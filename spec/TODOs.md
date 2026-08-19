@@ -1,14 +1,12 @@
 
 
 
-
-
 1. Pre-op
-- [ ] Choose framework.
-- [ ] Scaffold project. 
+- [x] Choose framework -> Svelte + Vite, clientside static site.
+- [x] Scaffold project. 
 - [ ] Perhaps deploy as a Github page app.
-- [ ] Procure art assets.
 - [ ] Collect all pertinent rules.
+- [ ] Procure art assets.
 
 
 2. Implement rules engine

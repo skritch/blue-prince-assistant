@@ -1,15 +1,28 @@
-export type Rarity = 'common' | 'uncommon' | 'rare'
+export type Rarity = 'commonplace' | 'standard' | 'unusual' | 'rare' | 'special'
 
-export interface Room {
-  id: string
+export type RoomColor = 'blue' | 'purple' | 'orange' | 'green' | 'gold' | 'red' | 'black' | 'multicolor'
+
+// Numbers correspond to directory section numbers (1-9); strings for unnumbered sections
+export type DirectoryPage = number | 'blackprint' | 'underground'
+
+/** Shape of an entry in rooms.json */
+export interface RoomData {
   name: string
-  rarity: Rarity
-  gemCost: number
+  slug: string
+  assetPath: string
+  color: RoomColor | null
+  baseRarity: Rarity
+  baseGemCost: number
+  doors: number | null
+  directoryPage: DirectoryPage
+  roomNumber: number
+  deadEnd: boolean
+}
+
+/** Runtime room — RoomData plus any computed/derived fields */
+export interface Room extends RoomData {
   /** Rooms that, when placed, remove this room from the pool */
   excludedBy?: string[]
-  /** Rooms that must be present for this room to appear */
-  requiredBy?: string[]
-  tags?: string[]
 }
 
 export interface RunState {

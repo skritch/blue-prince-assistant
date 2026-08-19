@@ -1,4 +1,6 @@
-import type { Room } from '../types'
+import type { Room, RoomData } from '../types'
+import rawRooms from './rooms.json'
 
-// TODO: populate from game data
-export const ROOMS: Room[] = []
+export const ROOMS: Room[] = (rawRooms as RoomData[]).map((r) => ({
+  ...r,
+}))
