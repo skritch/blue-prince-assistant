@@ -67,11 +67,16 @@ const SECTION_COLORS = {
 }
 
 function extractColor(section) {
+  const seen = new Set()
+  const colors = []
   for (const part of section.split(',')) {
     const m = part.match(/\((\w+)\)/)
-    if (m && SECTION_COLORS[m[1]]) return SECTION_COLORS[m[1]]
+    const c = m && SECTION_COLORS[m[1]]
+    if (c && !seen.has(c)) { colors.push(c); seen.add(c) }
   }
-  return null
+  if (colors.length === 0) return null
+  if (colors.length === 1) return colors[0]
+  return colors
 }
 
 function extractDirectoryPage(section) {

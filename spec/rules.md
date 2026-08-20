@@ -16,6 +16,7 @@ Current pool:
   - https://www.reddit.com/r/BluePrince/comments/1mkgzuj/chamber_of_mirrors_passive_and_permanent_effects/
 - Schoolhouse + classrooms
 - various ad-hoc rules involving e.g. terrace, secret passage
+- date
 
 Eligible rules:
 - Current state of house
@@ -49,7 +50,7 @@ Draw rules:
   - https://www.reddit.com/r/BluePrince/comments/1m98js6/special_drafting_prism_keys_and_secret_passages/
   - https://www.reddit.com/r/BluePrince/comments/1m98kcr/special_drafting_prism_keys_and_secret_passages/
 - duct drafting
-- reading nook, tunnel
+- reading nook, tunnel, library
 
 
 Orientations:

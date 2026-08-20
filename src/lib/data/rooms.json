@@ -519,7 +519,15 @@
     "name": "Aquarium",
     "slug": "aquarium",
     "assetPath": "rooms/aquarium.png",
-    "color": "blue",
+    "color": [
+      "blue",
+      "purple",
+      "orange",
+      "green",
+      "gold",
+      "red",
+      "black"
+    ],
     "baseRarity": "unusual",
     "baseGemCost": 1,
     "doors": 3,
@@ -927,7 +935,10 @@
     "name": "Armory",
     "slug": "armory",
     "assetPath": "rooms/armory.png",
-    "color": "gold",
+    "color": [
+      "gold",
+      "black"
+    ],
     "baseRarity": "standard",
     "baseGemCost": 0,
     "doors": 2,
@@ -975,7 +986,10 @@
     "name": "Maid's Chamber",
     "slug": "maids-chamber",
     "assetPath": "rooms/maids-chamber.png",
-    "color": "red",
+    "color": [
+      "red",
+      "purple"
+    ],
     "baseRarity": "unusual",
     "baseGemCost": 0,
     "doors": 2,
