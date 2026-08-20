@@ -1,0 +1,259 @@
+[
+  {
+    "slug": "billiard-room",
+    "default": 2,
+    "daily": {
+      "1": 3,
+      "2": 3
+    },
+    "vmode_day1_reset": true
+  },
+  {
+    "slug": "garage",
+    "default": 1,
+    "daily": {}
+  },
+  {
+    "slug": "locker-room",
+    "default": 2,
+    "daily": {}
+  },
+  {
+    "slug": "vault",
+    "default": 3,
+    "daily": {}
+  },
+  {
+    "slug": "library",
+    "default": 2,
+    "daily": {
+      "1": 4,
+      "2": 4,
+      "34": 4
+    },
+    "vmode_day1_reset": true
+  },
+  {
+    "slug": "drafting-studio",
+    "default": 3,
+    "daily": {
+      "1": 4,
+      "2": 4
+    }
+  },
+  {
+    "slug": "pump-room",
+    "default": 2,
+    "daily": {
+      "1": 4,
+      "2": 4
+    },
+    "vmode_day1": 2
+  },
+  {
+    "slug": "security",
+    "default": 1,
+    "daily": {}
+  },
+  {
+    "slug": "sauna",
+    "default": 2,
+    "daily": {}
+  },
+  {
+    "slug": "freezer",
+    "default": 3,
+    "daily": {
+      "1": 4,
+      "2": 4
+    },
+    "vmode_day1_reset": true
+  },
+  {
+    "slug": "bunk-room",
+    "default": 2,
+    "daily": {}
+  },
+  {
+    "slug": "her-ladyships-chamber",
+    "default": 1,
+    "daily": {}
+  },
+  {
+    "slug": "master-bedroom",
+    "default": 3,
+    "daily": {
+      "1": 4,
+      "2": 4,
+      "3-4": 4,
+      "5-7": 4
+    }
+  },
+  {
+    "slug": "west-wing-hall",
+    "default": 1,
+    "daily": {}
+  },
+  {
+    "slug": "east-wing-hall",
+    "default": 2,
+    "daily": {}
+  },
+  {
+    "slug": "patio",
+    "default": 1,
+    "daily": {}
+  },
+  {
+    "slug": "courtyard",
+    "default": 1,
+    "daily": {}
+  },
+  {
+    "slug": "veranda",
+    "default": 2,
+    "daily": {}
+  },
+  {
+    "slug": "greenhouse",
+    "default": 1,
+    "daily": {}
+  },
+  {
+    "slug": "morning-room",
+    "default": 1,
+    "daily": {}
+  },
+  {
+    "slug": "commissary",
+    "default": 1,
+    "daily": {
+      "1": 3
+    },
+    "vmode_day1": 1
+  },
+  {
+    "slug": "locksmith",
+    "default": 2,
+    "daily": {}
+  },
+  {
+    "slug": "showroom",
+    "default": 3,
+    "daily": {}
+  },
+  {
+    "slug": "mount-holly-gift-shop",
+    "default": 3,
+    "daily": {}
+  },
+  {
+    "slug": "classroom",
+    "default": 2,
+    "daily": {}
+  },
+  {
+    "slug": "closed-exhibit",
+    "default": 3,
+    "daily": {}
+  },
+  {
+    "slug": "workshop",
+    "daily": {
+      "1": 3
+    },
+    "vmode_day1": 2
+  },
+  {
+    "slug": "darkroom",
+    "daily": {
+      "1": 3
+    },
+    "vmode_day1_reset": true
+  },
+  {
+    "slug": "pool",
+    "daily": {
+      "1": 3,
+      "2": 3
+    }
+  },
+  {
+    "slug": "coat-check",
+    "daily": {
+      "1": 4,
+      "2": 4
+    },
+    "vmode_day1_reset": true
+  },
+  {
+    "slug": "observatory",
+    "daily": {
+      "1": 3,
+      "2": 3
+    }
+  },
+  {
+    "slug": "lavatory",
+    "daily": {
+      "1": 1,
+      "2": 1
+    }
+  },
+  {
+    "slug": "archives",
+    "daily": {
+      "1": 4,
+      "2": 4
+    },
+    "vmode_day1_reset": true
+  },
+  {
+    "slug": "ballroom",
+    "daily": {
+      "1": 3,
+      "2": 3,
+      "3-4": 3
+    },
+    "vmode_day1_reset": true
+  },
+  {
+    "slug": "laboratory",
+    "daily": {
+      "1": 3,
+      "2": 3,
+      "3-4": 3
+    },
+    "vmode_day1_reset": true
+  },
+  {
+    "slug": "gymnasium",
+    "daily": {
+      "1": 3,
+      "2": 3,
+      "3-4": 3
+    },
+    "vmode_day1_reset": true
+  },
+  {
+    "slug": "study",
+    "daily": {
+      "1": 4,
+      "2": 4,
+      "3-4": 4,
+      "5-7": 4
+    }
+  },
+  {
+    "slug": "boiler-room",
+    "vmode_day1": 2
+  },
+  {
+    "slug": "utility-closet",
+    "vmode_day1": 1
+  },
+  {
+    "slug": "dining-room",
+    "vmode_day1_reset": true
+  }
+]

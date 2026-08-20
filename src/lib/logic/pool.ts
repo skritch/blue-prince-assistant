@@ -1,66 +1,57 @@
-import { ADHOC_ADDITIONS, POOL_ADDITIONS, ROOMS, ROOM_46_REWARDS, ROOM_BY_SLUG, UNDRAFTABLE, roomsForPage } from '../data/rooms'
+import { ROOM_BY_SLUG } from './rooms'
 import type { Rarity, Room } from '../types'
 
 
+export type RoomSource =
+  | 'room46'
+  | 'pool-in-house'
+  | 'bacon-and-eggs'
+  | 'knight-chess'
+  | 'schoolhouse'
+  | 'laboratory'
+  | 'chamber-of-mirrors'
 
-export interface PoolState {
-  // Drafting Studio, found floorplans, etc.
-  pool: Room[]
-  haveRoom46: boolean              // Adds Gallery, Room8, gift shop, trophy room
 
-  // Conservatory / Gear Wrench permanent rarity shifts; slug → overridden rarity
+type MaybeInPool = { pct: number }
+type ChanceOfRarity = { rarityNote: string }
+export type Annotation = MaybeInPool | ChanceOfRarity
+
+export interface PooledRoom {
+  room: Room
+  source?: RoomSource
+}
+
+/**
+ * Dynamically-computed pool for a specific draft, after all state effects are applied.
+ * Intermediate representation between the input states and final DraftOdds.
+ */
+export interface DraftPool {
+  /** Rooms eligible to appear as draft choices at this location */
+  rooms: PooledRoom[]
+  /** Effective rarity for each room in this draft, slug → rarity */
   rarityOverrides: Record<string, Rarity>
+  /** Annotations keyed by room slug */
+  annotations: Record<string, Annotation[]>
 }
 
-// Pages excluded from the initial pool
-const INIT_EXCLUDED_PAGES = new Set([7, 8])
-
-// Rooms excluded from the initial pool despite their page being included
-const INIT_EXCLUDED_SLUGS = new Set([
-  ...ROOM_46_REWARDS,
-  ...POOL_ADDITIONS,
-  ...ADHOC_ADDITIONS,
-  ...UNDRAFTABLE
-])
-
-const FULL_EXCLUDED_SLUGS = new Set([
-  ...POOL_ADDITIONS,
-  ...ADHOC_ADDITIONS,
-  ...UNDRAFTABLE
-])
-
-export function initPool(): PoolState {
-  const unlockedRooms = ROOMS
-    .filter((r) => !INIT_EXCLUDED_PAGES.has(r.directoryPage) && !INIT_EXCLUDED_SLUGS.has(r.slug))
-  return { pool: unlockedRooms, haveRoom46: false, rarityOverrides: {} }
+export function addToPool(pool: DraftPool, source?: RoomSource, ...slugs: string[]): DraftPool {
+  // Does not check if rooms already exist, as draft pool supports duplicates
+  // Currently does not validate slugs
+  const toAdd = slugs.map((s) => ({ room: ROOM_BY_SLUG[s], source }))
+  if (toAdd.length === 0) return pool
+  return { ...pool, rooms: [...pool.rooms, ...toAdd] }
 }
 
-export function initFullPool(): PoolState {
-  return {
-    pool: ROOMS
-      .filter((r) => !FULL_EXCLUDED_SLUGS.has(r.slug)),
-    haveRoom46: true,
-    rarityOverrides: {},
+// TODO: do we need to remove one?
+export function removeFromPool(pool: DraftPool, ...slugs: string[]): DraftPool {
+  const toRemove = new Set(slugs)
+  return { ...pool, rooms: pool.rooms.filter(({ room }) => !toRemove.has(room.slug)) }
+}
+
+export function annotateRoom(pool: DraftPool, annotation: Annotation, ...slugs: string[]): DraftPool {
+  const updated = { ...pool.annotations }
+  for (const slug of slugs) {
+    updated[slug] = [...(updated[slug] ?? []), annotation]
   }
-}
-
-export function fillPage(state: PoolState, page: number): PoolState {
-  const existingSlugs = new Set(state.pool.map((r) => r.slug))
-  const toAdd = roomsForPage(page).filter((r) => !existingSlugs.has(r.slug))
-  if (toAdd.length === 0) return state
-  return { ...state, pool: [...state.pool, ...toAdd] }
-}
-
-export function addRoom(state: PoolState, slug: string): PoolState {
-  const room = ROOM_BY_SLUG[slug]
-  if (!room || state.pool.some((r) => r.slug === slug)) return state
-  return { ...state, pool: [...state.pool, room] }
-}
-
-export function removeRoom(state: PoolState, slug: string): PoolState {
-  const idx = state.pool.findIndex((r) => r.slug === slug)
-  if (idx === -1) return state
-  const unlockedRooms = [...state.pool]
-  unlockedRooms.splice(idx, 1)
-  return { ...state, pool: unlockedRooms }
+  return { ...pool, annotations: updated }
 }

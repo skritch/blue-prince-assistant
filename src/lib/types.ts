@@ -1,4 +1,5 @@
-export type Rarity = 'commonplace' | 'standard' | 'unusual' | 'rare' | 'special'
+/** 1 = commonplace, 2 = standard, 3 = unusual, 4 = rare, null = special */
+export type Rarity = 1 | 2 | 3 | 4 | null
 export type RoomColor = 'blue' | 'purple' | 'orange' | 'green' | 'gold' | 'red' | 'black'
 export type Direction = 'N' | 'S' | 'E' | 'W'
 export type TileColumn = 'A' | 'B' | 'C' | 'D' | 'E'

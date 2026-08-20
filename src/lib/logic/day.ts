@@ -19,7 +19,11 @@ export interface DayState {
   poolInHouse: boolean             // adds Locker Room, Sauna, Pump Room
   baconAndEggs: boolean            // adds Morning Room
 
-  // --- Dynamic rarity modifiers ---
+  // --- Relevant Items ---
+  haveBatteryPack: boolean
+  haveGearWrench: boolean
+
+  // --- Rarity modifiers ---
   chessColor: RoomColor | null    // Chess piece color boost (null = inactive)
   scepterColor: RoomColor | null  // Royal Scepter color boost (null = inactive)
   furnaceInHouse: boolean          // Red rooms more likely
@@ -47,6 +51,8 @@ export function initDay(day: number): DayState {
     chamberOfMirrorsInHouse: false,
     poolInHouse: false,
     baconAndEggs: false,
+    haveBatteryPack: false,
+    haveGearWrench: false,
     chessColor: null,
     scepterColor: null,
     furnaceInHouse: false,
