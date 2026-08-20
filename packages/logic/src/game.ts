@@ -1,5 +1,5 @@
 import { ADHOC_ADDITIONS, POOL_ADDITIONS, ROOMS, ROOM_46_REWARDS, ROOM_BY_SLUG, UNDRAFTABLE, roomsForPage } from './rooms'
-import type { Rarity, Room } from '../types'
+import type { Rarity, Room } from './types'
 
 
 

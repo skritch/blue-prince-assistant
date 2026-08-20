@@ -1,4 +1,4 @@
-import type { RoomColor } from "../types"
+import type { RoomColor } from "./types"
 
 /**
  * Within-day state. User-provided or derived from the existing daily state.

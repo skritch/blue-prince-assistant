@@ -1,5 +1,5 @@
-import type { Rarity, Room } from '../types'
-import rawRooms from '../data/rooms.json'
+import type { Rarity, Room } from './types'
+import rawRooms from './data/rooms.json'
 
 const RARITY_MAP: Record<string, Rarity> = {
   commonplace: 1,

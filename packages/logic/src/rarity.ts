@@ -1,5 +1,5 @@
-import type { Rarity } from '../types'
-import rawOverrides from '../data/rarityOverrides.json'
+import type { Rarity } from './types'
+import rawOverrides from './data/rarityOverrides.json'
 import type { GameState } from './game'
 import type { DayState } from './day'
 import type { HouseState } from './house'

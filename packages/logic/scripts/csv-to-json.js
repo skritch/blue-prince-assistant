@@ -1,11 +1,11 @@
-// Usage: node scripts/csv-to-json.js
-// Reads src/lib/data/rooms.csv and writes src/lib/data/rooms.json
+// Usage: node packages/logic/scripts/csv-to-json.js
+// Reads packages/logic/src/data/rooms.csv and writes packages/logic/src/data/rooms.json
 
 import { readFileSync, writeFileSync } from 'fs'
 import { resolve, dirname } from 'path'
 import { fileURLToPath } from 'url'
 
-const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
+const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url))
 
 // --- CSV parser ---
 
@@ -122,7 +122,7 @@ function pageOrder(page) {
 
 // --- Main ---
 
-const csvText = readFileSync(resolve(ROOT, 'src/lib/data/rooms.csv'), 'utf-8')
+const csvText = readFileSync(resolve(SCRIPT_DIR, '../src/data/rooms.csv'), 'utf-8')
 const rows = parseCSV(csvText)
 
 const rooms = rows
@@ -157,7 +157,7 @@ const rooms = rows
   })
 
 writeFileSync(
-  resolve(ROOT, 'src/lib/data/rooms.json'),
+  resolve(SCRIPT_DIR, '../src/data/rooms.json'),
   JSON.stringify(rooms, null, 2),
   'utf-8'
 )

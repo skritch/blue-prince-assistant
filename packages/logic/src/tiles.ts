@@ -1,4 +1,4 @@
-import type { Direction, TileColumn, TileRow } from '../types'
+import type { Direction, TileColumn, TileRow } from './types'
 
 
 export type GridTile = { column: TileColumn; row: TileRow }

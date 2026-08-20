@@ -1,5 +1,5 @@
 import { ROOM_BY_SLUG } from './rooms'
-import type { Direction, Rarity, Room, RoomColor } from '../types'
+import type { Direction, Rarity, Room, RoomColor } from './types'
 import type { GridTile } from './tiles'
 
 

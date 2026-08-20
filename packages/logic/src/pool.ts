@@ -1,5 +1,5 @@
 import { ROOM_BY_SLUG } from './rooms'
-import type { Rarity, Room } from '../types'
+import type { Rarity, Room } from './types'
 
 
 export type RoomSource =
