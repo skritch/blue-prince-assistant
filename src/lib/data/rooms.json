@@ -3,7 +3,9 @@
     "name": "Foundation",
     "slug": "foundation",
     "assetPath": "rooms/foundation.png",
-    "color": "blue",
+    "color": [
+      "blue"
+    ],
     "baseRarity": "rare",
     "baseGemCost": 0,
     "doors": 3,
@@ -15,7 +17,9 @@
     "name": "Entrance Hall",
     "slug": "entrance-hall",
     "assetPath": "rooms/entrance-hall.png",
-    "color": "blue",
+    "color": [
+      "blue"
+    ],
     "baseRarity": "special",
     "baseGemCost": 0,
     "doors": 3,
@@ -27,7 +31,9 @@
     "name": "Spare Room",
     "slug": "spare-room",
     "assetPath": "rooms/spare-room.png",
-    "color": "blue",
+    "color": [
+      "blue"
+    ],
     "baseRarity": "commonplace",
     "baseGemCost": 0,
     "doors": 2,
@@ -39,7 +45,9 @@
     "name": "Rotunda",
     "slug": "rotunda",
     "assetPath": "rooms/rotunda.png",
-    "color": "blue",
+    "color": [
+      "blue"
+    ],
     "baseRarity": "rare",
     "baseGemCost": 3,
     "doors": 4,
@@ -51,7 +59,9 @@
     "name": "Parlor",
     "slug": "parlor",
     "assetPath": "rooms/parlor.png",
-    "color": "blue",
+    "color": [
+      "blue"
+    ],
     "baseRarity": "commonplace",
     "baseGemCost": 0,
     "doors": 2,
@@ -63,7 +73,9 @@
     "name": "Billiard Room",
     "slug": "billiard-room",
     "assetPath": "rooms/billiard-room.png",
-    "color": "blue",
+    "color": [
+      "blue"
+    ],
     "baseRarity": "commonplace",
     "baseGemCost": 0,
     "doors": 2,
@@ -75,7 +87,9 @@
     "name": "Gallery",
     "slug": "gallery",
     "assetPath": "rooms/gallery.png",
-    "color": "blue",
+    "color": [
+      "blue"
+    ],
     "baseRarity": "rare",
     "baseGemCost": 0,
     "doors": 2,
@@ -87,7 +101,9 @@
     "name": "Room 8",
     "slug": "room-8",
     "assetPath": "rooms/room-8.png",
-    "color": "blue",
+    "color": [
+      "blue"
+    ],
     "baseRarity": "rare",
     "baseGemCost": 0,
     "doors": 2,
@@ -99,7 +115,9 @@
     "name": "Closet",
     "slug": "closet",
     "assetPath": "rooms/closet.png",
-    "color": "blue",
+    "color": [
+      "blue"
+    ],
     "baseRarity": "commonplace",
     "baseGemCost": 0,
     "doors": 1,
@@ -111,7 +129,9 @@
     "name": "Walk-In Closet",
     "slug": "walk-in-closet",
     "assetPath": "rooms/walk-in-closet.png",
-    "color": "blue",
+    "color": [
+      "blue"
+    ],
     "baseRarity": "standard",
     "baseGemCost": 1,
     "doors": 1,
@@ -123,7 +143,9 @@
     "name": "Attic",
     "slug": "attic",
     "assetPath": "rooms/attic.png",
-    "color": "blue",
+    "color": [
+      "blue"
+    ],
     "baseRarity": "rare",
     "baseGemCost": 3,
     "doors": 1,
@@ -135,7 +157,9 @@
     "name": "Storeroom",
     "slug": "storeroom",
     "assetPath": "rooms/storeroom.png",
-    "color": "blue",
+    "color": [
+      "blue"
+    ],
     "baseRarity": "commonplace",
     "baseGemCost": 0,
     "doors": 1,
@@ -147,7 +171,9 @@
     "name": "Nook",
     "slug": "nook",
     "assetPath": "rooms/nook.png",
-    "color": "blue",
+    "color": [
+      "blue"
+    ],
     "baseRarity": "commonplace",
     "baseGemCost": 0,
     "doors": 2,
@@ -159,7 +185,9 @@
     "name": "Garage",
     "slug": "garage",
     "assetPath": "rooms/garage.png",
-    "color": "blue",
+    "color": [
+      "blue"
+    ],
     "baseRarity": "unusual",
     "baseGemCost": 0,
     "doors": 1,
@@ -171,7 +199,9 @@
     "name": "Music Room",
     "slug": "music-room",
     "assetPath": "rooms/music-room.png",
-    "color": "blue",
+    "color": [
+      "blue"
+    ],
     "baseRarity": "unusual",
     "baseGemCost": 2,
     "doors": 2,
@@ -183,7 +213,9 @@
     "name": "Locker Room",
     "slug": "locker-room",
     "assetPath": "rooms/locker-room.png",
-    "color": "blue",
+    "color": [
+      "blue"
+    ],
     "baseRarity": "rare",
     "baseGemCost": 0,
     "doors": 2,
@@ -195,7 +227,9 @@
     "name": "Den",
     "slug": "den",
     "assetPath": "rooms/den.png",
-    "color": "blue",
+    "color": [
+      "blue"
+    ],
     "baseRarity": "commonplace",
     "baseGemCost": 0,
     "doors": 3,
@@ -207,7 +241,9 @@
     "name": "Wine Cellar",
     "slug": "wine-cellar",
     "assetPath": "rooms/wine-cellar.png",
-    "color": "blue",
+    "color": [
+      "blue"
+    ],
     "baseRarity": "commonplace",
     "baseGemCost": 0,
     "doors": 1,
@@ -219,7 +255,9 @@
     "name": "Trophy Room",
     "slug": "trophy-room",
     "assetPath": "rooms/trophy-room.png",
-    "color": "blue",
+    "color": [
+      "blue"
+    ],
     "baseRarity": "rare",
     "baseGemCost": 5,
     "doors": 2,
@@ -231,7 +269,9 @@
     "name": "Ballroom",
     "slug": "ballroom",
     "assetPath": "rooms/ballroom.png",
-    "color": "blue",
+    "color": [
+      "blue"
+    ],
     "baseRarity": "rare",
     "baseGemCost": 2,
     "doors": 2,
@@ -243,7 +283,9 @@
     "name": "Pantry",
     "slug": "pantry",
     "assetPath": "rooms/pantry.png",
-    "color": "blue",
+    "color": [
+      "blue"
+    ],
     "baseRarity": "commonplace",
     "baseGemCost": 0,
     "doors": 2,
@@ -255,7 +297,9 @@
     "name": "Rumpus Room",
     "slug": "rumpus-room",
     "assetPath": "rooms/rumpus-room.png",
-    "color": "blue",
+    "color": [
+      "blue"
+    ],
     "baseRarity": "standard",
     "baseGemCost": 1,
     "doors": 2,
@@ -267,7 +311,9 @@
     "name": "Vault",
     "slug": "vault",
     "assetPath": "rooms/vault.png",
-    "color": "blue",
+    "color": [
+      "blue"
+    ],
     "baseRarity": "rare",
     "baseGemCost": 3,
     "doors": 1,
@@ -279,7 +325,9 @@
     "name": "Office",
     "slug": "office",
     "assetPath": "rooms/office.png",
-    "color": "blue",
+    "color": [
+      "blue"
+    ],
     "baseRarity": "standard",
     "baseGemCost": 2,
     "doors": 2,
@@ -291,7 +339,9 @@
     "name": "Drawing Room",
     "slug": "drawing-room",
     "assetPath": "rooms/drawing-room.png",
-    "color": "blue",
+    "color": [
+      "blue"
+    ],
     "baseRarity": "commonplace",
     "baseGemCost": 1,
     "doors": 3,
@@ -303,7 +353,9 @@
     "name": "Study",
     "slug": "study",
     "assetPath": "rooms/study.png",
-    "color": "blue",
+    "color": [
+      "blue"
+    ],
     "baseRarity": "unusual",
     "baseGemCost": 0,
     "doors": 1,
@@ -315,7 +367,9 @@
     "name": "Library",
     "slug": "library",
     "assetPath": "rooms/library.png",
-    "color": "blue",
+    "color": [
+      "blue"
+    ],
     "baseRarity": "unusual",
     "baseGemCost": 0,
     "doors": 2,
@@ -327,7 +381,9 @@
     "name": "Chamber Of Mirrors",
     "slug": "chamber-of-mirrors",
     "assetPath": "rooms/chamber-of-mirrors.png",
-    "color": "blue",
+    "color": [
+      "blue"
+    ],
     "baseRarity": "rare",
     "baseGemCost": 0,
     "doors": 1,
@@ -339,7 +395,9 @@
     "name": "Pool",
     "slug": "pool",
     "assetPath": "rooms/pool.png",
-    "color": "blue",
+    "color": [
+      "blue"
+    ],
     "baseRarity": "standard",
     "baseGemCost": 1,
     "doors": 3,
@@ -351,7 +409,9 @@
     "name": "Drafting Studio",
     "slug": "drafting-studio",
     "assetPath": "rooms/drafting-studio.png",
-    "color": "blue",
+    "color": [
+      "blue"
+    ],
     "baseRarity": "rare",
     "baseGemCost": 2,
     "doors": 1,
@@ -363,7 +423,9 @@
     "name": "Utility Closet",
     "slug": "utility-closet",
     "assetPath": "rooms/utility-closet.png",
-    "color": "blue",
+    "color": [
+      "blue"
+    ],
     "baseRarity": "standard",
     "baseGemCost": 0,
     "doors": 1,
@@ -375,7 +437,9 @@
     "name": "Boiler Room",
     "slug": "boiler-room",
     "assetPath": "rooms/boiler-room.png",
-    "color": "blue",
+    "color": [
+      "blue"
+    ],
     "baseRarity": "unusual",
     "baseGemCost": 1,
     "doors": 3,
@@ -387,7 +451,9 @@
     "name": "Pump Room",
     "slug": "pump-room",
     "assetPath": "rooms/pump-room.png",
-    "color": "blue",
+    "color": [
+      "blue"
+    ],
     "baseRarity": "unusual",
     "baseGemCost": 0,
     "doors": 2,
@@ -399,7 +465,9 @@
     "name": "Security",
     "slug": "security",
     "assetPath": "rooms/security.png",
-    "color": "blue",
+    "color": [
+      "blue"
+    ],
     "baseRarity": "commonplace",
     "baseGemCost": 1,
     "doors": 3,
@@ -411,7 +479,9 @@
     "name": "Workshop",
     "slug": "workshop",
     "assetPath": "rooms/workshop.png",
-    "color": "blue",
+    "color": [
+      "blue"
+    ],
     "baseRarity": "unusual",
     "baseGemCost": 0,
     "doors": 1,
@@ -423,7 +493,9 @@
     "name": "Laboratory",
     "slug": "laboratory",
     "assetPath": "rooms/laboratory.png",
-    "color": "blue",
+    "color": [
+      "blue"
+    ],
     "baseRarity": "standard",
     "baseGemCost": 1,
     "doors": 2,
@@ -435,7 +507,9 @@
     "name": "Sauna",
     "slug": "sauna",
     "assetPath": "rooms/sauna.png",
-    "color": "blue",
+    "color": [
+      "blue"
+    ],
     "baseRarity": "unusual",
     "baseGemCost": 0,
     "doors": 1,
@@ -447,7 +521,9 @@
     "name": "Coat Check",
     "slug": "coat-check",
     "assetPath": "rooms/coat-check.png",
-    "color": "blue",
+    "color": [
+      "blue"
+    ],
     "baseRarity": "commonplace",
     "baseGemCost": 0,
     "doors": 1,
@@ -459,7 +535,9 @@
     "name": "Mail Room",
     "slug": "mail-room",
     "assetPath": "rooms/mail-room.png",
-    "color": "blue",
+    "color": [
+      "blue"
+    ],
     "baseRarity": "unusual",
     "baseGemCost": 0,
     "doors": 1,
@@ -471,7 +549,9 @@
     "name": "Freezer",
     "slug": "freezer",
     "assetPath": "rooms/freezer.png",
-    "color": "blue",
+    "color": [
+      "blue"
+    ],
     "baseRarity": "rare",
     "baseGemCost": 0,
     "doors": 1,
@@ -483,7 +563,9 @@
     "name": "Dining Room",
     "slug": "dining-room",
     "assetPath": "rooms/dining-room.png",
-    "color": "blue",
+    "color": [
+      "blue"
+    ],
     "baseRarity": "standard",
     "baseGemCost": 0,
     "doors": 3,
@@ -495,7 +577,9 @@
     "name": "Observatory",
     "slug": "observatory",
     "assetPath": "rooms/observatory.png",
-    "color": "blue",
+    "color": [
+      "blue"
+    ],
     "baseRarity": "standard",
     "baseGemCost": 1,
     "doors": 2,
@@ -507,7 +591,9 @@
     "name": "Conference Room",
     "slug": "conference-room",
     "assetPath": "rooms/conference-room.png",
-    "color": "blue",
+    "color": [
+      "blue"
+    ],
     "baseRarity": "unusual",
     "baseGemCost": 0,
     "doors": 3,
@@ -539,7 +625,9 @@
     "name": "Antechamber",
     "slug": "antechamber",
     "assetPath": "rooms/antechamber.png",
-    "color": "blue",
+    "color": [
+      "blue"
+    ],
     "baseRarity": "special",
     "baseGemCost": 0,
     "doors": 4,
@@ -551,7 +639,9 @@
     "name": "Room 46",
     "slug": "room-46",
     "assetPath": "rooms/room-46.png",
-    "color": "blue",
+    "color": [
+      "blue"
+    ],
     "baseRarity": "special",
     "baseGemCost": 0,
     "doors": 1,
@@ -563,7 +653,9 @@
     "name": "Classroom",
     "slug": "classroom",
     "assetPath": "rooms/classroom.png",
-    "color": "blue",
+    "color": [
+      "blue"
+    ],
     "baseRarity": "unusual",
     "baseGemCost": 1,
     "doors": 2,
@@ -575,7 +667,9 @@
     "name": "Bedroom",
     "slug": "bedroom",
     "assetPath": "rooms/bedroom.png",
-    "color": "purple",
+    "color": [
+      "purple"
+    ],
     "baseRarity": "commonplace",
     "baseGemCost": 0,
     "doors": 2,
@@ -587,7 +681,9 @@
     "name": "Boudoir",
     "slug": "boudoir",
     "assetPath": "rooms/boudoir.png",
-    "color": "purple",
+    "color": [
+      "purple"
+    ],
     "baseRarity": "standard",
     "baseGemCost": 0,
     "doors": 2,
@@ -599,7 +695,9 @@
     "name": "Guest Bedroom",
     "slug": "guest-bedroom",
     "assetPath": "rooms/guest-bedroom.png",
-    "color": "purple",
+    "color": [
+      "purple"
+    ],
     "baseRarity": "commonplace",
     "baseGemCost": 0,
     "doors": 1,
@@ -611,7 +709,9 @@
     "name": "Nursery",
     "slug": "nursery",
     "assetPath": "rooms/nursery.png",
-    "color": "purple",
+    "color": [
+      "purple"
+    ],
     "baseRarity": "commonplace",
     "baseGemCost": 1,
     "doors": 1,
@@ -623,7 +723,9 @@
     "name": "Servant's Quarters",
     "slug": "servants-quarters",
     "assetPath": "rooms/servants-quarters.png",
-    "color": "purple",
+    "color": [
+      "purple"
+    ],
     "baseRarity": "unusual",
     "baseGemCost": 1,
     "doors": 1,
@@ -635,7 +737,9 @@
     "name": "Bunk Room",
     "slug": "bunk-room",
     "assetPath": "rooms/bunk-room.png",
-    "color": "purple",
+    "color": [
+      "purple"
+    ],
     "baseRarity": "unusual",
     "baseGemCost": 0,
     "doors": 1,
@@ -647,7 +751,9 @@
     "name": "Her Ladyship's Chamber",
     "slug": "her-ladyships-chamber",
     "assetPath": "rooms/her-ladyships-chamber.png",
-    "color": "purple",
+    "color": [
+      "purple"
+    ],
     "baseRarity": "rare",
     "baseGemCost": 0,
     "doors": null,
@@ -659,7 +765,9 @@
     "name": "Master Bedroom",
     "slug": "master-bedroom",
     "assetPath": "rooms/master-bedroom.png",
-    "color": "purple",
+    "color": [
+      "purple"
+    ],
     "baseRarity": "rare",
     "baseGemCost": 2,
     "doors": 1,
@@ -671,7 +779,9 @@
     "name": "Hallway",
     "slug": "hallway",
     "assetPath": "rooms/hallway.png",
-    "color": "orange",
+    "color": [
+      "orange"
+    ],
     "baseRarity": "commonplace",
     "baseGemCost": 0,
     "doors": 3,
@@ -683,7 +793,9 @@
     "name": "West Wing Hall",
     "slug": "west-wing-hall",
     "assetPath": "rooms/west-wing-hall.png",
-    "color": "orange",
+    "color": [
+      "orange"
+    ],
     "baseRarity": "standard",
     "baseGemCost": 0,
     "doors": 3,
@@ -695,7 +807,9 @@
     "name": "East Wing Hall",
     "slug": "east-wing-hall",
     "assetPath": "rooms/east-wing-hall.png",
-    "color": "orange",
+    "color": [
+      "orange"
+    ],
     "baseRarity": "unusual",
     "baseGemCost": 0,
     "doors": 3,
@@ -707,7 +821,9 @@
     "name": "Corridor",
     "slug": "corridor",
     "assetPath": "rooms/corridor.png",
-    "color": "orange",
+    "color": [
+      "orange"
+    ],
     "baseRarity": "commonplace",
     "baseGemCost": 0,
     "doors": 2,
@@ -719,7 +835,9 @@
     "name": "Passageway",
     "slug": "passageway",
     "assetPath": "rooms/passageway.png",
-    "color": "orange",
+    "color": [
+      "orange"
+    ],
     "baseRarity": "commonplace",
     "baseGemCost": 2,
     "doors": 4,
@@ -731,7 +849,9 @@
     "name": "Secret Passage",
     "slug": "secret-passage",
     "assetPath": "rooms/secret-passage.png",
-    "color": "orange",
+    "color": [
+      "orange"
+    ],
     "baseRarity": "unusual",
     "baseGemCost": 1,
     "doors": 2,
@@ -743,7 +863,9 @@
     "name": "Foyer",
     "slug": "foyer",
     "assetPath": "rooms/foyer.png",
-    "color": "orange",
+    "color": [
+      "orange"
+    ],
     "baseRarity": "unusual",
     "baseGemCost": 2,
     "doors": 2,
@@ -755,7 +877,9 @@
     "name": "Great Hall",
     "slug": "great-hall",
     "assetPath": "rooms/great-hall.png",
-    "color": "orange",
+    "color": [
+      "orange"
+    ],
     "baseRarity": "unusual",
     "baseGemCost": 0,
     "doors": 4,
@@ -767,7 +891,9 @@
     "name": "Terrace",
     "slug": "terrace",
     "assetPath": "rooms/terrace.png",
-    "color": "green",
+    "color": [
+      "green"
+    ],
     "baseRarity": "standard",
     "baseGemCost": 0,
     "doors": 1,
@@ -779,7 +905,9 @@
     "name": "Patio",
     "slug": "patio",
     "assetPath": "rooms/patio.png",
-    "color": "green",
+    "color": [
+      "green"
+    ],
     "baseRarity": "standard",
     "baseGemCost": 1,
     "doors": 2,
@@ -791,7 +919,9 @@
     "name": "Courtyard",
     "slug": "courtyard",
     "assetPath": "rooms/courtyard.png",
-    "color": "green",
+    "color": [
+      "green"
+    ],
     "baseRarity": "standard",
     "baseGemCost": 1,
     "doors": 3,
@@ -803,7 +933,9 @@
     "name": "Cloister",
     "slug": "cloister",
     "assetPath": "rooms/cloister.png",
-    "color": "green",
+    "color": [
+      "green"
+    ],
     "baseRarity": "unusual",
     "baseGemCost": 3,
     "doors": 4,
@@ -815,7 +947,9 @@
     "name": "Veranda",
     "slug": "veranda",
     "assetPath": "rooms/veranda.png",
-    "color": "green",
+    "color": [
+      "green"
+    ],
     "baseRarity": "unusual",
     "baseGemCost": 2,
     "doors": 2,
@@ -827,7 +961,9 @@
     "name": "Greenhouse",
     "slug": "greenhouse",
     "assetPath": "rooms/greenhouse.png",
-    "color": "green",
+    "color": [
+      "green"
+    ],
     "baseRarity": "standard",
     "baseGemCost": 1,
     "doors": 1,
@@ -839,7 +975,9 @@
     "name": "Morning Room",
     "slug": "morning-room",
     "assetPath": "rooms/morning-room.png",
-    "color": "green",
+    "color": [
+      "green"
+    ],
     "baseRarity": "rare",
     "baseGemCost": 0,
     "doors": 2,
@@ -851,7 +989,9 @@
     "name": "Secret Garden",
     "slug": "secret-garden",
     "assetPath": "rooms/secret-garden.png",
-    "color": "green",
+    "color": [
+      "green"
+    ],
     "baseRarity": "rare",
     "baseGemCost": 0,
     "doors": 3,
@@ -863,7 +1003,9 @@
     "name": "Commissary",
     "slug": "commissary",
     "assetPath": "rooms/commissary.png",
-    "color": "gold",
+    "color": [
+      "gold"
+    ],
     "baseRarity": "standard",
     "baseGemCost": 1,
     "doors": 2,
@@ -875,7 +1017,9 @@
     "name": "Kitchen",
     "slug": "kitchen",
     "assetPath": "rooms/kitchen.png",
-    "color": "gold",
+    "color": [
+      "gold"
+    ],
     "baseRarity": "commonplace",
     "baseGemCost": 1,
     "doors": 2,
@@ -887,7 +1031,9 @@
     "name": "Locksmith",
     "slug": "locksmith",
     "assetPath": "rooms/locksmith.png",
-    "color": "gold",
+    "color": [
+      "gold"
+    ],
     "baseRarity": "unusual",
     "baseGemCost": 1,
     "doors": 1,
@@ -899,7 +1045,9 @@
     "name": "Showroom",
     "slug": "showroom",
     "assetPath": "rooms/showroom.png",
-    "color": "gold",
+    "color": [
+      "gold"
+    ],
     "baseRarity": "rare",
     "baseGemCost": 2,
     "doors": 2,
@@ -911,7 +1059,9 @@
     "name": "Laundry Room",
     "slug": "laundry-room",
     "assetPath": "rooms/laundry-room.png",
-    "color": "gold",
+    "color": [
+      "gold"
+    ],
     "baseRarity": "rare",
     "baseGemCost": 1,
     "doors": 1,
@@ -923,7 +1073,9 @@
     "name": "Bookshop",
     "slug": "bookshop",
     "assetPath": "rooms/bookshop.png",
-    "color": "gold",
+    "color": [
+      "gold"
+    ],
     "baseRarity": "rare",
     "baseGemCost": 1,
     "doors": 2,
@@ -950,7 +1102,9 @@
     "name": "Mount Holly Gift Shop",
     "slug": "mount-holly-gift-shop",
     "assetPath": "rooms/mount-holly-gift-shop.png",
-    "color": "gold",
+    "color": [
+      "gold"
+    ],
     "baseRarity": "rare",
     "baseGemCost": 0,
     "doors": 3,
@@ -962,7 +1116,9 @@
     "name": "Lavatory",
     "slug": "lavatory",
     "assetPath": "rooms/lavatory.png",
-    "color": "red",
+    "color": [
+      "red"
+    ],
     "baseRarity": "commonplace",
     "baseGemCost": 0,
     "doors": 1,
@@ -974,7 +1130,9 @@
     "name": "Chapel",
     "slug": "chapel",
     "assetPath": "rooms/chapel.png",
-    "color": "red",
+    "color": [
+      "red"
+    ],
     "baseRarity": "commonplace",
     "baseGemCost": 0,
     "doors": 3,
@@ -1001,7 +1159,9 @@
     "name": "Archives",
     "slug": "archives",
     "assetPath": "rooms/archives.png",
-    "color": "red",
+    "color": [
+      "red"
+    ],
     "baseRarity": "unusual",
     "baseGemCost": 0,
     "doors": 4,
@@ -1013,7 +1173,9 @@
     "name": "Gymnasium",
     "slug": "gymnasium",
     "assetPath": "rooms/gymnasium.png",
-    "color": "red",
+    "color": [
+      "red"
+    ],
     "baseRarity": "standard",
     "baseGemCost": 0,
     "doors": 3,
@@ -1025,7 +1187,9 @@
     "name": "Darkroom",
     "slug": "darkroom",
     "assetPath": "rooms/darkroom.png",
-    "color": "red",
+    "color": [
+      "red"
+    ],
     "baseRarity": "standard",
     "baseGemCost": 0,
     "doors": 3,
@@ -1037,7 +1201,9 @@
     "name": "Weight Room",
     "slug": "weight-room",
     "assetPath": "rooms/weight-room.png",
-    "color": "red",
+    "color": [
+      "red"
+    ],
     "baseRarity": "rare",
     "baseGemCost": 0,
     "doors": 4,
@@ -1049,7 +1215,9 @@
     "name": "Furnace",
     "slug": "furnace",
     "assetPath": "rooms/furnace.png",
-    "color": "red",
+    "color": [
+      "red"
+    ],
     "baseRarity": "rare",
     "baseGemCost": 0,
     "doors": 1,
@@ -1061,7 +1229,9 @@
     "name": "Dovecote",
     "slug": "dovecote",
     "assetPath": "rooms/dovecote.png",
-    "color": "blue",
+    "color": [
+      "blue"
+    ],
     "baseRarity": "unusual",
     "baseGemCost": 0,
     "doors": 2,
@@ -1073,7 +1243,9 @@
     "name": "Kennel",
     "slug": "kennel",
     "assetPath": "rooms/kennel.png",
-    "color": "blue",
+    "color": [
+      "blue"
+    ],
     "baseRarity": "standard",
     "baseGemCost": 0,
     "doors": 2,
@@ -1085,7 +1257,9 @@
     "name": "Clock Tower",
     "slug": "clock-tower",
     "assetPath": "rooms/clock-tower.png",
-    "color": "blue",
+    "color": [
+      "blue"
+    ],
     "baseRarity": "unusual",
     "baseGemCost": 1,
     "doors": 1,
@@ -1097,7 +1271,9 @@
     "name": "Dormitory",
     "slug": "dormitory",
     "assetPath": "rooms/dormitory.png",
-    "color": "purple",
+    "color": [
+      "purple"
+    ],
     "baseRarity": "standard",
     "baseGemCost": 0,
     "doors": 1,
@@ -1109,7 +1285,9 @@
     "name": "Vestibule",
     "slug": "vestibule",
     "assetPath": "rooms/vestibule.png",
-    "color": "orange",
+    "color": [
+      "orange"
+    ],
     "baseRarity": "unusual",
     "baseGemCost": 2,
     "doors": 4,
@@ -1121,7 +1299,9 @@
     "name": "Casino",
     "slug": "casino",
     "assetPath": "rooms/casino.png",
-    "color": "gold",
+    "color": [
+      "gold"
+    ],
     "baseRarity": "unusual",
     "baseGemCost": 2,
     "doors": 2,
@@ -1133,7 +1313,9 @@
     "name": "Solarium",
     "slug": "solarium",
     "assetPath": "rooms/solarium.png",
-    "color": "green",
+    "color": [
+      "green"
+    ],
     "baseRarity": "standard",
     "baseGemCost": 1,
     "doors": 1,
@@ -1145,7 +1327,9 @@
     "name": "Planetarium",
     "slug": "planetarium",
     "assetPath": "rooms/planetarium.png",
-    "color": "blue",
+    "color": [
+      "blue"
+    ],
     "baseRarity": "standard",
     "baseGemCost": 0,
     "doors": 1,
@@ -1157,7 +1341,9 @@
     "name": "Tunnel",
     "slug": "tunnel",
     "assetPath": "rooms/tunnel.png",
-    "color": "orange",
+    "color": [
+      "orange"
+    ],
     "baseRarity": "standard",
     "baseGemCost": 0,
     "doors": 2,
@@ -1169,7 +1355,9 @@
     "name": "Conservatory",
     "slug": "conservatory",
     "assetPath": "rooms/conservatory.png",
-    "color": "green",
+    "color": [
+      "green"
+    ],
     "baseRarity": "unusual",
     "baseGemCost": 1,
     "doors": 2,
@@ -1181,7 +1369,9 @@
     "name": "Closed Exhibit",
     "slug": "closed-exhibit",
     "assetPath": "rooms/closed-exhibit.png",
-    "color": "red",
+    "color": [
+      "red"
+    ],
     "baseRarity": "rare",
     "baseGemCost": 0,
     "doors": 3,
@@ -1193,7 +1383,9 @@
     "name": "Mechanarium",
     "slug": "mechanarium",
     "assetPath": "rooms/mechanarium.png",
-    "color": "blue",
+    "color": [
+      "blue"
+    ],
     "baseRarity": "unusual",
     "baseGemCost": 0,
     "doors": 4,
@@ -1205,7 +1397,9 @@
     "name": "Treasure Trove",
     "slug": "treasure-trove",
     "assetPath": "rooms/treasure-trove.png",
-    "color": "black",
+    "color": [
+      "black"
+    ],
     "baseRarity": "unusual",
     "baseGemCost": 1,
     "doors": 2,
@@ -1217,7 +1411,9 @@
     "name": "Throne Room",
     "slug": "throne-room",
     "assetPath": "rooms/throne-room.png",
-    "color": "black",
+    "color": [
+      "black"
+    ],
     "baseRarity": "rare",
     "baseGemCost": 5,
     "doors": 3,
@@ -1229,7 +1425,9 @@
     "name": "Lost And Found",
     "slug": "lost-and-found",
     "assetPath": "rooms/lost-and-found.png",
-    "color": "red",
+    "color": [
+      "red"
+    ],
     "baseRarity": "unusual",
     "baseGemCost": 0,
     "doors": 2,
@@ -1241,7 +1439,9 @@
     "name": "Shelter",
     "slug": "shelter",
     "assetPath": "rooms/shelter.png",
-    "color": "blue",
+    "color": [
+      "blue"
+    ],
     "baseRarity": "unusual",
     "baseGemCost": 0,
     "doors": 1,
@@ -1253,7 +1453,9 @@
     "name": "Shrine",
     "slug": "shrine",
     "assetPath": "rooms/shrine.png",
-    "color": "blue",
+    "color": [
+      "blue"
+    ],
     "baseRarity": "unusual",
     "baseGemCost": 0,
     "doors": 1,
@@ -1265,7 +1467,9 @@
     "name": "Toolshed",
     "slug": "toolshed",
     "assetPath": "rooms/toolshed.png",
-    "color": "blue",
+    "color": [
+      "blue"
+    ],
     "baseRarity": "unusual",
     "baseGemCost": 0,
     "doors": 1,
@@ -1277,7 +1481,9 @@
     "name": "Schoolhouse",
     "slug": "schoolhouse",
     "assetPath": "rooms/schoolhouse.png",
-    "color": "blue",
+    "color": [
+      "blue"
+    ],
     "baseRarity": "unusual",
     "baseGemCost": 0,
     "doors": 1,
@@ -1289,7 +1495,9 @@
     "name": "Hovel",
     "slug": "hovel",
     "assetPath": "rooms/hovel.png",
-    "color": "purple",
+    "color": [
+      "purple"
+    ],
     "baseRarity": "unusual",
     "baseGemCost": 0,
     "doors": 1,
@@ -1301,7 +1509,9 @@
     "name": "Root Cellar",
     "slug": "root-cellar",
     "assetPath": "rooms/root-cellar.png",
-    "color": "green",
+    "color": [
+      "green"
+    ],
     "baseRarity": "unusual",
     "baseGemCost": 0,
     "doors": 1,
@@ -1313,7 +1523,9 @@
     "name": "Trading Post",
     "slug": "trading-post",
     "assetPath": "rooms/trading-post.png",
-    "color": "gold",
+    "color": [
+      "gold"
+    ],
     "baseRarity": "unusual",
     "baseGemCost": 0,
     "doors": 1,
@@ -1325,7 +1537,9 @@
     "name": "Tomb",
     "slug": "tomb",
     "assetPath": "rooms/tomb.png",
-    "color": "black",
+    "color": [
+      "black"
+    ],
     "baseRarity": "unusual",
     "baseGemCost": 0,
     "doors": 1,

@@ -75,7 +75,6 @@ function extractColor(section) {
     if (c && !seen.has(c)) { colors.push(c); seen.add(c) }
   }
   if (colors.length === 0) return null
-  if (colors.length === 1) return colors[0]
   return colors
 }
 
