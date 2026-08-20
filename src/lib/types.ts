@@ -6,7 +6,7 @@ export type TileRow = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
 
 
 /** Shape of an entry in rooms.json */
-export interface RoomData {
+export interface Room {
   name: string
   slug: string
   assetPath: string
@@ -18,11 +18,4 @@ export interface RoomData {
   roomNumber: number
   deadEnd: boolean
 }
-
-/** Runtime room — RoomData plus any computed/derived fields */
-export interface Room extends RoomData {
-  /** Rooms that, when placed, remove this room from the pool */
-  excludedBy?: string[]
-}
-
 

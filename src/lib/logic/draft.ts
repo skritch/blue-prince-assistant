@@ -1,3 +1,4 @@
+import { ROOM_BY_SLUG } from '../data/rooms'
 import type { Direction, Rarity, Room, RoomColor } from '../types'
 
 
@@ -33,9 +34,17 @@ export interface DraftParams {
  */
 export interface DraftPool {
   /** Rooms eligible to appear as draft choices at this location */
-  rooms: Set<Room>
+  rooms: Room[]
   /** Effective rarity for each room in this draft, slug → rarity */
   rarityOverrides: Record<string, Rarity>
+}
+
+export function addRooms(pool: DraftPool, ...slugs: string[]): DraftPool {
+  // Does not check if rooms already exist, as draft pool suppors duplicates
+  // Currently does not validate slugs
+  const toAdd = slugs.map((s) => ROOM_BY_SLUG[s])
+  if (toAdd.length === 0) return pool
+  return { ...pool, rooms: [...pool.rooms, ...toAdd] }
 }
 
 export interface DraftOdds {

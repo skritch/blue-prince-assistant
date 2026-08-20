@@ -14,7 +14,7 @@ export interface DayState {
 
   // --- Dynamic pool modifiers ---
   knightChess: boolean             // Adds Armory
-  aquariumExperimentActive: boolean    // (Laboratory) adds extra Aquariums to pool
+  aquariumExperimentActivations: number | null    // (Laboratory) adds extra Aquariums to pool
   chamberOfMirrorsInHouse: boolean // adds same-day duplicates of already-placed rooms
   poolInHouse: boolean             // adds Locker Room, Sauna, Pump Room
   baconAndEggs: boolean            // adds Morning Room
@@ -43,7 +43,7 @@ export function initDay(day: number): DayState {
     day,
     gems: 0,
     knightChess: false,
-    aquariumExperimentActive: false,
+    aquariumExperimentActivations: null,
     chamberOfMirrorsInHouse: false,
     poolInHouse: false,
     baconAndEggs: false,
