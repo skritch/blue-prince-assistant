@@ -271,7 +271,8 @@ function currentDraftLogic(
   //  - greenhouse
   //  - terrace
 
-
+  // outer room stuff:
+  // https://www.reddit.com/r/BluePrince/comments/1liagtk/outer_room_basic_draft_rates_effects_of_rarity/
 
 
   return pool

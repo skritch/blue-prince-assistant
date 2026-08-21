@@ -788,23 +788,6 @@
     "drafting": false
   },
   {
-    "name": "Classroom",
-    "slug": "classroom",
-    "assetPath": "rooms/classroom.png",
-    "color": [
-      "blue"
-    ],
-    "baseRarity": "unusual",
-    "baseGemCost": 1,
-    "doors": 2,
-    "directoryPage": 1,
-    "roomNumber": 91,
-    "deadEnd": false,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": true
-  },
-  {
     "name": "Bedroom",
     "slug": "bedroom",
     "assetPath": "rooms/bedroom.png",
@@ -1553,6 +1536,23 @@
     "mechanical": false,
     "tomorrow": false,
     "drafting": false
+  },
+  {
+    "name": "Classroom",
+    "slug": "classroom",
+    "assetPath": "rooms/classroom.png",
+    "color": [
+      "blue"
+    ],
+    "baseRarity": "unusual",
+    "baseGemCost": 1,
+    "doors": 2,
+    "directoryPage": 7,
+    "roomNumber": 91,
+    "deadEnd": false,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": true
   },
   {
     "name": "Vestibule",

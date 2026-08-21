@@ -75,6 +75,16 @@ function extractColor(section) {
   return colors
 }
 
+// Rooms that appear in multiple sections — override to their canonical page
+const PAGE_OVERRIDES = {
+  'classroom': 7,
+}
+
+// Ad-hoc door count overrides where the CSV value is wrong or missing
+const DOOR_OVERRIDES = {
+  'her-ladyships-chamber': 1,
+}
+
 function extractDirectoryPage(section) {
   for (const part of section.split(',').map(s => s.trim())) {
     if (part === 'Additions') continue
@@ -141,8 +151,8 @@ const rooms = rows
       color: extractColor(section),
       baseRarity: parseRarity(r['Rarity']),
       baseGemCost: parseGemCost(r['Gem cost']),
-      doors: parseDoors(r['Doors']),
-      directoryPage: extractDirectoryPage(section),
+      doors: DOOR_OVERRIDES[slug] ?? parseDoors(r['Doors']),
+      directoryPage: PAGE_OVERRIDES[toSlug(name)] ?? extractDirectoryPage(section),
       roomNumber: parseInt(r['#']),
       deadEnd: specialType.includes('Dead-End'),
       mechanical: specialType.includes('Mechanical'),
@@ -150,7 +160,7 @@ const rooms = rows
       drafting: specialType.includes('Drafting'),
     }
   })
-  .filter(r => r.directoryPage !== 'other' && r.directoryPage !== 'underground')
+  .filter(r => r.directoryPage !== 'other' && r.directoryPage !== 'underground' && r.directoryPage !== 'blackprint')
   .sort((a, b) => {
     const pd = pageOrder(a.directoryPage) - pageOrder(b.directoryPage)
     return pd !== 0 ? pd : a.roomNumber - b.roomNumber

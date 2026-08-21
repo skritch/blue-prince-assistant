@@ -25,7 +25,7 @@ export interface HouseDraftParams {
   // TODO: Buggy stuff
   // - drafting blocks: greenhouse, secret passags, tunnel
 
-  // Do gems go here?
+  gems: number
 }
 
 /**

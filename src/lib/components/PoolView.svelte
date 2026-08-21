@@ -12,19 +12,45 @@
   let draftPool = $derived(computePool(gameState, dayState, houseState));
 </script>
 
-<div class="config">
-  <GameStatePanel {gameState} />
-  <DayStatePanel {dayState} />
-  <HouseStatePanel {houseState} />
+<div class="layout">
+  <div class="config">
+    <GameStatePanel {gameState} />
+    <DayStatePanel {dayState} />
+    <HouseStatePanel {houseState} />
+  </div>
+  <div class="results">
+    <PoolTable {draftPool} />
+  </div>
 </div>
 
-<PoolTable {draftPool} />
-
 <style>
+  .layout {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 1.5rem;
+  }
+
   .config {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
-    margin-bottom: 1.5rem;
+    flex: 0 0 340px;
+  }
+
+  .results {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  @media (max-width: 700px) {
+    .layout {
+      flex-direction: column;
+    }
+
+    .config {
+      flex: none;
+      width: 100%;
+    }
   }
 </style>

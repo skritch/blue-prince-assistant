@@ -27,3 +27,5 @@ dist-ssr
 .vscode
 # Downloaded assets
 src/assets/rooms/
+
+CLAUDE.md

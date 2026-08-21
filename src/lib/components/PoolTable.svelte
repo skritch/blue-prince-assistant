@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { type DraftPool, type Rarity, type Annotation } from 'bp-logic';
+  import { type DraftPool, type Rarity, type Annotation } from "bp-logic";
 
   let { draftPool }: { draftPool: DraftPool } = $props();
 
@@ -7,37 +7,49 @@
     return r === null ? 5 : r;
   }
 
-  const RARITY_NAMES: Record<number, string> = { 1: 'commonplace', 2: 'standard', 3: 'unusual', 4: 'rare' };
+  const RARITY_NAMES: Record<number, string> = {
+    1: "commonplace",
+    2: "standard",
+    3: "unusual",
+    4: "rare",
+  };
   function rarityName(r: Rarity): string {
-    return r === null ? 'special' : (RARITY_NAMES[r] ?? '?');
+    return r === null ? "special" : (RARITY_NAMES[r] ?? "?");
   }
 
   const SOURCE_LABELS: Record<string, string> = {
-    'room46': 'Room 46',
-    'pool-in-house': 'Pool',
-    'bacon-and-eggs': 'Bacon & Eggs',
-    'knight-chess': 'Knight Chess',
-    'schoolhouse': 'Schoolhouse',
-    'laboratory': 'Laboratory',
-    'com-permanent': 'CoM permanent',
-    'com-passive': 'CoM passive',
+    room46: "Room 46",
+    "pool-in-house": "Pool",
+    "bacon-and-eggs": "Bacon & Eggs",
+    "knight-chess": "Knight Chess",
+    schoolhouse: "Schoolhouse",
+    laboratory: "Laboratory",
+    "com-permanent": "CoM permanent",
+    "com-passive": "CoM passive",
   };
 
   function formatAnnotations(annotations: Annotation[]): string {
-    return annotations.map((a) => {
-      if ('pct' in a) return `${a.pct}% chance in pool`;
-      if ('mirrorNote' in a) return a.mirrorNote;
-      if ('rarityNote' in a) return a.rarityNote;
-      return '';
-    }).filter(Boolean).join('\n');
+    return annotations
+      .map((a) => {
+        if ("pct" in a) return `${a.pct}% chance in pool`;
+        if ("mirrorNote" in a) return a.mirrorNote;
+        if ("rarityNote" in a) return a.rarityNote;
+        return "";
+      })
+      .filter(Boolean)
+      .join("\n");
   }
 
   let sortedRooms = $derived(
     [...draftPool.rooms].sort((a, b) => {
-      const ra = raritySort(draftPool.rarityOverrides[a.room.slug] ?? a.room.baseRarity);
-      const rb = raritySort(draftPool.rarityOverrides[b.room.slug] ?? b.room.baseRarity);
+      const ra = raritySort(
+        draftPool.rarityOverrides[a.room.slug] ?? a.room.baseRarity,
+      );
+      const rb = raritySort(
+        draftPool.rarityOverrides[b.room.slug] ?? b.room.baseRarity,
+      );
       return ra !== rb ? ra - rb : a.room.name.localeCompare(b.room.name);
-    })
+    }),
   );
 </script>
 
@@ -56,8 +68,9 @@
       </tr>
     </thead>
     <tbody>
-      {#each sortedRooms as { room, source } (room.slug + (source ?? ''))}
-        {@const effectiveRarity = draftPool.rarityOverrides[room.slug] ?? room.baseRarity}
+      {#each sortedRooms as { room, source } (room.slug + (source ?? ""))}
+        {@const effectiveRarity =
+          draftPool.rarityOverrides[room.slug] ?? room.baseRarity}
         {@const annotations = draftPool.annotations[room.slug]}
         {@const rarityChanged = effectiveRarity !== room.baseRarity}
         <tr>
@@ -68,24 +81,33 @@
           </td>
           <td class="name">{room.name}</td>
           <td class="rarity rarity-{effectiveRarity}">
-            {rarityName(effectiveRarity)}
-            {#if rarityChanged}
-              <span class="rarity-base" data-tooltip="base: {rarityName(room.baseRarity)}">*</span>
-            {/if}
+            {rarityName(effectiveRarity)}{#if rarityChanged}<span
+                class="rarity-base"
+                data-tooltip="base: {rarityName(room.baseRarity)}">*</span
+              >{/if}
           </td>
-          <td class="doors">{room.doors ?? '—'}</td>
+          <td class="doors">{room.doors ?? "—"}</td>
           <td class="tags">
-            {#if room.deadEnd}<span class="tag tag-dead-end">dead end</span>{/if}
-            {#if room.mechanical}<span class="tag tag-mechanical">mech</span>{/if}
-            {#if room.tomorrow}<span class="tag tag-tomorrow">tomorrow</span>{/if}
-            {#if room.drafting}<span class="tag tag-drafting">drafting</span>{/if}
+            {#if room.deadEnd}<span class="tag tag-dead-end">dead end</span
+              >{/if}
+            {#if room.mechanical}<span class="tag tag-mechanical">mech</span
+              >{/if}
+            {#if room.tomorrow}<span class="tag tag-tomorrow">tomorrow</span
+              >{/if}
+            {#if room.drafting}<span class="tag tag-drafting">drafting</span
+              >{/if}
           </td>
           <td class="source">
-            {#if source}<span class="source-label">{SOURCE_LABELS[source] ?? source}</span>{/if}
+            {#if source}<span class="source-label"
+                >{SOURCE_LABELS[source] ?? source}</span
+              >{/if}
           </td>
           <td class="annot">
             {#if annotations?.length}
-              <span class="annot-icon" data-tooltip={formatAnnotations(annotations)}>?</span>
+              <span
+                class="annot-icon"
+                data-tooltip={formatAnnotations(annotations)}>?</span
+              >
             {/if}
           </td>
         </tr>
@@ -123,9 +145,13 @@
     vertical-align: middle;
   }
 
-  tr:last-child td { border-bottom: none; }
+  tr:last-child td {
+    border-bottom: none;
+  }
 
-  .colors { white-space: nowrap; }
+  .colors {
+    white-space: nowrap;
+  }
 
   .color-dot {
     display: inline-block;
@@ -135,20 +161,47 @@
     margin-right: 2px;
   }
 
-  .color-blue    { background: #3b82f6; }
-  .color-purple  { background: #8b5cf6; }
-  .color-orange  { background: #f97316; }
-  .color-green   { background: #22c55e; }
-  .color-gold    { background: #f59e0b; }
-  .color-red     { background: #ef4444; }
-  .color-black   { background: #6b7280; }
+  .color-blue {
+    background: #3b82f6;
+  }
+  .color-purple {
+    background: #8b5cf6;
+  }
+  .color-orange {
+    background: #f97316;
+  }
+  .color-green {
+    background: #22c55e;
+  }
+  .color-gold {
+    background: #f59e0b;
+  }
+  .color-red {
+    background: #ef4444;
+  }
+  .color-black {
+    background: #6b7280;
+  }
 
-  .rarity { font-size: 0.8rem; white-space: nowrap; }
-  .rarity-1    { color: #9ca3af; }
-  .rarity-2    { color: var(--text); }
-  .rarity-3    { color: #60a5fa; }
-  .rarity-4    { color: #c084fc; }
-  .rarity-null { color: #f59e0b; }
+  .rarity {
+    font-size: 0.8rem;
+    white-space: nowrap;
+  }
+  .rarity-1 {
+    color: #9ca3af;
+  }
+  .rarity-2 {
+    color: var(--text);
+  }
+  .rarity-3 {
+    color: #60a5fa;
+  }
+  .rarity-4 {
+    color: #c084fc;
+  }
+  .rarity-null {
+    color: #f59e0b;
+  }
 
   .rarity-base {
     color: var(--text-muted);
@@ -177,11 +230,18 @@
     transition: opacity 0.1s;
   }
 
-  .rarity-base:hover::after { opacity: 1; }
+  .rarity-base:hover::after {
+    opacity: 1;
+  }
 
-  .doors { color: var(--text-muted); text-align: center; }
+  .doors {
+    color: var(--text-muted);
+    text-align: center;
+  }
 
-  .tags { white-space: nowrap; }
+  .tags {
+    white-space: nowrap;
+  }
 
   .tag {
     display: inline-block;
@@ -192,10 +252,22 @@
     margin-right: 3px;
   }
 
-  .tag-dead-end   { background: #374151; color: #d1d5db; }
-  .tag-mechanical { background: #1e3a5f; color: #93c5fd; }
-  .tag-tomorrow   { background: #3b1f5e; color: #d8b4fe; }
-  .tag-drafting   { background: #14532d; color: #86efac; }
+  .tag-dead-end {
+    background: #374151;
+    color: #d1d5db;
+  }
+  .tag-mechanical {
+    background: #1e3a5f;
+    color: #93c5fd;
+  }
+  .tag-tomorrow {
+    background: #3b1f5e;
+    color: #d8b4fe;
+  }
+  .tag-drafting {
+    background: #14532d;
+    color: #86efac;
+  }
 
   .source-label {
     font-size: 0.75rem;
@@ -203,7 +275,10 @@
     font-style: italic;
   }
 
-  .annot { width: 1.5rem; text-align: center; }
+  .annot {
+    width: 1.5rem;
+    text-align: center;
+  }
 
   .annot-icon {
     display: inline-flex;
@@ -241,5 +316,7 @@
     transition: opacity 0.1s;
   }
 
-  .annot-icon:hover::after { opacity: 1; }
+  .annot-icon:hover::after {
+    opacity: 1;
+  }
 </style>

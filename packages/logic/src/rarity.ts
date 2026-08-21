@@ -3,6 +3,7 @@ import rawOverrides from './data/rarityOverrides.json'
 import type { GameState } from './game'
 import type { DayState } from './day'
 import type { HouseState } from './house'
+import { ROOMS } from './rooms'
 
 export type DayString = "1" | "2" | "3-4" | "5-7"
 
@@ -123,6 +124,8 @@ export function applyAdHocRarities(
   if (day.haveGearWrench) {
     rarities['workshop'] = 2
     rarities['boiler-room'] = 2
+    annotate('workshop', 'gear wrench: standard (2)')
+    annotate('boiler-room', 'gear wrench: standard (2)')
   }
 
   // Terrace (rank 3 = certain base rarity)
@@ -169,10 +172,29 @@ export function applyAdHocRarities(
     }
   }
 
+  // Electromagnet
+  if (day.haveElectromagnet) {
+    for (const room of ROOMS.filter(r => r.mechanical)) {
+      annotate(room.slug, 'electromagnet biases mechanical rooms')
+    }
+  }
+
+  // Chronograph
+  if (day.haveChronograph) {
+    for (const room of ROOMS.filter(r => r.tomorrow)) {
+      annotate(room.slug, 'chronograph biases tomorrow rooms')
+    }
+  }
+
+  // Mail Room
+  annotate('mail-room', 'becomes commonplace (1) after receiving a package')
+
   // Coat check
-  if (day.day >= 3 && !game.haveRoom46) {
-    annotate('coat-check', '25% chance of commonplace (1)')
-    annotate('coat-check', 'if drawn once today: standard (2); drawn twice: unusual (3)')
+  if (day.coatCheckUsed) {
+    annotate('coat-check', 'exact effect of an item in coat check on rarity is not known')
+  }
+  if (day.coatCheckDraftedToday > 0) {
+    annotate('coat-check', `coat check becomes less common after being drafted`)
   }
 
   // Terrace (probabilistic on top of certain base above)

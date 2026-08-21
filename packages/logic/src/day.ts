@@ -9,59 +9,54 @@ import type { RoomColor } from "./types"
 export interface DayState {
   day: number
 
-  // Affects how many floor plans are drawn per draft
-  gems: number
-
   // --- Dynamic pool modifiers ---
-  knightChess: boolean             // Adds Armory
-  aquariumExperimentActivations: number | null    // (Laboratory) adds extra Aquariums to pool
-  chamberOfMirrorsInHouse: boolean // adds same-day duplicates of already-placed rooms
   poolInHouse: boolean             // adds Locker Room, Sauna, Pump Room
+  knightChess: boolean             // Adds Armory
   baconAndEggs: boolean            // adds Morning Room
+  schoolhouseInHouse: boolean      // Alters Library rarity and adds classrooms
+  chamberOfMirrorsInHouse: boolean // adds same-day duplicates of already-placed rooms
+  aquariumExperimentActivations: number | null    // (Laboratory) adds extra Aquariums to pool
 
-  // --- Relevant Items ---
-  haveBatteryPack: boolean
-  haveGearWrench: boolean
-
-  // --- Rarity modifiers ---
-  chessColor: RoomColor | null    // Chess piece color boost (null = inactive)
-  scepterColor: RoomColor | null  // Royal Scepter color boost (null = inactive)
+  // --- Rarity biases ---
   furnaceInHouse: boolean          // Red rooms more likely
   greenhouseInHouse: boolean       // Green rooms more likely
   southernCrossActive: boolean     // Boosts certain rooms
   draxusActive: boolean            // Dead ends more common
+  chessColor: RoomColor | null     // Chess piece color boost (null = inactive)
+  scepterColor: RoomColor | null   // Royal Scepter color boost (null = inactive)
+
+  // --- Items ---
+  haveBatteryPack: boolean
+  haveGearWrench: boolean
+  haveElectromagnet: boolean
+  haveChronograph: boolean
+
+  // --- Misc ---
   mailRoomUsed: boolean            // Mail Room rarity effect triggers after first use
-  coatCheckUsed: boolean           // Coat Check rarity effect triggers after first use
-
-  // Both
-  schoolhouseInHouse: boolean      // Alters Library rarity and adds classrooms
-  monk: string | null
-
-  // Any other chess mechanics?
-  // What's the mechanic that removes things from the pool? Blue crown? What else?
-  // Scrubber thing
-  // Day after freezer?
+  coatCheckUsed: boolean           // Coat Check item available
+  coatCheckDraftedToday: number    // Times Coat Check room has been drafted today (affects rarity)
 }
 export function initDay(day: number): DayState {
   return {
     day,
-    gems: 0,
-    knightChess: false,
-    aquariumExperimentActivations: null,
-    chamberOfMirrorsInHouse: false,
     poolInHouse: false,
+    knightChess: false,
     baconAndEggs: false,
-    haveBatteryPack: false,
-    haveGearWrench: false,
-    chessColor: null,
-    scepterColor: null,
+    schoolhouseInHouse: false,
+    chamberOfMirrorsInHouse: false,
+    aquariumExperimentActivations: null,
     furnaceInHouse: false,
     greenhouseInHouse: false,
     southernCrossActive: false,
     draxusActive: false,
+    chessColor: null,
+    scepterColor: null,
+    haveBatteryPack: false,
+    haveGearWrench: false,
+    haveElectromagnet: false,
+    haveChronograph: false,
     mailRoomUsed: false,
     coatCheckUsed: false,
-    schoolhouseInHouse: false,
-    monk: null
+    coatCheckDraftedToday: 0,
   }
 }
