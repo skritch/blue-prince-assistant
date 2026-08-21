@@ -6,6 +6,12 @@ export type TileColumn = 'A' | 'B' | 'C' | 'D' | 'E'
 export type TileRow = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
 
 
+export interface UpgradeSpec {
+  name?: string
+  description?: string
+  color?: RoomColor[]
+}
+
 /** Shape of an entry in rooms.json */
 export interface Room {
   name: string
@@ -21,5 +27,6 @@ export interface Room {
   mechanical: boolean
   tomorrow: boolean
   drafting: boolean
+  description: string | null
 }
 

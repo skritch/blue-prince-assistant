@@ -1,5 +1,6 @@
-import { ROOM_BY_SLUG } from './rooms'
-import type { Rarity, Room } from './types'
+import { ROOM_BY_SLUG, UPGRADES } from './rooms'
+import type { GameState } from './game'
+import type { Rarity, Room, RoomColor, UpgradeSpec } from './types'
 
 
 export type RoomSource =
@@ -21,6 +22,39 @@ export type Annotation = ChanceInPool | MaybeMirrored | ChanceOfRarity
 export interface PooledRoom {
   room: Room
   source?: RoomSource
+  upgrade?: UpgradeSpec
+}
+
+function toSlug(str: string): string {
+  return str.toLowerCase().replace(/['']/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')
+}
+
+type RawUpgrade = { name?: string; description?: string; color?: string | string[] }
+const UPGRADE_LOOKUP: Record<string, Record<string, UpgradeSpec>> = {}
+for (const [baseSlug, entry] of Object.entries(UPGRADES as Record<string, { upgrades: RawUpgrade[] }>)) {
+  const bySlug: Record<string, UpgradeSpec> = {}
+  for (const u of entry.upgrades) {
+    if (u.name) {
+      bySlug[toSlug(u.name)] = {
+        name: u.name,
+        description: u.description || undefined,
+        color: u.color ? ([u.color].flat() as RoomColor[]) : undefined,
+      }
+    }
+  }
+  if (Object.keys(bySlug).length > 0) UPGRADE_LOOKUP[baseSlug] = bySlug
+}
+
+export function fromGameState(game: GameState): DraftPool {
+  return {
+    rooms: game.pool.map((room) => {
+      const upgradeSlug = game.upgrades[room.slug]
+      const upgrade = upgradeSlug ? UPGRADE_LOOKUP[room.slug]?.[upgradeSlug] : undefined
+      return { room, upgrade }
+    }),
+    rarityOverrides: {},
+    annotations: {},
+  }
 }
 
 /**

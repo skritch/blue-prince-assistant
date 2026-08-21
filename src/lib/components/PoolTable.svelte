@@ -68,18 +68,21 @@
       </tr>
     </thead>
     <tbody>
-      {#each sortedRooms as { room, source }, i (room.slug + (source ?? "") + i)}
+      {#each sortedRooms as { room, source, upgrade }, i (room.slug + (source ?? "") + i)}
         {@const effectiveRarity =
           draftPool.rarityOverrides[room.slug] ?? room.baseRarity}
         {@const annotations = draftPool.annotations[room.slug]}
         {@const rarityChanged = effectiveRarity !== room.baseRarity}
+        {@const description = upgrade
+          ? [`(${upgrade.name ?? room.name} upgrade)`, upgrade.description ?? room.description].filter(Boolean).join(' ')
+          : (room.description ?? undefined)}
         <tr>
           <td class="colors">
-            {#each room.color as c}
+            {#each (upgrade?.color ?? room.color) as c}
               <span class="color-dot color-{c}"></span>
             {/each}
           </td>
-          <td class="name">{room.name}</td>
+          <td class="name" data-tooltip={description}>{upgrade?.name ?? room.name}</td>
           <td class="rarity rarity-{effectiveRarity}">
             {rarityName(effectiveRarity)}{#if rarityChanged}<span
                 class="rarity-base"
@@ -231,6 +234,37 @@
   }
 
   .rarity-base:hover::after {
+    opacity: 1;
+  }
+
+  .name[data-tooltip] {
+    cursor: help;
+    position: relative;
+  }
+
+  .name[data-tooltip]::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: #111827;
+    color: #f9fafb;
+    border: 1px solid #374151;
+    padding: 0.4rem 0.6rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 400;
+    white-space: normal;
+    width: max-content;
+    max-width: 280px;
+    pointer-events: none;
+    opacity: 0;
+    z-index: 10;
+    transition: opacity 0.1s;
+  }
+
+  .name[data-tooltip]:hover::after {
     opacity: 1;
   }
 

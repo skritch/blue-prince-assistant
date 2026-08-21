@@ -13,7 +13,7 @@
   import HouseStatePanel from "./HouseStatePanel.svelte";
   import PoolTable from "./PoolTable.svelte";
 
-  let gameState: GameState = $state(initGameState());
+  let gameState: GameState = $state({ ...initGameState() });
   let dayState: DayState = $state(initDay(1));
   let houseState: HouseState = $state(initHouse());
 

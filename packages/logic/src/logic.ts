@@ -1,7 +1,7 @@
 
 import { MIRROR_ROOMS, POOL_ADDITIONS, ROOM_46_REWARDS } from './rooms'
 import type { DayState } from './day'
-import { addToPool, annotateRoom, removeFromPool, type DraftPool } from './pool'
+import { addToPool, annotateRoom, fromGameState, removeFromPool, type DraftPool } from './pool'
 import type { HouseState } from './house'
 import { type GameState } from './game'
 import { applyAdHocRarities, generateDynamicRarities } from './rarity'
@@ -17,11 +17,7 @@ export function computeOdds(
   house: HouseState,
 ): DraftOdds[] {
 
-  var pool: DraftPool = {
-    rooms: Object.values(game.pool).map((room) => ({ room })),
-    rarityOverrides: {},
-    annotations: {},
-  }
+  var pool: DraftPool = fromGameState(game)
 
   // Technically we need some state for "number of times a room has been drafted"
 
@@ -50,11 +46,7 @@ export function computePool(
   house: HouseState,
 ): DraftPool {
 
-  var pool: DraftPool = {
-    rooms: Object.values(game.pool).map((room) => ({ room })),
-    rarityOverrides: {},
-    annotations: {},
-  }
+  var pool: DraftPool = fromGameState(game)
 
   pool = buildCurrentPool(pool, game, day, house)
   pool = removeDraftedRooms(pool, house)

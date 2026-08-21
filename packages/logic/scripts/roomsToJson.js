@@ -110,6 +110,14 @@ function parseRarity(r) {
   return map[r.toLowerCase()] ?? 'special'
 }
 
+const DESCRIPTION_BLOCKLIST = new Set(['none', 'puzzle', 'no room description'])
+
+function parseDescription(str) {
+  const s = str?.trim()
+  if (!s || DESCRIPTION_BLOCKLIST.has(s.toLowerCase())) return null
+  return s.charAt(0).toUpperCase() + s.slice(1)
+}
+
 function parseDoors(doorsStr) {
   const m = doorsStr.match(/\d+/)
   return m ? parseInt(m[0]) : null
@@ -155,6 +163,7 @@ const rooms = rows
       doors: DOOR_OVERRIDES[slug] ?? parseDoors(r['Doors']),
       directoryPage: PAGE_OVERRIDES[toSlug(name)] ?? extractDirectoryPage(section),
       roomNumber: parseInt(r['#']),
+      description: parseDescription(r['Room description']),
       deadEnd: specialType.includes('Dead-End'),
       mechanical: specialType.includes('Mechanical'),
       tomorrow: specialType.includes('Tomorrow'),
