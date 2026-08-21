@@ -38,3 +38,106 @@ h1, h2, h3 {
   font-weight: 600;
   line-height: 1.2;
 }
+
+/* ---- Shared config panel styles ---- */
+.panel {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+}
+
+.panel-header {
+  padding: 0.6rem 0.75rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  user-select: none;
+  list-style: none;
+}
+
+.panel-header::before {
+  content: '▶';
+  display: inline-block;
+  margin-right: 0.5rem;
+  font-size: 0.7rem;
+  transition: transform 0.15s;
+}
+
+details[open] .panel-header::before {
+  transform: rotate(90deg);
+}
+
+.fields {
+  padding: 0.75rem;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.checkboxes {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 0.35rem 1rem;
+}
+
+.checkboxes label,
+.inline-fields label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.875rem;
+  white-space: nowrap;
+}
+
+.inline-fields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.25rem;
+  align-items: center;
+}
+
+.inline-fields label,
+.inline-field {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.875rem;
+}
+
+.field-label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 0.875rem;
+}
+
+.panel input[type="number"],
+.panel input[type="text"],
+.panel select {
+  padding: 0.2rem 0.4rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 0.875rem;
+}
+
+.panel input[type="number"] { width: 4.5rem; }
+.panel input[type="text"] { width: 10rem; }
+.panel select { width: 7rem; }
+
+.panel textarea {
+  padding: 0.35rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 0.875rem;
+  resize: vertical;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.mono { font-family: monospace; font-size: 0.8rem; }
+.hint { font-size: 0.8rem; color: var(--text-muted); }

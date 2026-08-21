@@ -44,6 +44,27 @@ export function computeOdds(
 }
 
 
+export function computePool(
+  game: GameState,
+  day: DayState,
+  house: HouseState,
+): DraftPool {
+
+  var pool: DraftPool = {
+    rooms: Object.values(game.pool).map((room) => ({ room })),
+    rarityOverrides: {},
+    annotations: {},
+  }
+
+  pool = buildCurrentPool(pool, game, day, house)
+  pool = removeDraftedRooms(pool, house)
+  pool = setDynamicRarities(pool, game, day, house)
+  return pool
+}
+
+
+
+
 // Step 1: build the correct pool
 function buildCurrentPool(
   pool: DraftPool,
@@ -89,23 +110,24 @@ function buildCurrentPool(
   // one of the copies will then be removed when we remove the current drafts,
   // https://www.reddit.com/r/BluePrince/comments/1mkgzuj/chamber_of_mirrors_passive_and_permanent_effects/
 
+  if (day.chamberOfMirrorsInHouse) {
+    const houseCounts: Record<string, number> = {}
+    for (const slug of house.placedRooms) {
+      houseCounts[slug] = (houseCounts[slug] ?? 0) + 1
+    }
+    for (const [slug, ct] of Object.entries(houseCounts)) {
+      // TODO: CoM has special classroom interactions. 
+      // For now just treat classroom like all the others
+      if (MIRROR_ROOMS[slug] || slug == 'classroom') {
+        pool = addToPool(pool, 'com-passive', slug)
 
-  const houseCounts: Record<string, number> = {}
-  for (const slug of house.placedRooms) {
-    houseCounts[slug] = (houseCounts[slug] ?? 0) + 1
-  }
-  for (const [slug, ct] of Object.entries(houseCounts)) {
-    // TODO: CoM has special classroom interactions. 
-    // For now just treat classroom like all the others
-    if (MIRROR_ROOMS[slug] || slug == 'classroom') {
-      pool = addToPool(pool, 'com-passive', slug)
-
-      // Annotate
-      const mirroredModifier = MIRROR_ROOMS?.[slug]?.["mirrored"]
-      if (mirroredModifier == "never") {
-        annotateRoom(pool, { "mirrorNote": "will only be mirrored if drafted after CoM" })
-      } else if (mirroredModifier == "modified") {
-        annotateRoom(pool, { "mirrorNote": "if drafted after CoM, will modified drafting rules" })
+        // Annotate
+        const mirroredModifier = MIRROR_ROOMS?.[slug]?.["mirrored"]
+        if (mirroredModifier == "never") {
+          annotateRoom(pool, { "mirrorNote": "will only be mirrored if drafted after CoM" })
+        } else if (mirroredModifier == "modified") {
+          annotateRoom(pool, { "mirrorNote": "if drafted after CoM, will modified drafting rules" })
+        }
       }
     }
   }
@@ -134,8 +156,8 @@ function removeDraftedRooms(
   //   has been drafted, e.g. if one is upgrade and one not or something.
   const removed: Record<string, number> = {}
   const newRooms = pool.rooms.filter(({ room }) => {
-    if (removed[room.slug] < houseCounts[room.slug]) {
-      removed[room.slug] = (removed?.[room.slug] ?? 0) + 1
+    if ((removed[room.slug] ?? 0) < houseCounts[room.slug]) {
+      removed[room.slug] = (removed[room.slug] ?? 0) + 1
       return false
     } else {
       return true

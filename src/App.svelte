@@ -1,12 +1,12 @@
 <script lang="ts">
-  import DraftView from './lib/components/DraftView.svelte'
+  import PoolVIew from "./lib/components/PoolView.svelte";
 </script>
 
 <main>
   <header>
-    <h1>Blue Prince Draft Assistant</h1>
+    <h1>Blue Prince Pool Assistant</h1>
   </header>
-  <DraftView />
+  <PoolVIew />
 </main>
 
 <style>

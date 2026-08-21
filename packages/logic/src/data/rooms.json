@@ -11,7 +11,10 @@
     "doors": 3,
     "directoryPage": 1,
     "roomNumber": 1,
-    "deadEnd": false
+    "deadEnd": false,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": false
   },
   {
     "name": "Entrance Hall",
@@ -25,7 +28,10 @@
     "doors": 3,
     "directoryPage": 1,
     "roomNumber": 2,
-    "deadEnd": false
+    "deadEnd": false,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": false
   },
   {
     "name": "Spare Room",
@@ -39,7 +45,10 @@
     "doors": 2,
     "directoryPage": 1,
     "roomNumber": 3,
-    "deadEnd": false
+    "deadEnd": false,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": false
   },
   {
     "name": "Rotunda",
@@ -53,7 +62,10 @@
     "doors": 4,
     "directoryPage": 1,
     "roomNumber": 4,
-    "deadEnd": false
+    "deadEnd": false,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": false
   },
   {
     "name": "Parlor",
@@ -67,7 +79,10 @@
     "doors": 2,
     "directoryPage": 1,
     "roomNumber": 5,
-    "deadEnd": false
+    "deadEnd": false,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": false
   },
   {
     "name": "Billiard Room",
@@ -81,7 +96,10 @@
     "doors": 2,
     "directoryPage": 1,
     "roomNumber": 6,
-    "deadEnd": false
+    "deadEnd": false,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": false
   },
   {
     "name": "Gallery",
@@ -95,7 +113,10 @@
     "doors": 2,
     "directoryPage": 1,
     "roomNumber": 7,
-    "deadEnd": false
+    "deadEnd": false,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": false
   },
   {
     "name": "Room 8",
@@ -109,7 +130,10 @@
     "doors": 2,
     "directoryPage": 1,
     "roomNumber": 8,
-    "deadEnd": false
+    "deadEnd": false,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": false
   },
   {
     "name": "Closet",
@@ -123,7 +147,10 @@
     "doors": 1,
     "directoryPage": 1,
     "roomNumber": 9,
-    "deadEnd": true
+    "deadEnd": true,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": false
   },
   {
     "name": "Walk-In Closet",
@@ -137,7 +164,10 @@
     "doors": 1,
     "directoryPage": 1,
     "roomNumber": 10,
-    "deadEnd": true
+    "deadEnd": true,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": false
   },
   {
     "name": "Attic",
@@ -151,7 +181,10 @@
     "doors": 1,
     "directoryPage": 1,
     "roomNumber": 11,
-    "deadEnd": true
+    "deadEnd": true,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": false
   },
   {
     "name": "Storeroom",
@@ -165,7 +198,10 @@
     "doors": 1,
     "directoryPage": 1,
     "roomNumber": 12,
-    "deadEnd": true
+    "deadEnd": true,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": false
   },
   {
     "name": "Nook",
@@ -179,7 +215,10 @@
     "doors": 2,
     "directoryPage": 1,
     "roomNumber": 13,
-    "deadEnd": false
+    "deadEnd": false,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": false
   },
   {
     "name": "Garage",
@@ -193,7 +232,10 @@
     "doors": 1,
     "directoryPage": 1,
     "roomNumber": 14,
-    "deadEnd": true
+    "deadEnd": true,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": false
   },
   {
     "name": "Music Room",
@@ -207,7 +249,10 @@
     "doors": 2,
     "directoryPage": 1,
     "roomNumber": 15,
-    "deadEnd": false
+    "deadEnd": false,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": false
   },
   {
     "name": "Locker Room",
@@ -221,7 +266,10 @@
     "doors": 2,
     "directoryPage": 1,
     "roomNumber": 16,
-    "deadEnd": false
+    "deadEnd": false,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": false
   },
   {
     "name": "Den",
@@ -235,7 +283,10 @@
     "doors": 3,
     "directoryPage": 1,
     "roomNumber": 17,
-    "deadEnd": false
+    "deadEnd": false,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": false
   },
   {
     "name": "Wine Cellar",
@@ -249,7 +300,10 @@
     "doors": 1,
     "directoryPage": 1,
     "roomNumber": 18,
-    "deadEnd": true
+    "deadEnd": true,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": false
   },
   {
     "name": "Trophy Room",
@@ -263,7 +317,10 @@
     "doors": 2,
     "directoryPage": 1,
     "roomNumber": 19,
-    "deadEnd": false
+    "deadEnd": false,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": false
   },
   {
     "name": "Ballroom",
@@ -277,7 +334,10 @@
     "doors": 2,
     "directoryPage": 1,
     "roomNumber": 20,
-    "deadEnd": false
+    "deadEnd": false,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": false
   },
   {
     "name": "Pantry",
@@ -291,7 +351,10 @@
     "doors": 2,
     "directoryPage": 1,
     "roomNumber": 21,
-    "deadEnd": false
+    "deadEnd": false,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": false
   },
   {
     "name": "Rumpus Room",
@@ -305,7 +368,10 @@
     "doors": 2,
     "directoryPage": 1,
     "roomNumber": 22,
-    "deadEnd": false
+    "deadEnd": false,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": false
   },
   {
     "name": "Vault",
@@ -319,7 +385,10 @@
     "doors": 1,
     "directoryPage": 1,
     "roomNumber": 23,
-    "deadEnd": true
+    "deadEnd": true,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": false
   },
   {
     "name": "Office",
@@ -333,7 +402,10 @@
     "doors": 2,
     "directoryPage": 1,
     "roomNumber": 24,
-    "deadEnd": false
+    "deadEnd": false,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": false
   },
   {
     "name": "Drawing Room",
@@ -347,7 +419,10 @@
     "doors": 3,
     "directoryPage": 1,
     "roomNumber": 25,
-    "deadEnd": false
+    "deadEnd": false,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": true
   },
   {
     "name": "Study",
@@ -361,7 +436,10 @@
     "doors": 1,
     "directoryPage": 1,
     "roomNumber": 26,
-    "deadEnd": true
+    "deadEnd": true,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": true
   },
   {
     "name": "Library",
@@ -375,7 +453,10 @@
     "doors": 2,
     "directoryPage": 1,
     "roomNumber": 27,
-    "deadEnd": false
+    "deadEnd": false,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": true
   },
   {
     "name": "Chamber Of Mirrors",
@@ -389,7 +470,10 @@
     "doors": 1,
     "directoryPage": 1,
     "roomNumber": 28,
-    "deadEnd": true
+    "deadEnd": true,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": true
   },
   {
     "name": "Pool",
@@ -403,7 +487,10 @@
     "doors": 3,
     "directoryPage": 1,
     "roomNumber": 29,
-    "deadEnd": false
+    "deadEnd": false,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": true
   },
   {
     "name": "Drafting Studio",
@@ -417,7 +504,10 @@
     "doors": 1,
     "directoryPage": 1,
     "roomNumber": 30,
-    "deadEnd": false
+    "deadEnd": false,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": true
   },
   {
     "name": "Utility Closet",
@@ -431,7 +521,10 @@
     "doors": 1,
     "directoryPage": 1,
     "roomNumber": 31,
-    "deadEnd": false
+    "deadEnd": false,
+    "mechanical": true,
+    "tomorrow": false,
+    "drafting": false
   },
   {
     "name": "Boiler Room",
@@ -445,7 +538,10 @@
     "doors": 3,
     "directoryPage": 1,
     "roomNumber": 32,
-    "deadEnd": false
+    "deadEnd": false,
+    "mechanical": true,
+    "tomorrow": false,
+    "drafting": false
   },
   {
     "name": "Pump Room",
@@ -459,7 +555,10 @@
     "doors": 2,
     "directoryPage": 1,
     "roomNumber": 33,
-    "deadEnd": false
+    "deadEnd": false,
+    "mechanical": true,
+    "tomorrow": false,
+    "drafting": false
   },
   {
     "name": "Security",
@@ -473,7 +572,10 @@
     "doors": 3,
     "directoryPage": 1,
     "roomNumber": 34,
-    "deadEnd": false
+    "deadEnd": false,
+    "mechanical": true,
+    "tomorrow": false,
+    "drafting": false
   },
   {
     "name": "Workshop",
@@ -487,7 +589,10 @@
     "doors": 1,
     "directoryPage": 1,
     "roomNumber": 35,
-    "deadEnd": false
+    "deadEnd": false,
+    "mechanical": true,
+    "tomorrow": false,
+    "drafting": false
   },
   {
     "name": "Laboratory",
@@ -501,7 +606,10 @@
     "doors": 2,
     "directoryPage": 1,
     "roomNumber": 36,
-    "deadEnd": false
+    "deadEnd": false,
+    "mechanical": true,
+    "tomorrow": false,
+    "drafting": false
   },
   {
     "name": "Sauna",
@@ -515,7 +623,10 @@
     "doors": 1,
     "directoryPage": 1,
     "roomNumber": 37,
-    "deadEnd": true
+    "deadEnd": true,
+    "mechanical": false,
+    "tomorrow": true,
+    "drafting": false
   },
   {
     "name": "Coat Check",
@@ -529,7 +640,10 @@
     "doors": 1,
     "directoryPage": 1,
     "roomNumber": 38,
-    "deadEnd": true
+    "deadEnd": true,
+    "mechanical": false,
+    "tomorrow": true,
+    "drafting": false
   },
   {
     "name": "Mail Room",
@@ -543,7 +657,10 @@
     "doors": 1,
     "directoryPage": 1,
     "roomNumber": 39,
-    "deadEnd": true
+    "deadEnd": true,
+    "mechanical": false,
+    "tomorrow": true,
+    "drafting": false
   },
   {
     "name": "Freezer",
@@ -557,7 +674,10 @@
     "doors": 1,
     "directoryPage": 1,
     "roomNumber": 40,
-    "deadEnd": true
+    "deadEnd": true,
+    "mechanical": false,
+    "tomorrow": true,
+    "drafting": false
   },
   {
     "name": "Dining Room",
@@ -571,7 +691,10 @@
     "doors": 3,
     "directoryPage": 1,
     "roomNumber": 41,
-    "deadEnd": false
+    "deadEnd": false,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": false
   },
   {
     "name": "Observatory",
@@ -585,7 +708,10 @@
     "doors": 2,
     "directoryPage": 1,
     "roomNumber": 42,
-    "deadEnd": false
+    "deadEnd": false,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": false
   },
   {
     "name": "Conference Room",
@@ -599,7 +725,10 @@
     "doors": 3,
     "directoryPage": 1,
     "roomNumber": 43,
-    "deadEnd": false
+    "deadEnd": false,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": false
   },
   {
     "name": "Aquarium",
@@ -619,7 +748,10 @@
     "doors": 3,
     "directoryPage": 1,
     "roomNumber": 44,
-    "deadEnd": false
+    "deadEnd": false,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": false
   },
   {
     "name": "Antechamber",
@@ -633,7 +765,10 @@
     "doors": 4,
     "directoryPage": 1,
     "roomNumber": 45,
-    "deadEnd": false
+    "deadEnd": false,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": false
   },
   {
     "name": "Room 46",
@@ -647,7 +782,10 @@
     "doors": 1,
     "directoryPage": 1,
     "roomNumber": 46,
-    "deadEnd": false
+    "deadEnd": false,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": false
   },
   {
     "name": "Classroom",
@@ -661,7 +799,10 @@
     "doors": 2,
     "directoryPage": 1,
     "roomNumber": 91,
-    "deadEnd": false
+    "deadEnd": false,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": true
   },
   {
     "name": "Bedroom",
@@ -675,7 +816,10 @@
     "doors": 2,
     "directoryPage": 2,
     "roomNumber": 47,
-    "deadEnd": false
+    "deadEnd": false,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": false
   },
   {
     "name": "Boudoir",
@@ -689,7 +833,10 @@
     "doors": 2,
     "directoryPage": 2,
     "roomNumber": 48,
-    "deadEnd": false
+    "deadEnd": false,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": false
   },
   {
     "name": "Guest Bedroom",
@@ -703,7 +850,10 @@
     "doors": 1,
     "directoryPage": 2,
     "roomNumber": 49,
-    "deadEnd": true
+    "deadEnd": true,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": false
   },
   {
     "name": "Nursery",
@@ -717,7 +867,10 @@
     "doors": 1,
     "directoryPage": 2,
     "roomNumber": 50,
-    "deadEnd": true
+    "deadEnd": true,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": true
   },
   {
     "name": "Servant's Quarters",
@@ -731,7 +884,10 @@
     "doors": 1,
     "directoryPage": 2,
     "roomNumber": 51,
-    "deadEnd": true
+    "deadEnd": true,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": false
   },
   {
     "name": "Bunk Room",
@@ -745,7 +901,10 @@
     "doors": 1,
     "directoryPage": 2,
     "roomNumber": 52,
-    "deadEnd": true
+    "deadEnd": true,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": false
   },
   {
     "name": "Her Ladyship's Chamber",
@@ -759,7 +918,10 @@
     "doors": null,
     "directoryPage": 2,
     "roomNumber": 53,
-    "deadEnd": true
+    "deadEnd": true,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": false
   },
   {
     "name": "Master Bedroom",
@@ -773,7 +935,10 @@
     "doors": 1,
     "directoryPage": 2,
     "roomNumber": 54,
-    "deadEnd": true
+    "deadEnd": true,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": false
   },
   {
     "name": "Hallway",
@@ -787,7 +952,10 @@
     "doors": 3,
     "directoryPage": 3,
     "roomNumber": 55,
-    "deadEnd": false
+    "deadEnd": false,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": false
   },
   {
     "name": "West Wing Hall",
@@ -801,7 +969,10 @@
     "doors": 3,
     "directoryPage": 3,
     "roomNumber": 56,
-    "deadEnd": false
+    "deadEnd": false,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": false
   },
   {
     "name": "East Wing Hall",
@@ -815,7 +986,10 @@
     "doors": 3,
     "directoryPage": 3,
     "roomNumber": 57,
-    "deadEnd": false
+    "deadEnd": false,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": false
   },
   {
     "name": "Corridor",
@@ -829,7 +1003,10 @@
     "doors": 2,
     "directoryPage": 3,
     "roomNumber": 58,
-    "deadEnd": false
+    "deadEnd": false,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": false
   },
   {
     "name": "Passageway",
@@ -843,7 +1020,10 @@
     "doors": 4,
     "directoryPage": 3,
     "roomNumber": 59,
-    "deadEnd": false
+    "deadEnd": false,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": false
   },
   {
     "name": "Secret Passage",
@@ -857,7 +1037,10 @@
     "doors": 2,
     "directoryPage": 3,
     "roomNumber": 60,
-    "deadEnd": true
+    "deadEnd": true,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": false
   },
   {
     "name": "Foyer",
@@ -871,7 +1054,10 @@
     "doors": 2,
     "directoryPage": 3,
     "roomNumber": 61,
-    "deadEnd": false
+    "deadEnd": false,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": false
   },
   {
     "name": "Great Hall",
@@ -885,7 +1071,10 @@
     "doors": 4,
     "directoryPage": 3,
     "roomNumber": 62,
-    "deadEnd": false
+    "deadEnd": false,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": false
   },
   {
     "name": "Terrace",
@@ -899,7 +1088,10 @@
     "doors": 1,
     "directoryPage": 4,
     "roomNumber": 63,
-    "deadEnd": true
+    "deadEnd": true,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": false
   },
   {
     "name": "Patio",
@@ -913,7 +1105,10 @@
     "doors": 2,
     "directoryPage": 4,
     "roomNumber": 64,
-    "deadEnd": false
+    "deadEnd": false,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": false
   },
   {
     "name": "Courtyard",
@@ -927,7 +1122,10 @@
     "doors": 3,
     "directoryPage": 4,
     "roomNumber": 65,
-    "deadEnd": false
+    "deadEnd": false,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": false
   },
   {
     "name": "Cloister",
@@ -941,7 +1139,10 @@
     "doors": 4,
     "directoryPage": 4,
     "roomNumber": 66,
-    "deadEnd": false
+    "deadEnd": false,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": false
   },
   {
     "name": "Veranda",
@@ -955,7 +1156,10 @@
     "doors": 2,
     "directoryPage": 4,
     "roomNumber": 67,
-    "deadEnd": false
+    "deadEnd": false,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": false
   },
   {
     "name": "Greenhouse",
@@ -969,7 +1173,10 @@
     "doors": 1,
     "directoryPage": 4,
     "roomNumber": 68,
-    "deadEnd": true
+    "deadEnd": true,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": true
   },
   {
     "name": "Morning Room",
@@ -983,7 +1190,10 @@
     "doors": 2,
     "directoryPage": 4,
     "roomNumber": 69,
-    "deadEnd": false
+    "deadEnd": false,
+    "mechanical": false,
+    "tomorrow": true,
+    "drafting": false
   },
   {
     "name": "Secret Garden",
@@ -997,7 +1207,10 @@
     "doors": 3,
     "directoryPage": 4,
     "roomNumber": 70,
-    "deadEnd": false
+    "deadEnd": false,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": false
   },
   {
     "name": "Commissary",
@@ -1011,7 +1224,10 @@
     "doors": 2,
     "directoryPage": 5,
     "roomNumber": 71,
-    "deadEnd": false
+    "deadEnd": false,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": false
   },
   {
     "name": "Kitchen",
@@ -1025,7 +1241,10 @@
     "doors": 2,
     "directoryPage": 5,
     "roomNumber": 72,
-    "deadEnd": false
+    "deadEnd": false,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": false
   },
   {
     "name": "Locksmith",
@@ -1039,7 +1258,10 @@
     "doors": 1,
     "directoryPage": 5,
     "roomNumber": 73,
-    "deadEnd": true
+    "deadEnd": true,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": false
   },
   {
     "name": "Showroom",
@@ -1053,7 +1275,10 @@
     "doors": 2,
     "directoryPage": 5,
     "roomNumber": 74,
-    "deadEnd": false
+    "deadEnd": false,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": false
   },
   {
     "name": "Laundry Room",
@@ -1067,7 +1292,10 @@
     "doors": 1,
     "directoryPage": 5,
     "roomNumber": 75,
-    "deadEnd": true
+    "deadEnd": true,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": false
   },
   {
     "name": "Bookshop",
@@ -1081,7 +1309,10 @@
     "doors": 2,
     "directoryPage": 5,
     "roomNumber": 76,
-    "deadEnd": false
+    "deadEnd": false,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": false
   },
   {
     "name": "Armory",
@@ -1096,7 +1327,10 @@
     "doors": 2,
     "directoryPage": 5,
     "roomNumber": 77,
-    "deadEnd": false
+    "deadEnd": false,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": false
   },
   {
     "name": "Mount Holly Gift Shop",
@@ -1110,7 +1344,10 @@
     "doors": 3,
     "directoryPage": 5,
     "roomNumber": 78,
-    "deadEnd": false
+    "deadEnd": false,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": false
   },
   {
     "name": "Lavatory",
@@ -1124,7 +1361,10 @@
     "doors": 1,
     "directoryPage": 6,
     "roomNumber": 79,
-    "deadEnd": true
+    "deadEnd": true,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": false
   },
   {
     "name": "Chapel",
@@ -1138,7 +1378,10 @@
     "doors": 3,
     "directoryPage": 6,
     "roomNumber": 80,
-    "deadEnd": false
+    "deadEnd": false,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": false
   },
   {
     "name": "Maid's Chamber",
@@ -1153,7 +1396,10 @@
     "doors": 2,
     "directoryPage": 6,
     "roomNumber": 81,
-    "deadEnd": false
+    "deadEnd": false,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": false
   },
   {
     "name": "Archives",
@@ -1167,7 +1413,10 @@
     "doors": 4,
     "directoryPage": 6,
     "roomNumber": 82,
-    "deadEnd": false
+    "deadEnd": false,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": false
   },
   {
     "name": "Gymnasium",
@@ -1181,7 +1430,10 @@
     "doors": 3,
     "directoryPage": 6,
     "roomNumber": 83,
-    "deadEnd": false
+    "deadEnd": false,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": false
   },
   {
     "name": "Darkroom",
@@ -1195,7 +1447,10 @@
     "doors": 3,
     "directoryPage": 6,
     "roomNumber": 84,
-    "deadEnd": false
+    "deadEnd": false,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": true
   },
   {
     "name": "Weight Room",
@@ -1209,7 +1464,10 @@
     "doors": 4,
     "directoryPage": 6,
     "roomNumber": 85,
-    "deadEnd": false
+    "deadEnd": false,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": false
   },
   {
     "name": "Furnace",
@@ -1223,7 +1481,10 @@
     "doors": 1,
     "directoryPage": 6,
     "roomNumber": 86,
-    "deadEnd": false
+    "deadEnd": false,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": false
   },
   {
     "name": "Dovecote",
@@ -1237,7 +1498,10 @@
     "doors": 2,
     "directoryPage": 7,
     "roomNumber": 87,
-    "deadEnd": false
+    "deadEnd": false,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": false
   },
   {
     "name": "Kennel",
@@ -1251,7 +1515,10 @@
     "doors": 2,
     "directoryPage": 7,
     "roomNumber": 88,
-    "deadEnd": false
+    "deadEnd": false,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": false
   },
   {
     "name": "Clock Tower",
@@ -1265,7 +1532,10 @@
     "doors": 1,
     "directoryPage": 7,
     "roomNumber": 89,
-    "deadEnd": true
+    "deadEnd": true,
+    "mechanical": false,
+    "tomorrow": true,
+    "drafting": false
   },
   {
     "name": "Dormitory",
@@ -1279,7 +1549,10 @@
     "doors": 1,
     "directoryPage": 7,
     "roomNumber": 90,
-    "deadEnd": true
+    "deadEnd": true,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": false
   },
   {
     "name": "Vestibule",
@@ -1293,7 +1566,10 @@
     "doors": 4,
     "directoryPage": 7,
     "roomNumber": 92,
-    "deadEnd": false
+    "deadEnd": false,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": false
   },
   {
     "name": "Casino",
@@ -1307,7 +1583,10 @@
     "doors": 2,
     "directoryPage": 7,
     "roomNumber": 93,
-    "deadEnd": false
+    "deadEnd": false,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": false
   },
   {
     "name": "Solarium",
@@ -1321,7 +1600,10 @@
     "doors": 1,
     "directoryPage": 7,
     "roomNumber": 94,
-    "deadEnd": false
+    "deadEnd": false,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": false
   },
   {
     "name": "Planetarium",
@@ -1335,7 +1617,10 @@
     "doors": 1,
     "directoryPage": 8,
     "roomNumber": 95,
-    "deadEnd": true
+    "deadEnd": true,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": false
   },
   {
     "name": "Tunnel",
@@ -1349,7 +1634,10 @@
     "doors": 2,
     "directoryPage": 8,
     "roomNumber": 96,
-    "deadEnd": false
+    "deadEnd": false,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": false
   },
   {
     "name": "Conservatory",
@@ -1363,7 +1651,10 @@
     "doors": 2,
     "directoryPage": 8,
     "roomNumber": 97,
-    "deadEnd": false
+    "deadEnd": false,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": true
   },
   {
     "name": "Closed Exhibit",
@@ -1377,7 +1668,10 @@
     "doors": 3,
     "directoryPage": 8,
     "roomNumber": 98,
-    "deadEnd": false
+    "deadEnd": false,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": false
   },
   {
     "name": "Mechanarium",
@@ -1391,7 +1685,10 @@
     "doors": 4,
     "directoryPage": 8,
     "roomNumber": 99,
-    "deadEnd": false
+    "deadEnd": false,
+    "mechanical": true,
+    "tomorrow": false,
+    "drafting": false
   },
   {
     "name": "Treasure Trove",
@@ -1405,7 +1702,10 @@
     "doors": 2,
     "directoryPage": 8,
     "roomNumber": 100,
-    "deadEnd": false
+    "deadEnd": false,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": false
   },
   {
     "name": "Throne Room",
@@ -1419,7 +1719,10 @@
     "doors": 3,
     "directoryPage": 8,
     "roomNumber": 101,
-    "deadEnd": false
+    "deadEnd": false,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": false
   },
   {
     "name": "Lost And Found",
@@ -1433,7 +1736,10 @@
     "doors": 2,
     "directoryPage": 8,
     "roomNumber": 102,
-    "deadEnd": false
+    "deadEnd": false,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": false
   },
   {
     "name": "Shelter",
@@ -1447,7 +1753,10 @@
     "doors": 1,
     "directoryPage": 9,
     "roomNumber": 103,
-    "deadEnd": true
+    "deadEnd": true,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": false
   },
   {
     "name": "Shrine",
@@ -1461,7 +1770,10 @@
     "doors": 1,
     "directoryPage": 9,
     "roomNumber": 104,
-    "deadEnd": true
+    "deadEnd": true,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": false
   },
   {
     "name": "Toolshed",
@@ -1475,7 +1787,10 @@
     "doors": 1,
     "directoryPage": 9,
     "roomNumber": 105,
-    "deadEnd": true
+    "deadEnd": true,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": false
   },
   {
     "name": "Schoolhouse",
@@ -1489,7 +1804,10 @@
     "doors": 1,
     "directoryPage": 9,
     "roomNumber": 106,
-    "deadEnd": true
+    "deadEnd": true,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": true
   },
   {
     "name": "Hovel",
@@ -1503,7 +1821,10 @@
     "doors": 1,
     "directoryPage": 9,
     "roomNumber": 107,
-    "deadEnd": true
+    "deadEnd": true,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": false
   },
   {
     "name": "Root Cellar",
@@ -1517,7 +1838,10 @@
     "doors": 1,
     "directoryPage": 9,
     "roomNumber": 108,
-    "deadEnd": true
+    "deadEnd": true,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": false
   },
   {
     "name": "Trading Post",
@@ -1531,7 +1855,10 @@
     "doors": 1,
     "directoryPage": 9,
     "roomNumber": 109,
-    "deadEnd": true
+    "deadEnd": true,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": false
   },
   {
     "name": "Tomb",
@@ -1545,6 +1872,9 @@
     "doors": 1,
     "directoryPage": 9,
     "roomNumber": 110,
-    "deadEnd": true
+    "deadEnd": true,
+    "mechanical": false,
+    "tomorrow": false,
+    "drafting": false
   }
 ]

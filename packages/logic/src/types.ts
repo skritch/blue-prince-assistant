@@ -18,5 +18,8 @@ export interface Room {
   directoryPage: number  // 1-9
   roomNumber: number
   deadEnd: boolean
+  mechanical: boolean
+  tomorrow: boolean
+  drafting: boolean
 }
 

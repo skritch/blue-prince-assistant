@@ -42,7 +42,7 @@ const FULL_EXCLUDED_SLUGS = new Set([
   ...UNDRAFTABLE
 ])
 
-export function initState(): GameState {
+export function initGameState(): GameState {
   const unlockedRooms = ROOMS
     .filter((r) => !INIT_EXCLUDED_PAGES.has(r.directoryPage) && !INIT_EXCLUDED_SLUGS.has(r.slug))
   return {
@@ -58,14 +58,14 @@ export function initState(): GameState {
   }
 }
 
-export function initWithFullPool(): GameState {
+export function initGameFull(): GameState {
   return {
     pool: ROOMS
       .filter((r) => !FULL_EXCLUDED_SLUGS.has(r.slug)),
     haveWestGate: true,
     haveRoom46: true,
     haveDraftedFoundation: false,
-    vmode: true,
+    vmode: false,
     curseOrDare: false,
     rarityOverrides: {},
     chamberOfMirrorsAdditions: [],

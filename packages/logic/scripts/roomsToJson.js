@@ -1,6 +1,3 @@
-// Usage: node packages/logic/scripts/csv-to-json.js
-// Reads packages/logic/src/data/rooms.csv and writes packages/logic/src/data/rooms.json
-
 import { readFileSync, writeFileSync } from 'fs'
 import { resolve, dirname } from 'path'
 import { fileURLToPath } from 'url'
@@ -148,6 +145,9 @@ const rooms = rows
       directoryPage: extractDirectoryPage(section),
       roomNumber: parseInt(r['#']),
       deadEnd: specialType.includes('Dead-End'),
+      mechanical: specialType.includes('Mechanical'),
+      tomorrow: specialType.includes('Tomorrow'),
+      drafting: specialType.includes('Drafting'),
     }
   })
   .filter(r => r.directoryPage !== 'other' && r.directoryPage !== 'underground')
