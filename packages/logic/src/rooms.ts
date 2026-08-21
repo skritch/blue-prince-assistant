@@ -1,6 +1,8 @@
 import type { Rarity, Room } from './types'
 import rawRooms from './data/rooms.json'
 import rawMirrorRooms from './data/mirrorRooms.json'
+export { default as MIRROR_FLOORPLANS } from './data/mirrorFloorplans.json'
+export { default as UPGRADES } from './data/upgrades.json'
 
 const RARITY_MAP: Record<string, Rarity> = {
   commonplace: 1,

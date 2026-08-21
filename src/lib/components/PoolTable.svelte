@@ -168,13 +168,13 @@
     background: #8b5cf6;
   }
   .color-orange {
-    background: #f97316;
+    background: #f59e0b;
   }
   .color-green {
     background: #22c55e;
   }
   .color-gold {
-    background: #f59e0b;
+    background: #facc15;
   }
   .color-red {
     background: #ef4444;
@@ -253,20 +253,39 @@
   }
 
   .tag-dead-end {
-    background: #374151;
-    color: #d1d5db;
+    background: #e5e7eb;
+    color: #374151;
   }
   .tag-mechanical {
-    background: #1e3a5f;
-    color: #93c5fd;
+    background: #dbeafe;
+    color: #1e40af;
   }
   .tag-tomorrow {
-    background: #3b1f5e;
-    color: #d8b4fe;
+    background: #ede9fe;
+    color: #5b21b6;
   }
   .tag-drafting {
-    background: #14532d;
-    color: #86efac;
+    background: #dcfce7;
+    color: #15803d;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .tag-dead-end {
+      background: #374151;
+      color: #d1d5db;
+    }
+    .tag-mechanical {
+      background: #1e3a5f;
+      color: #93c5fd;
+    }
+    .tag-tomorrow {
+      background: #3b1f5e;
+      color: #d8b4fe;
+    }
+    .tag-drafting {
+      background: #14532d;
+      color: #86efac;
+    }
   }
 
   .source-label {

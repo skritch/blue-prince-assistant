@@ -1,0 +1,289 @@
+{
+  "aquarium": {
+    "upgrades": [
+      {
+        "name": "Electric Eel Aquarium",
+        "description": "Power"
+      },
+      {
+        "name": "Goldfish Aquarium",
+        "description": "10 Gold"
+      },
+      {
+        "name": "Starfish Aquarium",
+        "description": "1 Star"
+      }
+    ]
+  },
+  "billiard-room": {
+    "upgrades": [
+      {
+        "name": "Break Room",
+        "description": "Gives you the Keycard the next day if you end the day inside."
+      },
+      {
+        "name": "Speakeasy",
+        "description": "Limits the Puzzle to simple addition."
+      },
+      {
+        "name": "Pool Hall",
+        "description": "Adds the Great Hall, Foyer and Secret Passage to the draft pool. Becomes a Hallway.",
+        "color": "orange"
+      }
+    ]
+  },
+  "boudoir": {
+    "upgrades": [
+      {
+        "description": "3 food items"
+      },
+      {
+        "description": "1 Gem"
+      },
+      {
+        "description": "2 Ivory Dice"
+      }
+    ]
+  },
+  "bunk-room": {
+    "upgrades": [
+      {
+        "description": "Double your Gems if you have exactly 2 Green Rooms when drafting this room."
+      },
+      {
+        "description": "Double your Gold if you have exactly 2 Shops when drafting this room."
+      },
+      {
+        "description": "Double your Keys if you have exactly 2 Hallways when drafting this room."
+      }
+    ]
+  },
+  "cloister": {
+    "note": "8 options available; 3 are chosen each run.",
+    "upgrades": [
+      {
+        "name": "Cloister of Rynna",
+        "description": "Raise your Luck with each Green Room you draft from this Cloister."
+      },
+      {
+        "name": "Cloister of Joya",
+        "description": "Permanently add an extra 5 Steps to the main course for each Kitchen, Pantry or Furnace you draft from this Cloister."
+      },
+      {
+        "name": "Cloister of Dauja",
+        "description": "Gain 2 Stars for each room with an animal you draft from this Cloister."
+      },
+      {
+        "name": "Cloister of Veia",
+        "description": "Find 8 Dig Spots in each room with a fireplace you draft from this Cloister."
+      },
+      {
+        "name": "Cloister of Mila",
+        "description": "Find an extra item in each Bedroom you draft from this Cloister."
+      },
+      {
+        "name": "Cloister of Lydia",
+        "description": "Add 2 Gold to your Allowance for each Shop you draft from this Cloister."
+      },
+      {
+        "name": "Cloister of Orinda",
+        "description": "Open a random door of the Antechamber for each Blackprint you draft from this Cloister.",
+        "color": "red"
+      },
+      {
+        "name": "Cloister of Draxus",
+        "description": "Gain 4 Ivory Dice for each Dead End room that you WILL draft from this Cloister.",
+        "color": "black"
+      }
+    ]
+  },
+  "closet": {
+    "upgrades": [
+      {
+        "name": "Hallway Closet",
+        "description": "Provides 2 items + 1 extra item if drafted next to a Hallway."
+      },
+      {
+        "name": "Bedroom Closet",
+        "description": "Provides 2 items + 2 extra items if drafted next to a Bedroom."
+      },
+      {
+        "name": "Empty Closet",
+        "description": "Provides 0 items + 4 extra items if drafted next to a Red Room.",
+        "color": "red"
+      }
+    ]
+  },
+  "courtyard": {
+    "upgrades": [
+      {
+        "name": "Corriyard",
+        "description": "Always left unlocked.",
+        "color": [
+          "green",
+          "orange"
+        ]
+      },
+      {
+        "description": "Contains 5 Dig Spots."
+      },
+      {
+        "description": "+2 Gems."
+      }
+    ]
+  },
+  "guest-bedroom": {
+    "upgrades": [
+      {
+        "name": "Geist Bedroom",
+        "description": "Provides 2 Ivory Dice + 4 additional Ivory Dice if a Tomb has been drafted."
+      },
+      {
+        "name": "Guess Bedroom",
+        "description": "Provides a random Bedroom effect. You can also guess what bedroom it is for a bonus reward."
+      },
+      {
+        "name": "Quest Bedroom",
+        "description": "Provides 2 additional Gold to the Allowance if the Antechamber is reached in the run."
+      }
+    ]
+  },
+  "hallway": {
+    "upgrades": [
+      {
+        "description": "+1 Key"
+      },
+      {
+        "description": "+1 trunk"
+      },
+      {
+        "description": "An extra Hallway is added to tomorrow's draft pool."
+      }
+    ]
+  },
+  "mail-room": {
+    "upgrades": [
+      {
+        "description": "Freight Shipping: a very large package will be delivered here 3 days after drafting this room."
+      },
+      {
+        "description": "No Contact Delivery: a package will be dropped off on the entrance steps the day after drafting this room."
+      },
+      {
+        "description": "Same Day Delivery: a package will be delivered here after you reach rank 8."
+      }
+    ]
+  },
+  "nook": {
+    "upgrades": [
+      {
+        "description": "+2 Keys"
+      },
+      {
+        "name": "Breakfast Nook",
+        "description": "Provides a Bacon & Eggs dish giving +10 Energy and adds the Morning Room to the day's draft pool."
+      },
+      {
+        "name": "Reading Nook",
+        "description": "Provides a guaranteed Library draft from this room."
+      }
+    ]
+  },
+  "nursery": {
+    "upgrades": [
+      {
+        "description": "+8 Steps gained per added Bedroom."
+      },
+      {
+        "name": "Nurse's Station",
+        "description": "Sets your Steps to 20 if you enter it with less than 10."
+      },
+      {
+        "name": "Indoor Nursery",
+        "description": "2 Gems appear each time you draft a Green Room. The Nursery itself becomes a Green Room.",
+        "color": "green"
+      }
+    ]
+  },
+  "parlor": {
+    "upgrades": [
+      {
+        "description": "1 extra Gem in the prize box."
+      },
+      {
+        "description": "1 extra Wind-up Key to solve the Puzzle."
+      },
+      {
+        "name": "Funeral Parlor",
+        "description": "Gems in the prize box equal the number of Red Rooms in the manor when the box is opened. If the box is empty, decrease Steps by 30.",
+        "color": "red"
+      }
+    ]
+  },
+  "storeroom": {
+    "upgrades": [
+      {
+        "description": "1 additional Gem"
+      },
+      {
+        "description": "9 additional Gold"
+      },
+      {
+        "description": "1 additional Key"
+      }
+    ]
+  },
+  "spare-room": {
+    "note": "Two-stage upgrade. The first upgrade irrevocably sets the room color. The second can be changed with another upgrade disk.",
+    "upgrades": [
+      {
+        "name": "Spare Bedroom",
+        "color": "purple"
+      },
+      {
+        "name": "Spare Green Room",
+        "color": "green"
+      },
+      {
+        "name": "Spare Hall",
+        "color": "orange"
+      },
+      {
+        "name": "Her Ladyship's Spare Room",
+        "color": "purple"
+      },
+      {
+        "name": "Servant's Spare Quarters",
+        "color": "purple"
+      },
+      {
+        "name": "Spare Master Bedroom",
+        "color": "purple"
+      },
+      {
+        "name": "Spare Patio",
+        "color": "green"
+      },
+      {
+        "name": "Spare Terrace",
+        "color": "green"
+      },
+      {
+        "name": "Spare Veranda",
+        "color": "green"
+      },
+      {
+        "name": "Spare Foyer",
+        "color": "orange"
+      },
+      {
+        "name": "Spare Great Hall",
+        "color": "orange"
+      },
+      {
+        "name": "Spare Secret Passage",
+        "color": "orange"
+      }
+    ]
+  }
+}
