@@ -98,7 +98,7 @@ export function applyAdHocRarities(
   if (day.aquariumExperimentActivations) {
     rarities['aquarium'] = 1
   }
-  if (house.placedRooms.has('her-ladyships-chamber')) {
+  if (house.placedRooms.includes('her-ladyships-chamber')) {
     rarities['boudoir'] = 1
     rarities['walk-in-closet'] = 1
   }

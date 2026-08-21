@@ -9,12 +9,14 @@ export type RoomSource =
   | 'knight-chess'
   | 'schoolhouse'
   | 'laboratory'
-  | 'chamber-of-mirrors'
+  | 'com-permanent'
+  | 'com-passive'
 
 
-type MaybeInPool = { pct: number }
+type ChanceInPool = { pct: number }
+type MaybeMirrored = { mirrorNote: string }
 type ChanceOfRarity = { rarityNote: string }
-export type Annotation = MaybeInPool | ChanceOfRarity
+export type Annotation = ChanceInPool | MaybeMirrored | ChanceOfRarity
 
 export interface PooledRoom {
   room: Room

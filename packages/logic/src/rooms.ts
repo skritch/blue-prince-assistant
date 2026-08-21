@@ -1,5 +1,6 @@
 import type { Rarity, Room } from './types'
 import rawRooms from './data/rooms.json'
+import rawMirrorRooms from './data/mirrorRooms.json'
 
 const RARITY_MAP: Record<string, Rarity> = {
   commonplace: 1,
@@ -23,6 +24,10 @@ export const ROOM_BY_SLUG: Record<string, Room> = Object.fromEntries(
   ROOMS.map((r) => [r.slug, r])
 )
 
+const mirrorRooms = rawMirrorRooms as { slug: string, mirrored?: "never" | "modified" }[]
+export const MIRROR_ROOMS: Record<string, { mirrored?: "never" | "modified" }> = Object.fromEntries(mirrorRooms.map(({ slug, ...rest }) => [slug, rest]))
+
 export function roomsForPage(page: number): Room[] {
   return ROOMS.filter((r) => r.directoryPage === page)
 }
+

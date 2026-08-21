@@ -1,13 +1,13 @@
 
 export interface HouseState {
-  placedRooms: Set<string>
+  placedRooms: string[]
   maxRank: number
 }
 
 
 export function initHouse(): HouseState {
   return {
-    placedRooms: new Set(['entrance-hall', 'antechamber']),
+    placedRooms: ['entrance-hall', 'antechamber'],
     maxRank: 1
   }
 }

@@ -1,5 +1,5 @@
 
-import { POOL_ADDITIONS, ROOM_46_REWARDS, ROOMS } from './rooms'
+import { MIRROR_ROOMS, POOL_ADDITIONS, ROOM_46_REWARDS, ROOMS } from './rooms'
 import type { DayState } from './day'
 import { addToPool, annotateRoom, removeFromPool, type DraftPool } from './pool'
 import type { HouseState } from './house'
@@ -26,9 +26,10 @@ export function computeOdds(
   // Technically we need some state for "number of times a room has been drafted"
 
 
-  pool = buildCurrentPool(pool, game, day)
+  pool = buildCurrentPool(pool, game, day, house)
+  pool = removeDraftedRooms(pool, house)
   pool = setDynamicRarities(pool, game, day, house)
-  pool = setDailyRarities(pool, game, day)
+  pool = setConditionalFilters(pool, game, day)
   pool = currentDraftLogic(pool, draft)
 
   // Handle per-slot logic, gems etc.
@@ -48,6 +49,7 @@ function buildCurrentPool(
   pool: DraftPool,
   game: GameState,
   day: DayState,
+  house: HouseState
 ): DraftPool {
   if (game.haveRoom46) { pool = addToPool(pool, 'room46', ...ROOM_46_REWARDS) }
   if (day.poolInHouse) { pool = addToPool(pool, 'pool-in-house', ...POOL_ADDITIONS) }
@@ -62,7 +64,7 @@ function buildCurrentPool(
   // Chamber of Mirrors permanent additions
   // https://www.reddit.com/r/BluePrince/comments/1mkgzuj/chamber_of_mirrors_passive_and_permanent_effects/
   if (game.chamberOfMirrorsAdditions) {
-    pool = addToPool(pool, 'chamber-of-mirrors', ...game.chamberOfMirrorsAdditions)
+    pool = addToPool(pool, 'com-permanent', ...game.chamberOfMirrorsAdditions)
   }
 
   // V-mode additions
@@ -80,25 +82,71 @@ function buildCurrentPool(
     pool = addToPool(pool, 'schoolhouse', ...Array(8).fill('classroom'))
   }
 
-  // Chamber of Mirrors same-day duplicates
+
+  // Chamber of Mirrors duplicates, simplified somewhat.
+  // for each room already in the house and in the mirrored list
+  //   add an additional copy to the pool.
+  // one of the copies will then be removed when we remove the current drafts,
   // https://www.reddit.com/r/BluePrince/comments/1mkgzuj/chamber_of_mirrors_passive_and_permanent_effects/
-  if (day.chamberOfMirrorsInHouse) {
-    // "mirror room" list
-    // if not yet drafted, will not be removed when next drafted
-    //   calculate this posthoc
-    // if drafted, new copy added
-    //   different set of rooms? / different set of "exit lists"
-    // special classroom interaction
+
+
+  const houseCounts: Record<string, number> = {}
+  for (const slug of house.placedRooms) {
+    houseCounts[slug] = (houseCounts[slug] ?? 0) + 1
+  }
+  for (const [slug, ct] of Object.entries(houseCounts)) {
+    // TODO: CoM has special classroom interactions. 
+    // For now just treat classroom like all the others
+    if (MIRROR_ROOMS[slug] || slug == 'classroom') {
+      pool = addToPool(pool, 'com-passive', slug)
+
+      // Annotate
+      const mirroredModifier = MIRROR_ROOMS?.[slug]?.["mirrored"]
+      if (mirroredModifier == "never") {
+        annotateRoom(pool, { "mirrorNote": "will only be mirrored if drafted after CoM" })
+      } else if (mirroredModifier == "modified") {
+        annotateRoom(pool, { "mirrorNote": "if drafted after CoM, will modified drafting rules" })
+      }
+    }
   }
 
+  return pool
+}
 
-  // Should monk block a room from being drafted in the main house?
+// Step 2: Remove rooms already in the house.
+function removeDraftedRooms(
+  pool: DraftPool,
+  house: HouseState
+): DraftPool {
 
+  // TODO: how do secret passage, prism key work? 
+  // Do they remove from the pool as usual?
+  // Does monk block a room from being drafted in the main house?
+  // Assuming yes to both.
 
-  // Remove everything already in the house?
-  // - handle chamber of mirrors again
-  // - handle complicated schoolhouse mechanics
-  //   - punt on identifying which copy was drafted
+  const houseCounts: Record<string, number> = {}
+  for (const slug of house.placedRooms) {
+    houseCounts[slug] = (houseCounts[slug] ?? 0) + 1
+  }
+
+  // We just remove the first of each room from the pool
+  // TODO: all of this will get much worse if we try to handle *which* copy in the pool
+  //   has been drafted, e.g. if one is upgrade and one not or something.
+  const removed: Record<string, number> = {}
+  const newRooms = pool.rooms.filter(({ room }) => {
+    if (removed[room.slug] < houseCounts[room.slug]) {
+      removed[room.slug] = (removed?.[room.slug] ?? 0) + 1
+      return false
+    } else {
+      return true
+    }
+  })
+
+  pool = {
+    ...pool,
+    rooms: newRooms
+  }
+
 
   return pool
 }
@@ -112,6 +160,7 @@ function setDynamicRarities(
   house: HouseState
 ): DraftPool {
   const dynamicRarities = generateDynamicRarities(game, day)
+
   const { rarities: adHocRarities, annotations } = applyAdHocRarities(game, day, house)
   Object.assign(dynamicRarities, adHocRarities)
 
@@ -129,14 +178,28 @@ function setDynamicRarities(
   return pool
 }
 
-// 
-function setDailyRarities(
+function setConditionalFilters(
   pool: DraftPool,
   game: GameState,
   day: DayState,
 ): DraftPool {
 
   // https://www.reddit.com/r/BluePrince/comments/1m4eer1/drafting_mechanics_conditional_filters_making/
+  // Multiple "conditional filters" apply at once.
+  // Rooms need to be accepted by one of them to be drawn.
+  // I don't think multiple of the same filter stack...
+  // Need to deal with upgraded rooms having different colors
+
+  // classrooms filter
+  // powered electromagnet mechanical filter
+  // chronograph -> tomorrow
+  // southern cross
+  // draxus
+
+
+
+
+
   if (day.chessColor) { }
   if (day.scepterColor) { }
   if (day.greenhouseInHouse) { }
@@ -157,10 +220,12 @@ function currentDraftLogic(
 
   // positional logic / exit list stuff
   // https://www.reddit.com/r/BluePrince/comments/1ltsn1t/drafting_mechanics_room_placement_restrictions/
-  // handle mirror room special exits
-  // handle schoolhouse vs normal classrooms
-  // handle chamber of mirrors rooms having different exits
 
+  // handle schoolhouse vs normal classrooms?
+  // handle chamber of mirrors rooms having different exits?
+
+  // weighted rooms
+  // https://www.reddit.com/r/BluePrince/comments/1lzdvv9/drafting_mechanics_weighted_rooms_the_library_and/
 
 
   // fromRoom
