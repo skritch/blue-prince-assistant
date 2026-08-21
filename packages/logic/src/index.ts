@@ -1,6 +1,7 @@
 export { computeOdds, computePool } from './logic'
+export { roomsForPage } from './rooms'
 
-export { initGameState as initState, initGameFull as initWithFullPool, fillPage, addRoom, removeRoom } from './game'
+export { initGameState, initGameFull, fillPage, addRoom, removeRoom } from './game'
 export { initDay } from './day'
 export { initHouse } from './house'
 

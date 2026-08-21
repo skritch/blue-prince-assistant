@@ -5,6 +5,7 @@ import { fileURLToPath } from 'url'
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url))
 
 // --- CSV parser ---
+// Source: https://docs.google.com/spreadsheets/d/1-c3mLC4gOdG_QrPF4wsFHCehfO2yZ1De_LrXOKzhU8Y/edit?gid=0#gid=0
 
 function parseCSVLine(line) {
   const fields = []

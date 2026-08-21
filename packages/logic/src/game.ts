@@ -7,9 +7,6 @@ export interface GameState {
   pool: Room[]
   haveWestGate: boolean
   haveRoom46: boolean
-
-  // Has some subtle effects even if it's been removed from house
-  haveDraftedFoundation: boolean
   vmode: boolean
   curseOrDare: boolean
 
@@ -49,7 +46,6 @@ export function initGameState(): GameState {
     pool: unlockedRooms,
     haveWestGate: false,
     haveRoom46: false,
-    haveDraftedFoundation: false,
     vmode: false,
     curseOrDare: false,
     rarityOverrides: {},
@@ -64,7 +60,6 @@ export function initGameFull(): GameState {
       .filter((r) => !FULL_EXCLUDED_SLUGS.has(r.slug)),
     haveWestGate: true,
     haveRoom46: true,
-    haveDraftedFoundation: false,
     vmode: false,
     curseOrDare: false,
     rarityOverrides: {},

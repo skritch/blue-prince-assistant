@@ -31,6 +31,9 @@ export interface DayState {
   haveElectromagnet: boolean
   haveChronograph: boolean
 
+  // Has subtle effects even if the Foundation has since been removed from the house
+  haveDraftedFoundation: boolean
+
   // --- Misc ---
   mailRoomUsed: boolean            // Mail Room rarity effect triggers after first use
   coatCheckUsed: boolean           // Coat Check item available
@@ -55,6 +58,7 @@ export function initDay(day: number): DayState {
     haveGearWrench: false,
     haveElectromagnet: false,
     haveChronograph: false,
+    haveDraftedFoundation: false,
     mailRoomUsed: false,
     coatCheckUsed: false,
     coatCheckDraftedToday: 0,

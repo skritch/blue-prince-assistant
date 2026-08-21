@@ -36,7 +36,7 @@ export interface DraftPool {
   annotations: Record<string, Annotation[]>
 }
 
-export function addToPool(pool: DraftPool, source?: RoomSource, ...slugs: string[]): DraftPool {
+export function addToPool(pool: DraftPool, slugs: string[], source?: RoomSource): DraftPool {
   // Does not check if rooms already exist, as draft pool supports duplicates
   // Currently does not validate slugs
   const toAdd = slugs.map((s) => ({ room: ROOM_BY_SLUG[s], source }))
@@ -45,7 +45,7 @@ export function addToPool(pool: DraftPool, source?: RoomSource, ...slugs: string
 }
 
 // TODO: do we need to remove one?
-export function removeFromPool(pool: DraftPool, ...slugs: string[]): DraftPool {
+export function removeFromPool(pool: DraftPool, slugs: string[]): DraftPool {
   const toRemove = new Set(slugs)
   return { ...pool, rooms: pool.rooms.filter(({ room }) => !toRemove.has(room.slug)) }
 }

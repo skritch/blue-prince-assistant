@@ -1,41 +1,35 @@
 <script lang="ts">
-  import { addRoom, removeRoom, type GameState } from "bp-logic";
+  import { untrack } from "svelte";
+  import {
+    addRoom,
+    removeRoom,
+    initGameFull,
+    roomsForPage,
+    type GameState,
+    initGameState,
+  } from "bp-logic";
 
-  let { gameState }: { gameState: GameState } = $props();
+  let { gameState = $bindable() }: { gameState: GameState } = $props();
 
   let comAdditionsText = $state("");
 
   $effect(() => {
-    gameState.chamberOfMirrorsAdditions = comAdditionsText
+    const chamberOfMirrorsAdditions = comAdditionsText
       .split("\n")
       .map((s) => s.trim())
       .filter(Boolean);
+    gameState = { ...untrack(() => gameState), chamberOfMirrorsAdditions };
   });
 
-  const PAGE7_ROOMS = [
-    { slug: "classroom", name: "Classroom" },
-    { slug: "dovecote", name: "Dovecote" },
-    { slug: "kennel", name: "Kennel" },
-    { slug: "clock-tower", name: "Clock Tower" },
-    { slug: "dormitory", name: "Dormitory" },
-    { slug: "vestibule", name: "Vestibule" },
-    { slug: "casino", name: "Casino" },
-    { slug: "solarium", name: "Solarium" },
-  ];
-
-  const PAGE8_ROOMS = [
-    { slug: "planetarium", name: "Planetarium" },
-    { slug: "tunnel", name: "Tunnel" },
-    { slug: "conservatory", name: "Conservatory" },
-    { slug: "closed-exhibit", name: "Closed Exhibit" },
-    { slug: "mechanarium", name: "Mechanarium" },
-    { slug: "treasure-trove", name: "Treasure Trove" },
-    { slug: "throne-room", name: "Throne Room" },
-    { slug: "lost-and-found", name: "Lost And Found" },
-  ];
+  const PAGE7_ROOMS = roomsForPage(7);
+  const PAGE8_ROOMS = roomsForPage(8);
 
   function hasRoom(slug: string): boolean {
     return gameState.pool.some((r) => r.slug === slug);
+  }
+
+  function setFlag(key: keyof GameState, value: boolean) {
+    gameState = { ...gameState, [key]: value };
   }
 
   function toggleRoom(slug: string, add: boolean) {
@@ -51,25 +45,14 @@
   let fullHouseActive = $derived(
     gameState.haveWestGate &&
       gameState.haveRoom46 &&
-      gameState.haveDraftedFoundation &&
       ALL_FLOORPLAN_ROOMS.every((r) => hasRoom(r.slug)),
   );
 
   function toggleFullHouse() {
     if (fullHouseActive) {
-      gameState.haveWestGate = false;
-      gameState.haveRoom46 = false;
-      gameState.haveDraftedFoundation = false;
-      for (const room of ALL_FLOORPLAN_ROOMS) {
-        gameState.pool = removeRoom(gameState, room.slug).pool;
-      }
+      gameState = initGameState();
     } else {
-      gameState.haveWestGate = true;
-      gameState.haveRoom46 = true;
-      gameState.haveDraftedFoundation = true;
-      for (const room of ALL_FLOORPLAN_ROOMS) {
-        gameState.pool = addRoom(gameState, room.slug).pool;
-      }
+      gameState = initGameFull();
     }
   }
 </script>
@@ -82,12 +65,6 @@
       <div class="two-col">
         <label
           ><input type="checkbox" bind:checked={gameState.haveWestGate} /> West Gate</label
-        >
-        <label
-          ><input
-            type="checkbox"
-            bind:checked={gameState.haveDraftedFoundation}
-          /> Drafted Foundation</label
         >
         <label
           ><input type="checkbox" bind:checked={gameState.haveRoom46} /> Room 46</label
@@ -142,7 +119,11 @@
 
     <div class="two-col">
       <label>
-        <input type="checkbox" bind:checked={gameState.vmode} />
+        <input
+          type="checkbox"
+          checked={gameState.vmode}
+          onchange={(e) => setFlag("vmode", e.currentTarget.checked)}
+        />
         Veteran Mode<a
           href="https://blueprince.wiki.gg/wiki/Spoilers:Veteran_Mode"
           target="_blank"
@@ -151,7 +132,11 @@
         >
       </label>
       <label
-        ><input type="checkbox" bind:checked={gameState.curseOrDare} /> Curse / Dare</label
+        ><input
+          type="checkbox"
+          checked={gameState.curseOrDare}
+          onchange={(e) => setFlag("curseOrDare", e.currentTarget.checked)}
+        /> Curse / Dare</label
       >
     </div>
 

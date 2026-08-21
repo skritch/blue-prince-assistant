@@ -1,7 +1,7 @@
 <script lang="ts">
   import { type DayState, type RoomColor } from "bp-logic";
 
-  let { dayState }: { dayState: DayState } = $props();
+  let { dayState = $bindable() }: { dayState: DayState } = $props();
 
   const ROOM_COLORS: RoomColor[] = [
     "blue",
@@ -82,6 +82,13 @@
         <div class="section">
           <div class="section-label">Misc.</div>
           <div class="checks">
+            <label
+              data-tooltip="Lowers Master Bedroom from rare to unusual. Unknown effect if Foundation is no longer in the house."
+              ><input
+                type="checkbox"
+                bind:checked={dayState.haveDraftedFoundation}
+              /> Drafted Foundation</label
+            >
             <label
               data-tooltip="Mail Room is set to common rarity when a package is available"
               ><input type="checkbox" bind:checked={dayState.mailRoomUsed} /> Mail

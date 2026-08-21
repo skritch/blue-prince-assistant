@@ -18,12 +18,12 @@
   }
 
   const SOURCE_LABELS: Record<string, string> = {
-    room46: "Room 46",
-    "pool-in-house": "Pool",
-    "bacon-and-eggs": "Bacon & Eggs",
-    "knight-chess": "Knight Chess",
-    schoolhouse: "Schoolhouse",
-    laboratory: "Laboratory",
+    room46: "room 46",
+    "pool-in-house": "pool",
+    "bacon-and-eggs": "bacon & eggs",
+    "knight-chess": "mantle of the knight",
+    schoolhouse: "schoolhouse",
+    laboratory: "laboratory",
     "com-permanent": "CoM permanent",
     "com-passive": "CoM passive",
   };
@@ -68,7 +68,7 @@
       </tr>
     </thead>
     <tbody>
-      {#each sortedRooms as { room, source } (room.slug + (source ?? ""))}
+      {#each sortedRooms as { room, source }, i (room.slug + (source ?? "") + i)}
         {@const effectiveRarity =
           draftPool.rarityOverrides[room.slug] ?? room.baseRarity}
         {@const annotations = draftPool.annotations[room.slug]}

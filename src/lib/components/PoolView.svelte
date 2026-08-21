@@ -1,11 +1,19 @@
 <script lang="ts">
-  import { computePool, initState, initDay, initHouse, type GameState, type DayState, type HouseState } from 'bp-logic';
-  import GameStatePanel from './GameStatePanel.svelte';
-  import DayStatePanel from './DayStatePanel.svelte';
-  import HouseStatePanel from './HouseStatePanel.svelte';
-  import PoolTable from './PoolTable.svelte';
+  import {
+    computePool,
+    initGameState,
+    initDay,
+    initHouse,
+    type GameState,
+    type DayState,
+    type HouseState,
+  } from "bp-logic";
+  import GameStatePanel from "./GameStatePanel.svelte";
+  import DayStatePanel from "./DayStatePanel.svelte";
+  import HouseStatePanel from "./HouseStatePanel.svelte";
+  import PoolTable from "./PoolTable.svelte";
 
-  let gameState: GameState = $state(initState());
+  let gameState: GameState = $state(initGameState());
   let dayState: DayState = $state(initDay(1));
   let houseState: HouseState = $state(initHouse());
 
@@ -14,9 +22,9 @@
 
 <div class="layout">
   <div class="config">
-    <GameStatePanel {gameState} />
-    <DayStatePanel {dayState} />
-    <HouseStatePanel {houseState} />
+    <GameStatePanel bind:gameState />
+    <DayStatePanel bind:dayState />
+    <HouseStatePanel bind:houseState />
   </div>
   <div class="results">
     <PoolTable {draftPool} />

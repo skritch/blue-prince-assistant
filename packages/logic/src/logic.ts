@@ -1,5 +1,5 @@
 
-import { MIRROR_ROOMS, POOL_ADDITIONS, ROOM_46_REWARDS, ROOMS } from './rooms'
+import { MIRROR_ROOMS, POOL_ADDITIONS, ROOM_46_REWARDS } from './rooms'
 import type { DayState } from './day'
 import { addToPool, annotateRoom, removeFromPool, type DraftPool } from './pool'
 import type { HouseState } from './house'
@@ -72,26 +72,26 @@ function buildCurrentPool(
   day: DayState,
   house: HouseState
 ): DraftPool {
-  if (game.haveRoom46) { pool = addToPool(pool, 'room46', ...ROOM_46_REWARDS) }
-  if (day.poolInHouse) { pool = addToPool(pool, 'pool-in-house', ...POOL_ADDITIONS) }
-  if (day.baconAndEggs) { pool = addToPool(pool, 'bacon-and-eggs', 'morning-room') }
-  if (day.knightChess) { pool = addToPool(pool, 'knight-chess', 'armory') }
+  if (game.haveRoom46) { pool = addToPool(pool, ROOM_46_REWARDS, 'room46') }
+  if (day.poolInHouse) { pool = addToPool(pool, POOL_ADDITIONS, 'pool-in-house') }
+  if (day.baconAndEggs) { pool = addToPool(pool, ['morning-room'], 'bacon-and-eggs') }
+  if (day.knightChess) { pool = addToPool(pool, ['armory'], 'knight-chess') }
   if (day.aquariumExperimentActivations) {
     // TODO confirm this mechanic
     const ct = 3 * day.aquariumExperimentActivations
-    pool = addToPool(pool, 'laboratory', ...Array(ct).fill('aquarium'))
+    pool = addToPool(pool, Array(ct).fill('aquarium'), 'laboratory')
   }
 
   // Chamber of Mirrors permanent additions
   // https://www.reddit.com/r/BluePrince/comments/1mkgzuj/chamber_of_mirrors_passive_and_permanent_effects/
   if (game.chamberOfMirrorsAdditions) {
-    pool = addToPool(pool, 'com-permanent', ...game.chamberOfMirrorsAdditions)
+    pool = addToPool(pool, game.chamberOfMirrorsAdditions, 'com-permanent')
   }
 
   // V-mode additions
   // https://www.reddit.com/r/BluePrinceUncensored/comments/1t4nmpn/v_mode_what_it_is_and_what_day_1_trophy_hunters/
   if (game.vmode) {
-    if (day.day < 3) { pool = removeFromPool(pool, 'study') }
+    if (day.day < 3) { pool = removeFromPool(pool, ['study']) }
     if (day.day < 3) { pool = annotateRoom(pool, { pct: 5 }, 'master-bedroom') }
     if (day.day < 5) { pool = annotateRoom(pool, { pct: 20 }, 'library') }
   }
@@ -100,7 +100,7 @@ function buildCurrentPool(
   // https://www.reddit.com/r/BluePrince/comments/1lrxff0/the_mechanics_of_drafting_multiple_classrooms/
   // TODO: fairly complicated, for now we just add 8 schoolhouses
   if (day.schoolhouseInHouse) {
-    pool = addToPool(pool, 'schoolhouse', ...Array(8).fill('classroom'))
+    pool = addToPool(pool, Array(8).fill('classroom'), 'schoolhouse')
   }
 
 
@@ -119,7 +119,7 @@ function buildCurrentPool(
       // TODO: CoM has special classroom interactions. 
       // For now just treat classroom like all the others
       if (MIRROR_ROOMS[slug] || slug == 'classroom') {
-        pool = addToPool(pool, 'com-passive', slug)
+        pool = addToPool(pool, [slug], 'com-passive')
 
         // Annotate
         const mirroredModifier = MIRROR_ROOMS?.[slug]?.["mirrored"]

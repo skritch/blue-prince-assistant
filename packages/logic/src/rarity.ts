@@ -98,6 +98,7 @@ export function applyAdHocRarities(
   // Rarity bumps?
   if (day.aquariumExperimentActivations) {
     rarities['aquarium'] = 1
+    annotate('aquarium', 'aquarium experiement: common')
   }
   if (house.placedRooms.includes('her-ladyships-chamber')) {
     rarities['boudoir'] = 1
@@ -105,7 +106,7 @@ export function applyAdHocRarities(
   }
 
   // Master Bedroom (deterministic branch only)
-  if (!game.haveDraftedFoundation && (day.day <= 9 || !game.haveRoom46)) {
+  if (!day.haveDraftedFoundation && (day.day <= 9 || !game.haveRoom46)) {
     rarities['master-bedroom'] = 4
   }
 
@@ -124,8 +125,8 @@ export function applyAdHocRarities(
   if (day.haveGearWrench) {
     rarities['workshop'] = 2
     rarities['boiler-room'] = 2
-    annotate('workshop', 'gear wrench: standard (2)')
-    annotate('boiler-room', 'gear wrench: standard (2)')
+    annotate('workshop', 'gear wrench: standard')
+    annotate('boiler-room', 'gear wrench: standard')
   }
 
   // Terrace (rank 3 = certain base rarity)
@@ -149,26 +150,26 @@ export function applyAdHocRarities(
 
   // Guest Bedroom
   if (!game.haveRoom46) {
-    annotate('guest-bedroom', '50% chance of standard (2) once drafted 5+ times')
+    annotate('guest-bedroom', '50% chance of standard once drafted 5+ times')
   }
 
   // Master Bedroom (probabilistic branch)
-  if (game.haveDraftedFoundation && day.day >= 7) {
-    annotate('master-bedroom', '30% chance drops to standard (2) (foundation drafted, day 7+)')
-    annotate('billiard-room', '30% chance rises to unusual (3) (foundation drafted, day 7+)')
+  if (day.haveDraftedFoundation && day.day >= 7) {
+    annotate('master-bedroom', '30% chance drops to standard (foundation drafted, day 7+)')
+    annotate('billiard-room', '30% chance rises to unusual (foundation drafted, day 7+)')
   }
 
   // Lavatory
-  annotate('lavatory', '40% chance of unusual (3) once drafted 3+ times')
+  annotate('lavatory', '40% chance of unusual once drafted 3+ times')
 
   // Workshop & Boiler (probabilistic, when no gear wrench)
   if (!day.haveGearWrench) {
     if (day.day >= 17 || game.haveRoom46) {
-      annotate('workshop', '40% chance of standard (2)')
-      annotate('boiler-room', '60% chance of standard (2)')
+      annotate('workshop', '40% chance of standard (day 17+ or room46)')
+      annotate('boiler-room', '60% chance of standard (day 17+ or room46)')
     }
     if (day.haveBatteryPack) {
-      annotate('workshop', 'battery pack: 50% chance standard (2) or unusual (3)')
+      annotate('workshop', 'battery pack: 50% chance standard or unusual')
     }
   }
 
@@ -187,7 +188,7 @@ export function applyAdHocRarities(
   }
 
   // Mail Room
-  annotate('mail-room', 'becomes commonplace (1) after receiving a package')
+  annotate('mail-room', 'becomes commonplace after receiving a package')
 
   // Coat check
   if (day.coatCheckUsed) {
@@ -199,7 +200,7 @@ export function applyAdHocRarities(
 
   // Terrace (probabilistic on top of certain base above)
   if (house.maxRank >= 3 && day.day > 1) {
-    annotate('terrace', '40% chance of commonplace (1)')
+    annotate('terrace', '40% chance of commonplace')
   }
 
   return { rarities, annotations }

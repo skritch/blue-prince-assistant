@@ -2,7 +2,7 @@
   import { untrack } from 'svelte';
   import { type HouseState } from 'bp-logic';
 
-  let { houseState }: { houseState: HouseState } = $props();
+  let { houseState = $bindable() }: { houseState: HouseState } = $props();
 
   let placedRoomsText = $state(untrack(() => houseState.placedRooms.join('\n')));
 
