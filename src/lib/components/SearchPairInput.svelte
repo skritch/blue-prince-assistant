@@ -1,9 +1,9 @@
 <script module lang="ts">
-  export type Item = { id: string; label: string }
-  export type Entry = { keyId: string; keyLabel: string; valueId?: string; valueLabel?: string }
+  export type { Item, Entry } from './searchPairTypes'
 </script>
 
 <script lang="ts">
+  import type { Item, Entry } from './searchPairTypes'
   let {
     label,
     searchItems,
@@ -21,7 +21,7 @@
   } = $props()
 
   let query = $state('')
-  let pendingKey: Item | null = $state(null)
+  let pendingKey = $state<Item | null>(null)
   let pendingValue = $state('')
   let focused = $state(false)
 
@@ -34,7 +34,7 @@
   )
 
   let valueOptions = $derived(
-    pendingKey && secondOptions ? secondOptions(pendingKey.id) : []
+    pendingKey && secondOptions ? secondOptions(pendingKey!.id) : []
   )
 
   let canAdd = $derived(!!pendingKey && (!secondOptions || !!pendingValue))

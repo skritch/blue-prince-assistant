@@ -12,7 +12,7 @@
     initGameState,
   } from "bp-logic";
   import SearchPairInput from "./SearchPairInput.svelte";
-  import type { Item, Entry } from "./SearchPairInput.svelte";
+  import type { Item, Entry } from "./searchPairTypes";
 
   let { gameState = $bindable() }: { gameState: GameState } = $props();
 
