@@ -1,10 +1,26 @@
 <script lang="ts">
-  import { type DraftPool, type HouseState, type Rarity, type Annotation } from "bp-logic";
+  import {
+    type DraftPool,
+    type HouseState,
+    type Rarity,
+    type Annotation,
+  } from "bp-logic";
 
-  let { draftPool, gameRarityOverrides, houseState = $bindable() }: { draftPool: DraftPool; gameRarityOverrides: Record<string, Rarity>; houseState: HouseState } = $props();
+  let {
+    draftPool,
+    gameRarityOverrides,
+    houseState = $bindable(),
+  }: {
+    draftPool: DraftPool;
+    gameRarityOverrides: Record<string, Rarity>;
+    houseState: HouseState;
+  } = $props();
 
   function addRoomToHouse(slug: string) {
-    houseState = { ...houseState, placedRooms: [...houseState.placedRooms, slug] };
+    houseState = {
+      ...houseState,
+      placedRooms: [...houseState.placedRooms, slug],
+    };
   }
 
   function removeRoomFromHouse(slug: string) {
@@ -36,8 +52,8 @@
     "knight-chess": "mantle of the knight",
     schoolhouse: "schoolhouse",
     laboratory: "laboratory",
-    "com-permanent": "CoM permanent",
-    "com-passive": "CoM passive",
+    "com-permanent": "CoM addition",
+    "com-passive": "CoM copy",
   };
 
   function formatAnnotations(annotations: Annotation[]): string {
@@ -84,24 +100,35 @@
         {@const effectiveRarity =
           draftPool.rarityOverrides[room.slug] ?? room.baseRarity}
         {@const annotations = draftPool.annotations[room.slug]}
-        {@const rarityChanged = effectiveRarity !== room.baseRarity}
         {@const rarityExplicit = room.slug in gameRarityOverrides}
+        {@const rarityDynamic = room.slug in draftPool.rarityOverrides && !rarityExplicit}
         {@const description = upgrade
-          ? [`(${upgrade.name ?? room.name} upgrade)`, upgrade.description ?? room.description].filter(Boolean).join(' ')
+          ? [
+              `(${upgrade.name ?? room.name} upgrade)`,
+              upgrade.description ?? room.description,
+            ]
+              .filter(Boolean)
+              .join(" ")
           : (room.description ?? undefined)}
-        {@const placedCount = houseState.placedRooms.filter(s => s === room.slug).length}
+        {@const placedCount = houseState.placedRooms.filter(
+          (s) => s === room.slug,
+        ).length}
         <tr>
           <td class="colors">
-            {#each (upgrade?.color ?? room.color) as c}
+            {#each upgrade?.color ?? room.color as c}
               <span class="color-dot color-{c}"></span>
             {/each}
           </td>
-          <td class="name" data-tooltip={description}>{upgrade?.name ?? room.name}</td>
+          <td class="name" data-tooltip={description}
+            >{upgrade?.name ?? room.name}</td
+          >
           <td class="rarity rarity-{effectiveRarity}">
-            {rarityName(effectiveRarity)}{#if rarityChanged && rarityExplicit}<span
+            {rarityName(
+              effectiveRarity,
+            )}{#if rarityExplicit}<span
                 class="rarity-base"
                 data-tooltip="player-set rarity">**</span
-              >{:else if rarityChanged}<span
+              >{:else if rarityDynamic}<span
                 class="rarity-base"
                 data-tooltip="dynamic rarity">*</span
               >{/if}{#if annotations?.length}<span
@@ -128,9 +155,16 @@
           <td class="place-btns">
             {#if placedCount > 0}
               <span class="placed-count">{placedCount}</span>
-              <button class="place-btn minus" onclick={() => removeRoomFromHouse(room.slug)}>−</button>
+              <button
+                class="place-btn minus"
+                onclick={() => removeRoomFromHouse(room.slug)}>−</button
+              >
             {/if}
-            <button class="place-btn plus" data-tooltip="add to house" onclick={() => addRoomToHouse(room.slug)}>+</button>
+            <button
+              class="place-btn plus"
+              data-tooltip="add to house"
+              onclick={() => addRoomToHouse(room.slug)}>+</button
+            >
           </td>
         </tr>
       {/each}
@@ -307,19 +341,19 @@
 
   .tag-dead-end {
     background: #e5e7eb;
-    color: #374151;
+    color: #6b7280;
   }
   .tag-mechanical {
     background: #dbeafe;
-    color: #1e40af;
+    color: #3b82f6;
   }
   .tag-tomorrow {
     background: #ede9fe;
-    color: #5b21b6;
+    color: #7c3aed;
   }
   .tag-drafting {
     background: #dcfce7;
-    color: #15803d;
+    color: #16a34a;
   }
 
   @media (prefers-color-scheme: dark) {
@@ -339,6 +373,40 @@
       background: #14532d;
       color: #86efac;
     }
+  }
+
+  :global(html[data-theme="dark"]) .tag-dead-end {
+    background: #374151;
+    color: #d1d5db;
+  }
+  :global(html[data-theme="dark"]) .tag-mechanical {
+    background: #1e3a5f;
+    color: #93c5fd;
+  }
+  :global(html[data-theme="dark"]) .tag-tomorrow {
+    background: #3b1f5e;
+    color: #d8b4fe;
+  }
+  :global(html[data-theme="dark"]) .tag-drafting {
+    background: #14532d;
+    color: #86efac;
+  }
+
+  :global(html[data-theme="light"]) .tag-dead-end {
+    background: #e5e7eb;
+    color: #6b7280;
+  }
+  :global(html[data-theme="light"]) .tag-mechanical {
+    background: #dbeafe;
+    color: #3b82f6;
+  }
+  :global(html[data-theme="light"]) .tag-tomorrow {
+    background: #ede9fe;
+    color: #7c3aed;
+  }
+  :global(html[data-theme="light"]) .tag-drafting {
+    background: #dcfce7;
+    color: #16a34a;
   }
 
   .source-label {

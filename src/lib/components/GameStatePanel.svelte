@@ -186,12 +186,14 @@
       <div class="section-label">Unlocks</div>
       <div class="two-col">
         <label
+          data-tooltip="If west gate has not been accessed, Utility Closet becomes commonplace after day 2"
           ><input type="checkbox" bind:checked={gameState.haveWestGate} /> West Gate</label
         >
         <label
+          data-tooltip="Adds Gallery, Trophy Room, and Mount Holly Gift Shop; affects various rarities"
           ><input type="checkbox" bind:checked={gameState.haveRoom46} /> Room 46</label
         >
-        <label
+        <label data-tooltip="Adds Trophy Room"
           ><input type="checkbox" bind:checked={gameState.haveTrophy} /> Trophy Acquired</label
         >
       </div>
@@ -238,12 +240,14 @@
       <button
         class="btn"
         class:active={fullHouseActive}
-        onclick={toggleFullHouse}>Select All</button
+        onclick={toggleFullHouse}>Use Full Directory</button
       >
     </div>
 
     <div class="two-col">
-      <label>
+      <label
+        data-tooltip="Modifies many room rarities. Activated by drafting 3 rooms in 45 seconds."
+      >
         <input
           type="checkbox"
           checked={gameState.vmode}
@@ -323,6 +327,12 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 0.75rem;
+  }
+
+  .floorplan-cols > div {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
   }
 
   .checkboxes.col {

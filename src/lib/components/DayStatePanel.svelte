@@ -14,7 +14,7 @@
   ];
 
   const NOT_SYNCED =
-    "These settings are not synced from the house state, and should be set manually.";
+    "These options are not synced with rooms in the house, and must be set explicitly.";
 </script>
 
 <details class="panel" open>
@@ -22,7 +22,7 @@
   <div class="fields">
     <div class="inline-fields">
       <label class="inline-field">
-        Day
+        Day:
         <input type="number" min="1" bind:value={dayState.day} />
       </label>
     </div>
@@ -32,7 +32,7 @@
       <div class="day-col">
         <div class="section">
           <div class="section-label">
-            Additions to Deck
+            Added Floorplans
             <span class="help-icon" data-tooltip={NOT_SYNCED}>?</span>
           </div>
           <div class="checks">
@@ -122,7 +122,7 @@
       <div class="day-col">
         <div class="section">
           <div class="section-label">
-            Biases
+            Draft Biases
             <span class="help-icon" data-tooltip={NOT_SYNCED}>?</span>
           </div>
           <div class="checks">

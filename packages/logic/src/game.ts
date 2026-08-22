@@ -61,10 +61,10 @@ export function initGameState(): GameState {
 export function initGameFull(): GameState {
   return {
     pool: ROOMS
-      .filter((r) => !FULL_EXCLUDED_SLUGS.has(r.slug)),
+      .filter((r) => !INIT_EXCLUDED_SLUGS.has(r.slug)),
     haveWestGate: true,
     haveRoom46: true,
-    haveTrophy: false,
+    haveTrophy: true,
     vmode: false,
     curseOrDare: false,
     rarityOverrides: {},

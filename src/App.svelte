@@ -21,14 +21,14 @@
   </header>
   <PoolVIew />
   <footer>
-    <span class="theme-label">Theme</span>
     <div class="theme-toggle" role="group" aria-label="Theme">
-      {#each (['system', 'light', 'dark'] as Theme[]) as t}
+      {#each ([['system', '🖥️'], ['light', '☀️'], ['dark', '🌙']] as [Theme, string][]) as [t, icon]}
         <button
           class="theme-btn"
           class:active={theme === t}
+          aria-label={t}
           onclick={() => (theme = t)}
-        >{t}</button>
+        >{icon}</button>
       {/each}
     </div>
   </footer>
@@ -53,12 +53,7 @@
     padding-top: 0.75rem;
     border-top: 1px solid var(--border);
     display: flex;
-    align-items: center;
-    gap: 0.6rem;
-  }
-  .theme-label {
-    font-size: 0.8rem;
-    color: var(--text-muted);
+    justify-content: flex-end;
   }
   .theme-toggle {
     display: flex;
