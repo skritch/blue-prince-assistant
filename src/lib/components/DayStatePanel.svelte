@@ -90,7 +90,7 @@
               ><input
                 type="checkbox"
                 bind:checked={dayState.haveDraftedFoundation}
-              /> Drafted Foundation</label
+              /> Foundation Drafted</label
             >
             <label
               data-tooltip="Mail Room is set to common rarity when a package is available"
@@ -99,7 +99,7 @@
             >
             <label data-tooltip="Coat Check rarity mechanism is unknown"
               ><input type="checkbox" bind:checked={dayState.coatCheckUsed} /> Coat
-              Check Item</label
+              Checked Item</label
             >
             <label
               class="select-row"
@@ -259,9 +259,9 @@
     font-size: 0.875rem;
   }
 
-  .narrow {
+  input[type="number"].narrow {
     flex: none;
-    width: 2.5rem;
+    width: 3.25rem;
   }
 
   .color-select {

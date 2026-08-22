@@ -261,7 +261,7 @@
           type="checkbox"
           checked={gameState.curseOrDare}
           onchange={(e) => setFlag("curseOrDare", e.currentTarget.checked)}
-        /> Curse / Dare</label
+        /> Curse / Dare Mode</label
       >
     </div>
 

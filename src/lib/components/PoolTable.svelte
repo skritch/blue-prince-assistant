@@ -1,7 +1,19 @@
 <script lang="ts">
-  import { type DraftPool, type Rarity, type Annotation } from "bp-logic";
+  import { type DraftPool, type HouseState, type Rarity, type Annotation } from "bp-logic";
 
-  let { draftPool }: { draftPool: DraftPool } = $props();
+  let { draftPool, gameRarityOverrides, houseState = $bindable() }: { draftPool: DraftPool; gameRarityOverrides: Record<string, Rarity>; houseState: HouseState } = $props();
+
+  function addRoomToHouse(slug: string) {
+    houseState = { ...houseState, placedRooms: [...houseState.placedRooms, slug] };
+  }
+
+  function removeRoomFromHouse(slug: string) {
+    const idx = houseState.placedRooms.lastIndexOf(slug);
+    if (idx === -1) return;
+    const arr = [...houseState.placedRooms];
+    arr.splice(idx, 1);
+    houseState = { ...houseState, placedRooms: arr };
+  }
 
   function raritySort(r: Rarity): number {
     return r === null ? 5 : r;
@@ -73,9 +85,11 @@
           draftPool.rarityOverrides[room.slug] ?? room.baseRarity}
         {@const annotations = draftPool.annotations[room.slug]}
         {@const rarityChanged = effectiveRarity !== room.baseRarity}
+        {@const rarityExplicit = room.slug in gameRarityOverrides}
         {@const description = upgrade
           ? [`(${upgrade.name ?? room.name} upgrade)`, upgrade.description ?? room.description].filter(Boolean).join(' ')
           : (room.description ?? undefined)}
+        {@const placedCount = houseState.placedRooms.filter(s => s === room.slug).length}
         <tr>
           <td class="colors">
             {#each (upgrade?.color ?? room.color) as c}
@@ -84,9 +98,15 @@
           </td>
           <td class="name" data-tooltip={description}>{upgrade?.name ?? room.name}</td>
           <td class="rarity rarity-{effectiveRarity}">
-            {rarityName(effectiveRarity)}{#if rarityChanged}<span
+            {rarityName(effectiveRarity)}{#if rarityChanged && rarityExplicit}<span
                 class="rarity-base"
-                data-tooltip="base: {rarityName(room.baseRarity)}">*</span
+                data-tooltip="player-set rarity">**</span
+              >{:else if rarityChanged}<span
+                class="rarity-base"
+                data-tooltip="dynamic rarity">*</span
+              >{/if}{#if annotations?.length}<span
+                class="annot-icon"
+                data-tooltip={formatAnnotations(annotations)}>?</span
               >{/if}
           </td>
           <td class="doors">{room.doors ?? "—"}</td>
@@ -105,13 +125,12 @@
                 >{SOURCE_LABELS[source] ?? source}</span
               >{/if}
           </td>
-          <td class="annot">
-            {#if annotations?.length}
-              <span
-                class="annot-icon"
-                data-tooltip={formatAnnotations(annotations)}>?</span
-              >
+          <td class="place-btns">
+            {#if placedCount > 0}
+              <span class="placed-count">{placedCount}</span>
+              <button class="place-btn minus" onclick={() => removeRoomFromHouse(room.slug)}>−</button>
             {/if}
+            <button class="place-btn plus" data-tooltip="add to house" onclick={() => addRoomToHouse(room.slug)}>+</button>
           </td>
         </tr>
       {/each}
@@ -328,24 +347,21 @@
     font-style: italic;
   }
 
-  .annot {
-    width: 1.5rem;
-    text-align: center;
-  }
-
   .annot-icon {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 16px;
-    height: 16px;
+    width: 14px;
+    height: 14px;
     border-radius: 50%;
     background: var(--border);
     color: var(--text-muted);
-    font-size: 0.7rem;
+    font-size: 0.65rem;
     font-weight: 700;
     cursor: help;
     position: relative;
+    vertical-align: middle;
+    margin-left: 3px;
   }
 
   .annot-icon::after {
@@ -371,5 +387,59 @@
 
   .annot-icon:hover::after {
     opacity: 1;
+  }
+
+  .place-btns {
+    white-space: nowrap;
+    text-align: right;
+    padding-right: 0.4rem;
+  }
+
+  .placed-count {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-right: 2px;
+  }
+
+  .place-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 3px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 1rem;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0;
+    margin-left: 2px;
+  }
+
+  .place-btn:hover {
+    background: var(--border);
+    color: var(--text);
+  }
+
+  .place-btn.plus {
+    color: var(--text-muted);
+    border-color: var(--border);
+  }
+
+  .place-btn.plus:hover {
+    background: var(--border);
+    color: var(--text);
+  }
+
+  .place-btn.minus {
+    color: #ef4444;
+    border-color: #ef444444;
+  }
+
+  .place-btn.minus:hover {
+    background: #ef444422;
+    color: #ef4444;
   }
 </style>

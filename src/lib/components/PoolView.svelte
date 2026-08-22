@@ -27,7 +27,7 @@
     <HouseStatePanel bind:houseState />
   </div>
   <div class="results">
-    <PoolTable {draftPool} />
+    <PoolTable {draftPool} gameRarityOverrides={gameState.rarityOverrides} bind:houseState />
   </div>
 </div>
 

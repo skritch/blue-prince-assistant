@@ -7,19 +7,23 @@
 
   const roomNameBySlug = Object.fromEntries(ROOMS.map((r) => [r.slug, r.name]));
 
-  const roomSearchItems = ROOMS
-    .map((r) => ({ id: r.slug, label: r.name }))
-    .sort((a, b) => a.label.localeCompare(b.label));
+  const roomSearchItems = ROOMS.map((r) => ({
+    id: r.slug,
+    label: r.name,
+  })).sort((a, b) => a.label.localeCompare(b.label));
 
   let placedEntries: Entry[] = $derived(
     houseState.placedRooms.map((slug) => ({
       keyId: slug,
       keyLabel: roomNameBySlug[slug] ?? slug,
-    }))
+    })),
   );
 
   function addRoom(slug: string) {
-    houseState = { ...houseState, placedRooms: [...houseState.placedRooms, slug] };
+    houseState = {
+      ...houseState,
+      placedRooms: [...houseState.placedRooms, slug],
+    };
   }
 
   function removeRoom(i: number) {
@@ -33,7 +37,7 @@
   <summary class="panel-header">House State</summary>
   <div class="fields">
     <label class="inline-field">
-      Max Rank
+      House Rank Reached:
       <input type="number" min="1" max="9" bind:value={houseState.maxRank} />
     </label>
     <SearchPairInput
