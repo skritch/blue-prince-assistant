@@ -14,7 +14,7 @@
   ];
 
   const NOT_SYNCED =
-    "These options are not synced with rooms in the house, and must be set explicitly.";
+    "These options are not synced with rooms in the house, and should be set explicitly.";
 </script>
 
 <details class="panel" open>
@@ -50,7 +50,7 @@
               &amp; Eggs</label
             >
             <label
-              data-tooltip="Adds 8 Classrooms; Library, Dormitory, and Classroom appear more often"
+              data-tooltip="Adds 8 Classrooms. Library, Dormitory, and Classroom appear more often"
               ><input
                 type="checkbox"
                 bind:checked={dayState.schoolhouseInHouse}
@@ -126,22 +126,22 @@
             <span class="help-icon" data-tooltip={NOT_SYNCED}>?</span>
           </div>
           <div class="checks">
-            <label
+            <label data-tooltip="Red rooms appear more often"
               ><input type="checkbox" bind:checked={dayState.furnaceInHouse} /> Furnace</label
             >
-            <label
+            <label data-tooltip="Green rooms appear more often"
               ><input
                 type="checkbox"
                 bind:checked={dayState.greenhouseInHouse}
               /> Greenhouse</label
             >
-            <label
+            <label data-tooltip="Rooms with four doors appear more often"
               ><input
                 type="checkbox"
                 bind:checked={dayState.southernCrossActive}
               /> Southern Cross Constellation</label
             >
-            <label
+            <label data-tooltip="Dead end rooms appear more often"
               ><input type="checkbox" bind:checked={dayState.draxusActive} /> Draxus
               Constellation</label
             >

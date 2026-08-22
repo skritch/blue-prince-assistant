@@ -33,10 +33,9 @@ Dynamic rarity rules:
   - https://www.reddit.com/r/BluePrince/comments/1m4eer1/drafting_mechanics_conditional_filters_making/
 - previously-used mail room, coat check
 - library
-  - https://www.reddit.com/r/BluePrince/comments/1lzdvv9/drafting_mechanics_weighted_rooms_the_library_and/
-- various ad-hoc rules involving e.g. terrace, secret passage
 - duct drafting
   - https://www.reddit.com/r/BluePrince/comments/1lzdvv9/drafting_mechanics_weighted_rooms_the_library_and/
+- various ad-hoc rules involving e.g. terrace, secret passage
 - Classroom stuff
   - https://www.reddit.com/r/BluePrince/comments/1lrxff0/the_mechanics_of_drafting_multiple_classrooms/
 - Date: outer rooms, HLC, bookshop, etc.
