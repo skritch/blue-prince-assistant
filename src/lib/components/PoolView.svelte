@@ -7,17 +7,20 @@
     type GameState,
     type DayState,
     type HouseState,
+    type DraftParams,
   } from "bp-logic";
   import GameStatePanel from "./GameStatePanel.svelte";
   import DayStatePanel from "./DayStatePanel.svelte";
   import HouseStatePanel from "./HouseStatePanel.svelte";
+  import DraftStatePanel from "./DraftStatePanel.svelte";
   import PoolTable from "./PoolTable.svelte";
 
   let gameState: GameState = $state({ ...initGameState() });
   let dayState: DayState = $state(initDay(1));
   let houseState: HouseState = $state(initHouse());
+  let draftParams: DraftParams | undefined = $state(undefined);
 
-  let draftPool = $derived(computePool(gameState, dayState, houseState));
+  let draftPool = $derived(computePool(gameState, dayState, houseState, draftParams));
 </script>
 
 <div class="layout">
@@ -25,6 +28,7 @@
     <GameStatePanel bind:gameState />
     <DayStatePanel bind:dayState />
     <HouseStatePanel bind:houseState />
+    <DraftStatePanel bind:draftParams />
   </div>
   <div class="results">
     <PoolTable {draftPool} gameRarityOverrides={gameState.rarityOverrides} bind:houseState />

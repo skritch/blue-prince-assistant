@@ -17,7 +17,7 @@
     "These options are not synced with rooms in the house, and should be set explicitly.";
 </script>
 
-<details class="panel" open>
+<details class="panel">
   <summary class="panel-header">Daily State</summary>
   <div class="fields">
     <div class="inline-fields">

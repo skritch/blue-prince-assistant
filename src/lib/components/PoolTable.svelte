@@ -101,7 +101,8 @@
           draftPool.rarityOverrides[room.slug] ?? room.baseRarity}
         {@const annotations = draftPool.annotations[room.slug]}
         {@const rarityExplicit = room.slug in gameRarityOverrides}
-        {@const rarityDynamic = room.slug in draftPool.rarityOverrides && !rarityExplicit}
+        {@const rarityDynamic =
+          room.slug in draftPool.rarityOverrides && !rarityExplicit}
         {@const description = upgrade
           ? [
               `(${upgrade.name ?? room.name} upgrade)`,
@@ -123,9 +124,7 @@
             >{upgrade?.name ?? room.name}</td
           >
           <td class="rarity rarity-{effectiveRarity}">
-            {rarityName(
-              effectiveRarity,
-            )}{#if rarityExplicit}<span
+            {rarityName(effectiveRarity)}{#if rarityExplicit}<span
                 class="rarity-base"
                 data-tooltip="player-set rarity">**</span
               >{:else if rarityDynamic}<span
@@ -140,12 +139,14 @@
           <td class="tags">
             {#if room.deadEnd}<span class="tag tag-dead-end">dead end</span
               >{/if}
-            {#if room.mechanical}<span class="tag tag-mechanical">mech</span
+            {#if room.mechanical}<span class="tag tag-mechanical"
+                >mechanical</span
               >{/if}
             {#if room.tomorrow}<span class="tag tag-tomorrow">tomorrow</span
               >{/if}
             {#if room.drafting}<span class="tag tag-drafting">drafting</span
               >{/if}
+            {#if room.outer}<span class="tag tag-outer">outer room</span>{/if}
           </td>
           <td class="source">
             {#if source}<span class="source-label"
@@ -355,6 +356,10 @@
     background: #dcfce7;
     color: #16a34a;
   }
+  .tag-outer {
+    background: #ebe8d7;
+    color: #6b6245;
+  }
 
   @media (prefers-color-scheme: dark) {
     .tag-dead-end {
@@ -372,6 +377,10 @@
     .tag-drafting {
       background: #14532d;
       color: #86efac;
+    }
+    .tag-outer {
+      background: #2e2b1d;
+      color: #a8a07a;
     }
   }
 
@@ -391,6 +400,10 @@
     background: #14532d;
     color: #86efac;
   }
+  :global(html[data-theme="dark"]) .tag-outer {
+    background: #451a03;
+    color: #fcd34d;
+  }
 
   :global(html[data-theme="light"]) .tag-dead-end {
     background: #e5e7eb;
@@ -407,6 +420,10 @@
   :global(html[data-theme="light"]) .tag-drafting {
     background: #dcfce7;
     color: #16a34a;
+  }
+  :global(html[data-theme="light"]) .tag-outer {
+    background: #fef3c7;
+    color: #b45309;
   }
 
   .source-label {

@@ -36,6 +36,7 @@ export interface Room {
   mechanical: boolean
   tomorrow: boolean
   drafting: boolean
+  outer: boolean
   description: string | null
 }
 

@@ -1,31 +1,23 @@
-import { ROOM_BY_SLUG } from './rooms'
-import type { Direction, Rarity, Room, RoomColor } from './types'
-import type { GridTile } from './tiles'
+import type { Direction, RoomColor, GridTile } from './types'
 
 
 export interface HouseDraftParams {
-  location: {
+  toLocation: {
     tile: GridTile,
-    direction: Direction,
+    fromDirection: Direction,
   }
 
-  // e.g. Tunnel, Library
-  fromRoom: string
-  silverKeyUsed: boolean
-  prismKeyColor: RoomColor | null
-  // No need for room 8 / secret garden keys
+  fromRoomSlug?: string
+  gems?: number
 
-  // IDK what happens if you use secret passage + a key
-  secretPassageColor: Exclude<RoomColor, 'black' | 'blue'> | null
+  previousDraft?: string[]
+  keyUsed?: 'silver' | 'secret-garden' | 'room-8' | ['prism', RoomColor]
+  secretPassageColor?: Exclude<RoomColor, 'black' | 'blue'> | null
+  boilerActivated?: boolean
 
-  // Can't see the same room two times in a row or something
-  // Except sometimes you can
-  previousDraft: string[]
 
   // TODO: Buggy stuff
   // - drafting blocks: greenhouse, secret passags, tunnel
-
-  gems: number
 }
 
 /**

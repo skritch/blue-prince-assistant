@@ -179,7 +179,7 @@
   }
 </script>
 
-<details class="panel" open>
+<details class="panel">
   <summary class="panel-header">Game State</summary>
   <div class="fields">
     <div class="section">

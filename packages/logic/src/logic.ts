@@ -1,5 +1,6 @@
 
 import { MIRROR_ROOMS, POOL_ADDITIONS, ROOM_46_REWARDS } from './rooms'
+import { getRoomsAt } from './roomLocations'
 import type { DayState } from './day'
 import { addToPool, annotateRoom, fromGameState, removeFromPool, type DraftPool } from './pool'
 import type { HouseState } from './house'
@@ -26,7 +27,7 @@ export function computeOdds(
   pool = removeDraftedRooms(pool, house)
   pool = setDynamicRarities(pool, game, day, house)
   pool = setConditionalFilters(pool, game, day)
-  pool = currentDraftLogic(pool, draft)
+  pool = filterDraftPool(pool, draft)
 
   // Handle per-slot logic, gems etc.
 
@@ -44,6 +45,7 @@ export function computePool(
   game: GameState,
   day: DayState,
   house: HouseState,
+  draft?: DraftParams
 ): DraftPool {
 
   var pool: DraftPool = fromGameState(game)
@@ -51,6 +53,9 @@ export function computePool(
   pool = buildCurrentPool(pool, game, day, house)
   pool = removeDraftedRooms(pool, house)
   pool = setDynamicRarities(pool, game, day, house)
+  if (draft !== undefined) {
+    pool = filterDraftPool(pool, draft)
+  }
   return pool
 }
 
@@ -167,7 +172,7 @@ function removeDraftedRooms(
 }
 
 
-// Step 2
+// Step 3
 function setDynamicRarities(
   pool: DraftPool,
   game: GameState,
@@ -193,6 +198,55 @@ function setDynamicRarities(
   return pool
 }
 
+
+// Step 4
+function filterDraftPool(
+  pool: DraftPool,
+  draft: DraftParams,
+): DraftPool {
+  // positional logic / exit list stuff
+  // https://www.reddit.com/r/BluePrince/comments/1ltsn1t/drafting_mechanics_room_placement_restrictions/
+
+  const eligible = new Set(
+    draft === 'outer'
+      ? getRoomsAt('outer')
+      : getRoomsAt(draft.toLocation.tile, draft.toLocation.fromDirection)
+  )
+  return { ...pool, rooms: pool.rooms.filter(({ room }) => eligible.has(room.slug)) }
+}
+
+// Step 5
+function applyDraftLogic(
+  pool: DraftPool,
+  draft: DraftParams,
+): DraftPool {
+
+
+  if (draft != 'outer') {
+    if (draft.keyUsed) { }
+    if (draft.secretPassageColor) { }
+  }
+
+  // handle schoolhouse vs normal classrooms?
+  // handle chamber of mirrors rooms having different exits?
+
+  // weighted rooms
+  // https://www.reddit.com/r/BluePrince/comments/1lzdvv9/drafting_mechanics_weighted_rooms_the_library_and/
+
+
+  // fromRoom
+  // handle tunnel, duct drafts, library -> rare | bookshop
+  // https://www.reddit.com/r/BluePrince/comments/1lzdvv9/drafting_mechanics_weighted_rooms_the_library_and/
+
+  // previousDraft
+
+  // outer room stuff:
+  // https://www.reddit.com/r/BluePrince/comments/1liagtk/outer_room_basic_draft_rates_effects_of_rarity/
+  return pool
+}
+
+
+// Step 6
 function setConditionalFilters(
   pool: DraftPool,
   game: GameState,
@@ -222,51 +276,6 @@ function setConditionalFilters(
   if (day.schoolhouseInHouse) { }
   if (day.southernCrossActive) { }
   if (day.draxusActive) { }
-
-  return pool
-}
-
-
-// Step 3
-function currentDraftLogic(
-  pool: DraftPool,
-  draft: DraftParams,
-): DraftPool {
-
-  // positional logic / exit list stuff
-  // https://www.reddit.com/r/BluePrince/comments/1ltsn1t/drafting_mechanics_room_placement_restrictions/
-
-  // handle schoolhouse vs normal classrooms?
-  // handle chamber of mirrors rooms having different exits?
-
-  // weighted rooms
-  // https://www.reddit.com/r/BluePrince/comments/1lzdvv9/drafting_mechanics_weighted_rooms_the_library_and/
-
-
-  // fromRoom
-  // handle tunnel, duct drafts, library -> rare | bookshop
-  // https://www.reddit.com/r/BluePrince/comments/1lzdvv9/drafting_mechanics_weighted_rooms_the_library_and/
-
-
-  if (draft != 'outer') {
-    if (draft.silverKeyUsed) { }
-    if (draft.prismKeyColor) { }
-    if (draft.secretPassageColor) { }
-  }
-
-  // previousDraft
-
-  // drafting blocks
-  //  - drafting studio
-
-  // buggy/weird blocks:
-  //  - tunnel
-  //  - greenhouse
-  //  - terrace
-
-  // outer room stuff:
-  // https://www.reddit.com/r/BluePrince/comments/1liagtk/outer_room_basic_draft_rates_effects_of_rarity/
-
 
   return pool
 }

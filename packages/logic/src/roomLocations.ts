@@ -1,4 +1,4 @@
-import { Direction, Tile } from "./types";
+import type { Direction, Tile } from "./types";
 import { getTilePosition } from "./tiles";
 import rawLocations from "./data/roomLocations.json";
 import { ROOMS, UNDRAFTABLE, OUTER_ROOMS } from "./rooms";
@@ -43,7 +43,7 @@ export const EXIT_LIST_ROOMS: Record<ExitList, string[]> = {
     .map(r => r.slug),
 }
 
-export function classifyExitFrom(tile: Tile, fromDirection: Direction): ExitList {
+export function classifyExitTo(tile: Tile, toDirection: Direction): ExitList {
   if (tile === 'outer') throw new Error('classifyExit called with outer tile')
 
   const pos = getTilePosition(tile)
@@ -52,20 +52,20 @@ export function classifyExitFrom(tile: Tile, fromDirection: Direction): ExitList
   if (pos.kind === 'corner') return 'corner'
 
   const { edge } = pos
-  if (edge === 'N') return fromDirection === 'N' ? 'north-pierce' : 'north-edge'
-  if (edge === 'S') return fromDirection === 'S' ? 'south-pierce' : 'south-edge'
+  if (edge === 'N') return toDirection === 'N' ? 'north-pierce' : 'north-edge'
+  if (edge === 'S') return toDirection === 'S' ? 'south-pierce' : 'south-edge'
   if (edge === 'W') {
-    if (fromDirection === 'W') return 'west-pierce'
-    return fromDirection === 'S' ? 'west-advance' : 'west-retreat'
+    if (toDirection === 'W') return 'west-pierce'
+    return toDirection === 'N' ? 'west-advance' : 'west-retreat'
   }
   // edge === 'E'
-  if (fromDirection === 'E') return 'east-pierce'
-  return fromDirection === 'S' ? 'east-advance' : 'east-retreat'
+  if (toDirection === 'E') return 'east-pierce'
+  return toDirection === 'N' ? 'east-advance' : 'east-retreat'
 }
 
-export function getRoomsAt(tile: 'outer', fromDirection?: Direction): string[]
-export function getRoomsAt(tile: Exclude<Tile, 'outer'>, fromDirection: Direction): string[]
-export function getRoomsAt(tile: Tile, fromDirection?: Direction): string[] {
+export function getRoomsAt(tile: 'outer', toDirection?: Direction): string[]
+export function getRoomsAt(tile: Exclude<Tile, 'outer'>, toDirection: Direction): string[]
+export function getRoomsAt(tile: Tile, toDirection?: Direction): string[] {
   if (tile === 'outer') return OUTER_ROOMS
-  return EXIT_LIST_ROOMS[classifyExitFrom(tile, fromDirection!)]
+  return EXIT_LIST_ROOMS[classifyExitTo(tile, toDirection!)]
 }

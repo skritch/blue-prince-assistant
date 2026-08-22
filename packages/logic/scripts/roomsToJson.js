@@ -152,6 +152,7 @@ const rooms = rows
     const slug = toSlug(name)
     const section = r['Column 1'] ?? ''
     const specialType = r['Special type'] ?? ''
+    const dirPage = PAGE_OVERRIDES[toSlug(name)] ?? extractDirectoryPage(section)
 
     return {
       name,
@@ -161,13 +162,14 @@ const rooms = rows
       baseRarity: parseRarity(r['Rarity']),
       baseGemCost: parseGemCost(r['Gem cost']),
       doors: DOOR_OVERRIDES[slug] ?? parseDoors(r['Doors']),
-      directoryPage: PAGE_OVERRIDES[toSlug(name)] ?? extractDirectoryPage(section),
+      directoryPage: dirPage,
       roomNumber: parseInt(r['#']),
       description: parseDescription(r['Room description']),
       deadEnd: specialType.includes('Dead-End'),
       mechanical: specialType.includes('Mechanical'),
       tomorrow: specialType.includes('Tomorrow'),
       drafting: specialType.includes('Drafting'),
+      outer: dirPage == 9
     }
   })
   .filter(r => r.directoryPage !== 'other' && r.directoryPage !== 'underground' && r.directoryPage !== 'blackprint')

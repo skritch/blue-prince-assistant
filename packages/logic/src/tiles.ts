@@ -1,4 +1,5 @@
-import { COLUMNS, GridTile, TilePosition, type Direction, type TileColumn, type TileRow } from './types'
+import { COLUMNS } from './types'
+import type { GridTile, TilePosition, Direction, TileRow } from './types'
 
 
 export type DraftResult =

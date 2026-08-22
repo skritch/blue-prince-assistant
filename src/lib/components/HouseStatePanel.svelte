@@ -33,7 +33,7 @@
   }
 </script>
 
-<details class="panel" open>
+<details class="panel">
   <summary class="panel-header">House State</summary>
   <div class="fields">
     <label class="inline-field">
