@@ -7,6 +7,7 @@
     ROOMS,
     UPGRADES,
     MIRROR_FLOORPLANS,
+    UNDRAFTABLE,
     type GameState,
     type Rarity,
     initGameState,
@@ -53,23 +54,35 @@
 
   // Must match the toSlug in pool.ts
   function toSlug(str: string): string {
-    return str.toLowerCase().replace(/['']/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')
+    return str
+      .toLowerCase()
+      .replace(/['']/g, "")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
   }
 
-  const ROOM_NAME_BY_SLUG = Object.fromEntries(ROOMS.map((r) => [r.slug, r.name]))
+  const ROOM_NAME_BY_SLUG = Object.fromEntries(
+    ROOMS.map((r) => [r.slug, r.name]),
+  );
 
   // --- Room Upgrades ---
-  type UpgradesShape = Record<string, { upgrades: Array<{ name?: string }> }>
+  type UpgradesShape = Record<
+    string,
+    { upgrades: Array<{ name?: string; description?: string }> }
+  >;
 
   const upgradeSearchItems: Item[] = Object.keys(UPGRADES as UpgradesShape)
     .map((slug) => ({ id: slug, label: ROOM_NAME_BY_SLUG[slug] ?? slug }))
-    .sort((a, b) => a.label.localeCompare(b.label))
+    .sort((a, b) => a.label.localeCompare(b.label));
 
   function upgradeOptions(baseSlug: string): Item[] {
-    const entry = (UPGRADES as UpgradesShape)[baseSlug]
+    const entry = (UPGRADES as UpgradesShape)[baseSlug];
     return (entry?.upgrades ?? [])
-      .filter((u) => u.name)
-      .map((u) => ({ id: toSlug(u.name!), label: u.name! }))
+      .filter((u) => u.name || u.description)
+      .map((u) => ({
+        id: toSlug(u.name ?? u.description!),
+        label: u.name ?? u.description!,
+      }));
   }
 
   let upgradeEntries: Entry[] = $derived(
@@ -77,76 +90,92 @@
       keyId: slug,
       keyLabel: ROOM_NAME_BY_SLUG[slug] ?? slug,
       valueId: upgradeSlug,
-      valueLabel: upgradeOptions(slug).find((o) => o.id === upgradeSlug)?.label ?? upgradeSlug,
-    }))
-  )
+      valueLabel:
+        upgradeOptions(slug).find((o) => o.id === upgradeSlug)?.label ??
+        upgradeSlug,
+    })),
+  );
 
   function addUpgrade(slug: string, upgradeSlug?: string) {
-    if (!upgradeSlug) return
-    gameState = { ...gameState, upgrades: { ...gameState.upgrades, [slug]: upgradeSlug } }
+    if (!upgradeSlug) return;
+    gameState = {
+      ...gameState,
+      upgrades: { ...gameState.upgrades, [slug]: upgradeSlug },
+    };
   }
 
   function removeUpgrade(i: number) {
-    const next = { ...gameState.upgrades }
-    delete next[Object.keys(next)[i]]
-    gameState = { ...gameState, upgrades: next }
+    const next = { ...gameState.upgrades };
+    delete next[Object.keys(next)[i]];
+    gameState = { ...gameState, upgrades: next };
   }
 
   // --- Rarity Overrides ---
-  const raritySearchItems: Item[] = ROOMS
+  const undraftableSet = new Set(UNDRAFTABLE);
+  const raritySearchItems: Item[] = ROOMS.filter(
+    (r) => !undraftableSet.has(r.slug),
+  )
     .map((r) => ({ id: r.slug, label: r.name }))
-    .sort((a, b) => a.label.localeCompare(b.label))
+    .sort((a, b) => a.label.localeCompare(b.label));
 
   const RARITY_OPTIONS: Item[] = [
-    { id: '1', label: 'Commonplace' },
-    { id: '2', label: 'Standard' },
-    { id: '3', label: 'Unusual' },
-    { id: '4', label: 'Rare' },
-    { id: 'null', label: 'Special' },
-  ]
+    { id: "1", label: "Commonplace" },
+    { id: "2", label: "Standard" },
+    { id: "3", label: "Unusual" },
+    { id: "4", label: "Rare" },
+  ];
 
   let rarityEntries: Entry[] = $derived(
     Object.entries(gameState.rarityOverrides).map(([slug, rarity]) => ({
       keyId: slug,
       keyLabel: ROOM_NAME_BY_SLUG[slug] ?? slug,
       valueId: String(rarity),
-      valueLabel: RARITY_OPTIONS.find((r) => r.id === String(rarity))?.label ?? String(rarity),
-    }))
-  )
+      valueLabel:
+        RARITY_OPTIONS.find((r) => r.id === String(rarity))?.label ??
+        String(rarity),
+    })),
+  );
 
   function addRarity(slug: string, rarityId?: string) {
-    if (!rarityId) return
-    const rarity: Rarity = rarityId === 'null' ? null : (Number(rarityId) as Rarity)
-    gameState = { ...gameState, rarityOverrides: { ...gameState.rarityOverrides, [slug]: rarity } }
+    if (!rarityId) return;
+    const rarity: Rarity =
+      rarityId === "null" ? null : (Number(rarityId) as Rarity);
+    gameState = {
+      ...gameState,
+      rarityOverrides: { ...gameState.rarityOverrides, [slug]: rarity },
+    };
   }
 
   function removeRarity(i: number) {
-    const next = { ...gameState.rarityOverrides }
-    delete next[Object.keys(next)[i]]
-    gameState = { ...gameState, rarityOverrides: next }
+    const next = { ...gameState.rarityOverrides };
+    delete next[Object.keys(next)[i]];
+    gameState = { ...gameState, rarityOverrides: next };
   }
 
   // --- Chamber of Mirrors Additions ---
   const comSearchItems: Item[] = MIRROR_FLOORPLANS.map((name) => ({
     id: toSlug(name),
     label: name,
-  }))
+  }));
 
   let comEntries: Entry[] = $derived(
     gameState.chamberOfMirrorsAdditions.map((slug) => ({
       keyId: slug,
       keyLabel: ROOM_NAME_BY_SLUG[slug] ?? slug,
-    }))
-  )
+    })),
+  );
 
   function addComRoom(slug: string) {
-    gameState = { ...gameState, chamberOfMirrorsAdditions: [...gameState.chamberOfMirrorsAdditions, slug] }
+    gameState = {
+      ...gameState,
+      chamberOfMirrorsAdditions: [...gameState.chamberOfMirrorsAdditions, slug],
+    };
   }
 
   function removeComRoom(i: number) {
-    const arr = [...gameState.chamberOfMirrorsAdditions]
-    arr.splice(i, 1)
-    gameState = { ...gameState, chamberOfMirrorsAdditions: arr }
+    const arr = [...gameState.chamberOfMirrorsAdditions];
+    arr.splice(i, 1);
+    gameState = { ...gameState, chamberOfMirrorsAdditions: arr };
   }
 </script>
 
@@ -175,7 +204,8 @@
                 <input
                   type="checkbox"
                   checked={hasRoom(room.slug)}
-                  onchange={(e) => toggleRoom(room.slug, e.currentTarget.checked)}
+                  onchange={(e) =>
+                    toggleRoom(room.slug, e.currentTarget.checked)}
                 />
                 {room.name}
               </label>
@@ -190,7 +220,8 @@
                 <input
                   type="checkbox"
                   checked={hasRoom(room.slug)}
-                  onchange={(e) => toggleRoom(room.slug, e.currentTarget.checked)}
+                  onchange={(e) =>
+                    toggleRoom(room.slug, e.currentTarget.checked)}
                 />
                 {room.name}
               </label>
@@ -232,7 +263,7 @@
     </div>
 
     <SearchPairInput
-      label="Room Upgrades"
+      label="Upgrade Disks"
       searchItems={upgradeSearchItems}
       secondOptions={upgradeOptions}
       entries={upgradeEntries}
@@ -248,7 +279,7 @@
       onremove={removeRarity}
     />
     <SearchPairInput
-      label="Chamber of Mirrors"
+      label="Chamber of Mirrors Additions"
       searchItems={comSearchItems}
       entries={comEntries}
       onadd={addComRoom}

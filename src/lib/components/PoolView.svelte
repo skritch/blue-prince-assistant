@@ -43,7 +43,7 @@
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
-    flex: 0 0 340px;
+    flex: 0 0 390px;
   }
 
   .results {

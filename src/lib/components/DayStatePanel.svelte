@@ -63,8 +63,10 @@
                 bind:checked={dayState.chamberOfMirrorsInHouse}
               /> Chamber of Mirrors</label
             >
-            <label class="select-row">
-              Aquarium Experiment
+            <label
+              class="select-row"
+              data-tooltip="Each experiment activation adds 3 aquariums to the pool. Also sets Aquarium to commonplace."
+            >
               <input
                 type="number"
                 min="0"
@@ -75,6 +77,7 @@
                   dayState.aquariumExperimentActivations = isNaN(v) ? null : v;
                 }}
               />
+              Aquarium Experiments
             </label>
           </div>
         </div>
@@ -102,7 +105,6 @@
               class="select-row"
               data-tooltip="Coat Check becomes more rare each time it appears in a draft"
             >
-              Coat Check drafted today
               <input
                 type="number"
                 min="0"
@@ -110,6 +112,7 @@
                 class="narrow"
                 bind:value={dayState.coatCheckDraftedToday}
               />
+              Coat Check Appearances
             </label>
           </div>
         </div>
@@ -143,22 +146,22 @@
               Constellation</label
             >
             <label class="select-row">
-              Banner of the King
-              <select bind:value={dayState.chessColor}>
+              <select class="color-select" bind:value={dayState.chessColor}>
                 <option value={null}>—</option>
                 {#each ROOM_COLORS as color}
                   <option value={color}>{color}</option>
                 {/each}
               </select>
+              Banner of the King
             </label>
             <label class="select-row">
-              Royal Scepter
-              <select bind:value={dayState.scepterColor}>
+              <select class="color-select" bind:value={dayState.scepterColor}>
                 <option value={null}>—</option>
                 {#each ROOM_COLORS as color}
                   <option value={color}>{color}</option>
                 {/each}
               </select>
+              Royal Scepter
             </label>
           </div>
         </div>
@@ -166,11 +169,11 @@
         <div class="section">
           <div class="section-label">Items</div>
           <div class="checks">
-            <label data-tooltip="Chance of setting Workshop to standard (2)"
+            <label data-tooltip="Chance of setting Workshop to standard"
               ><input type="checkbox" bind:checked={dayState.haveBatteryPack} />
               Battery Pack</label
             >
-            <label data-tooltip="Sets Workshop and Boiler Room to standard (2)"
+            <label data-tooltip="Sets Workshop and Boiler Room to standard"
               ><input type="checkbox" bind:checked={dayState.haveGearWrench} /> Gear
               Wrench</label
             >
@@ -257,6 +260,13 @@
   }
 
   .narrow {
-    width: 3.5rem;
+    flex: none;
+    width: 2.5rem;
+  }
+
+  .color-select {
+    flex: none;
+    width: 5rem;
+    min-width: 0;
   }
 </style>

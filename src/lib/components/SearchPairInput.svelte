@@ -37,17 +37,19 @@
     pendingKey && secondOptions ? secondOptions(pendingKey!.id) : []
   )
 
-  let canAdd = $derived(!!pendingKey && (!secondOptions || !!pendingValue))
-
   function pick(item: Item) {
     pendingKey = item
     query = item.label
-    pendingValue = ''
+    if (!secondOptions) {
+      onadd(item.id)
+      query = ''
+      pendingKey = null
+    }
   }
 
-  function submit() {
-    if (!canAdd) return
-    onadd(pendingKey!.id, pendingValue || undefined)
+  function pickValue(valueId: string) {
+    if (!pendingKey || !valueId) return
+    onadd(pendingKey.id, valueId)
     query = ''
     pendingKey = null
     pendingValue = ''
@@ -55,7 +57,6 @@
 
   function onkeydown(e: KeyboardEvent) {
     if (e.key === 'Escape') { query = ''; pendingKey = null; pendingValue = '' }
-    if (e.key === 'Enter' && canAdd) submit()
   }
 </script>
 
@@ -88,15 +89,18 @@
       </div>
 
       {#if secondOptions}
-        <select class="value-select" bind:value={pendingValue} disabled={!pendingKey}>
+        <select
+          class="value-select"
+          value=""
+          disabled={!pendingKey}
+          onchange={(e) => pickValue(e.currentTarget.value)}
+        >
           <option value="">—</option>
           {#each valueOptions as opt}
             <option value={opt.id}>{opt.label}</option>
           {/each}
         </select>
       {/if}
-
-      <button class="add-btn" type="button" onclick={submit} disabled={!canAdd}>Add</button>
     </div>
 
     {#if entries.length > 0}

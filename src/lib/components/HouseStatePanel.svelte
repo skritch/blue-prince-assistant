@@ -1,14 +1,32 @@
 <script lang="ts">
-  import { untrack } from 'svelte';
-  import { type HouseState } from 'bp-logic';
+  import { ROOMS, type HouseState } from "bp-logic";
+  import SearchPairInput from "./SearchPairInput.svelte";
+  import type { Entry } from "./searchPairTypes";
 
   let { houseState = $bindable() }: { houseState: HouseState } = $props();
 
-  let placedRoomsText = $state(untrack(() => houseState.placedRooms.join('\n')));
+  const roomNameBySlug = Object.fromEntries(ROOMS.map((r) => [r.slug, r.name]));
 
-  $effect(() => {
-    houseState.placedRooms = placedRoomsText.split('\n').map((s) => s.trim()).filter(Boolean);
-  });
+  const roomSearchItems = ROOMS
+    .map((r) => ({ id: r.slug, label: r.name }))
+    .sort((a, b) => a.label.localeCompare(b.label));
+
+  let placedEntries: Entry[] = $derived(
+    houseState.placedRooms.map((slug) => ({
+      keyId: slug,
+      keyLabel: roomNameBySlug[slug] ?? slug,
+    }))
+  );
+
+  function addRoom(slug: string) {
+    houseState = { ...houseState, placedRooms: [...houseState.placedRooms, slug] };
+  }
+
+  function removeRoom(i: number) {
+    const arr = [...houseState.placedRooms];
+    arr.splice(i, 1);
+    houseState = { ...houseState, placedRooms: arr };
+  }
 </script>
 
 <details class="panel" open>
@@ -16,11 +34,14 @@
   <div class="fields">
     <label class="inline-field">
       Max Rank
-      <input type="number" min="1" bind:value={houseState.maxRank} />
+      <input type="number" min="1" max="9" bind:value={houseState.maxRank} />
     </label>
-    <label class="field-label">
-      Placed Rooms <span class="hint">(one slug per line)</span>
-      <textarea bind:value={placedRoomsText} rows="6" class="mono"></textarea>
-    </label>
+    <SearchPairInput
+      label="Placed Rooms"
+      searchItems={roomSearchItems}
+      entries={placedEntries}
+      onadd={addRoom}
+      onremove={removeRoom}
+    />
   </div>
 </details>

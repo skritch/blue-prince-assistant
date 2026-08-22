@@ -15,7 +15,7 @@ const RARITY_MAP: Record<string, Rarity> = {
 export const ROOM_46_REWARDS = ['trophy-room', 'gallery', 'mount-holly-gift-shop']
 export const POOL_ADDITIONS = ['sauna', 'locker-room', 'pump-room']
 export const ADHOC_ADDITIONS = ['morning-room', 'armory']
-export const UNDRAFTABLE = ['secret-garden', 'room-8', 'room-46']
+export const UNDRAFTABLE = ['secret-garden', 'room-8', 'room-46', 'antechamber', 'entrance-hall']
 
 export const ROOMS: Room[] = rawRooms.map((r) => ({
   ...r,

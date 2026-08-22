@@ -1,5 +1,5 @@
 export { computeOdds, computePool } from './logic'
-export { roomsForPage, MIRROR_FLOORPLANS, UPGRADES, ROOMS } from './rooms'
+export { roomsForPage, MIRROR_FLOORPLANS, UPGRADES, ROOMS, UNDRAFTABLE } from './rooms'
 
 export { initGameState, initGameFull, fillPage, addRoom, removeRoom } from './game'
 export { initDay } from './day'
