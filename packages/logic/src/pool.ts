@@ -5,6 +5,7 @@ import type { Rarity, Room, RoomColor, UpgradeSpec } from './types'
 
 export type RoomSource =
   | 'room46'
+  | 'trophy'
   | 'pool-in-house'
   | 'bacon-and-eggs'
   | 'knight-chess'

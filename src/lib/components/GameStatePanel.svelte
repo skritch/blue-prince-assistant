@@ -191,6 +191,9 @@
         <label
           ><input type="checkbox" bind:checked={gameState.haveRoom46} /> Room 46</label
         >
+        <label
+          ><input type="checkbox" bind:checked={gameState.haveTrophy} /> Trophy Acquired</label
+        >
       </div>
     </div>
 

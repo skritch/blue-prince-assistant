@@ -65,6 +65,7 @@ function buildCurrentPool(
   house: HouseState
 ): DraftPool {
   if (game.haveRoom46) { pool = addToPool(pool, ROOM_46_REWARDS, 'room46') }
+  if (game.haveTrophy && !game.haveRoom46) { pool = addToPool(pool, ['trophy-room'], 'trophy') }
   if (day.poolInHouse) { pool = addToPool(pool, POOL_ADDITIONS, 'pool-in-house') }
   if (day.baconAndEggs) { pool = addToPool(pool, ['morning-room'], 'bacon-and-eggs') }
   if (day.knightChess) { pool = addToPool(pool, ['armory'], 'knight-chess') }
