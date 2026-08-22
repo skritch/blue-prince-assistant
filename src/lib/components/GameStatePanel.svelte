@@ -1,25 +1,20 @@
 <script lang="ts">
-  import { untrack } from "svelte";
   import {
     addRoom,
     removeRoom,
     initGameFull,
     roomsForPage,
+    ROOMS,
+    UPGRADES,
+    MIRROR_FLOORPLANS,
     type GameState,
+    type Rarity,
     initGameState,
   } from "bp-logic";
+  import SearchPairInput from "./SearchPairInput.svelte";
+  import type { Item, Entry } from "./SearchPairInput.svelte";
 
   let { gameState = $bindable() }: { gameState: GameState } = $props();
-
-  let comAdditionsText = $state("");
-
-  $effect(() => {
-    const chamberOfMirrorsAdditions = comAdditionsText
-      .split("\n")
-      .map((s) => s.trim())
-      .filter(Boolean);
-    gameState = { ...untrack(() => gameState), chamberOfMirrorsAdditions };
-  });
 
   const PAGE7_ROOMS = roomsForPage(7);
   const PAGE8_ROOMS = roomsForPage(8);
@@ -55,6 +50,104 @@
       gameState = initGameFull();
     }
   }
+
+  // Must match the toSlug in pool.ts
+  function toSlug(str: string): string {
+    return str.toLowerCase().replace(/['']/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')
+  }
+
+  const ROOM_NAME_BY_SLUG = Object.fromEntries(ROOMS.map((r) => [r.slug, r.name]))
+
+  // --- Room Upgrades ---
+  type UpgradesShape = Record<string, { upgrades: Array<{ name?: string }> }>
+
+  const upgradeSearchItems: Item[] = Object.keys(UPGRADES as UpgradesShape)
+    .map((slug) => ({ id: slug, label: ROOM_NAME_BY_SLUG[slug] ?? slug }))
+    .sort((a, b) => a.label.localeCompare(b.label))
+
+  function upgradeOptions(baseSlug: string): Item[] {
+    const entry = (UPGRADES as UpgradesShape)[baseSlug]
+    return (entry?.upgrades ?? [])
+      .filter((u) => u.name)
+      .map((u) => ({ id: toSlug(u.name!), label: u.name! }))
+  }
+
+  let upgradeEntries: Entry[] = $derived(
+    Object.entries(gameState.upgrades).map(([slug, upgradeSlug]) => ({
+      keyId: slug,
+      keyLabel: ROOM_NAME_BY_SLUG[slug] ?? slug,
+      valueId: upgradeSlug,
+      valueLabel: upgradeOptions(slug).find((o) => o.id === upgradeSlug)?.label ?? upgradeSlug,
+    }))
+  )
+
+  function addUpgrade(slug: string, upgradeSlug?: string) {
+    if (!upgradeSlug) return
+    gameState = { ...gameState, upgrades: { ...gameState.upgrades, [slug]: upgradeSlug } }
+  }
+
+  function removeUpgrade(i: number) {
+    const next = { ...gameState.upgrades }
+    delete next[Object.keys(next)[i]]
+    gameState = { ...gameState, upgrades: next }
+  }
+
+  // --- Rarity Overrides ---
+  const raritySearchItems: Item[] = ROOMS
+    .map((r) => ({ id: r.slug, label: r.name }))
+    .sort((a, b) => a.label.localeCompare(b.label))
+
+  const RARITY_OPTIONS: Item[] = [
+    { id: '1', label: 'Commonplace' },
+    { id: '2', label: 'Standard' },
+    { id: '3', label: 'Unusual' },
+    { id: '4', label: 'Rare' },
+    { id: 'null', label: 'Special' },
+  ]
+
+  let rarityEntries: Entry[] = $derived(
+    Object.entries(gameState.rarityOverrides).map(([slug, rarity]) => ({
+      keyId: slug,
+      keyLabel: ROOM_NAME_BY_SLUG[slug] ?? slug,
+      valueId: String(rarity),
+      valueLabel: RARITY_OPTIONS.find((r) => r.id === String(rarity))?.label ?? String(rarity),
+    }))
+  )
+
+  function addRarity(slug: string, rarityId?: string) {
+    if (!rarityId) return
+    const rarity: Rarity = rarityId === 'null' ? null : (Number(rarityId) as Rarity)
+    gameState = { ...gameState, rarityOverrides: { ...gameState.rarityOverrides, [slug]: rarity } }
+  }
+
+  function removeRarity(i: number) {
+    const next = { ...gameState.rarityOverrides }
+    delete next[Object.keys(next)[i]]
+    gameState = { ...gameState, rarityOverrides: next }
+  }
+
+  // --- Chamber of Mirrors Additions ---
+  const comSearchItems: Item[] = MIRROR_FLOORPLANS.map((name) => ({
+    id: toSlug(name),
+    label: name,
+  }))
+
+  let comEntries: Entry[] = $derived(
+    gameState.chamberOfMirrorsAdditions.map((slug) => ({
+      keyId: slug,
+      keyLabel: ROOM_NAME_BY_SLUG[slug] ?? slug,
+    }))
+  )
+
+  function addComRoom(slug: string) {
+    gameState = { ...gameState, chamberOfMirrorsAdditions: [...gameState.chamberOfMirrorsAdditions, slug] }
+  }
+
+  function removeComRoom(i: number) {
+    const arr = [...gameState.chamberOfMirrorsAdditions]
+    arr.splice(i, 1)
+    gameState = { ...gameState, chamberOfMirrorsAdditions: arr }
+  }
 </script>
 
 <details class="panel" open>
@@ -82,8 +175,7 @@
                 <input
                   type="checkbox"
                   checked={hasRoom(room.slug)}
-                  onchange={(e) =>
-                    toggleRoom(room.slug, e.currentTarget.checked)}
+                  onchange={(e) => toggleRoom(room.slug, e.currentTarget.checked)}
                 />
                 {room.name}
               </label>
@@ -98,8 +190,7 @@
                 <input
                   type="checkbox"
                   checked={hasRoom(room.slug)}
-                  onchange={(e) =>
-                    toggleRoom(room.slug, e.currentTarget.checked)}
+                  onchange={(e) => toggleRoom(room.slug, e.currentTarget.checked)}
                 />
                 {room.name}
               </label>
@@ -140,14 +231,29 @@
       >
     </div>
 
-    <details class="subsection">
-      <summary class="subsection-header">Chamber of Mirrors additions</summary>
-      <div class="subsection-body">
-        <span class="hint">one slug per line</span>
-        <textarea bind:value={comAdditionsText} rows="3" class="mono"
-        ></textarea>
-      </div>
-    </details>
+    <SearchPairInput
+      label="Room Upgrades"
+      searchItems={upgradeSearchItems}
+      secondOptions={upgradeOptions}
+      entries={upgradeEntries}
+      onadd={addUpgrade}
+      onremove={removeUpgrade}
+    />
+    <SearchPairInput
+      label="Rarity Overrides"
+      searchItems={raritySearchItems}
+      secondOptions={() => RARITY_OPTIONS}
+      entries={rarityEntries}
+      onadd={addRarity}
+      onremove={removeRarity}
+    />
+    <SearchPairInput
+      label="Chamber of Mirrors"
+      searchItems={comSearchItems}
+      entries={comEntries}
+      onadd={addComRoom}
+      onremove={removeComRoom}
+    />
   </div>
 </details>
 
@@ -225,40 +331,5 @@
 
   .wiki-link:hover {
     text-decoration: underline;
-  }
-
-  .subsection {
-    border: 1px solid var(--border);
-    border-radius: 4px;
-  }
-
-  .subsection-header {
-    padding: 0.35rem 0.6rem;
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: var(--text-muted);
-    cursor: pointer;
-    user-select: none;
-    list-style: none;
-  }
-
-  .subsection-header::before {
-    content: "▶";
-    display: inline-block;
-    margin-right: 0.4rem;
-    font-size: 0.6rem;
-    transition: transform 0.15s;
-  }
-
-  details[open] .subsection-header::before {
-    transform: rotate(90deg);
-  }
-
-  .subsection-body {
-    padding: 0.5rem 0.6rem;
-    border-top: 1px solid var(--border);
-    display: flex;
-    flex-direction: column;
-    gap: 0.3rem;
   }
 </style>
