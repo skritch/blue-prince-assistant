@@ -5,7 +5,7 @@ import type { DayState } from './day'
 import { addToPool, annotateRoom, fromGameState, removeFromPool, type DraftPool } from './pool'
 import type { HouseState } from './house'
 import { type GameState } from './game'
-import { applyAdHocRarities, generateDynamicRarities } from './rarity'
+import { getAdHocRarities, getDynamicRarities } from './rarity'
 
 import type { DraftParams } from './draft'
 import type { DraftOdds } from './draftResult'
@@ -62,7 +62,7 @@ export function computePool(
 
 
 
-// Step 1: build the correct pool
+// Step 1: build the correct pool, and annotate drafting blocks
 function buildCurrentPool(
   pool: DraftPool,
   game: GameState,
@@ -122,12 +122,29 @@ function buildCurrentPool(
         // Annotate
         const mirroredModifier = MIRROR_ROOMS?.[slug]?.["mirrored"]
         if (mirroredModifier == "never") {
-          annotateRoom(pool, { "mirrorNote": "will only be mirrored if drafted after CoM" })
+          pool = annotateRoom(pool, { "mirrorNote": "will only be mirrored if drafted after CoM" }, slug)
         } else if (mirroredModifier == "modified") {
-          annotateRoom(pool, { "mirrorNote": "if drafted after CoM, will modified drafting rules" })
+          pool = annotateRoom(pool, { "mirrorNote": "if drafted after CoM, will modified drafting rules" }, slug)
         }
       }
     }
+  }
+
+  // Drafting Blocks
+  if (!game.curseOrDare && (day.day == 1 || (day.day == 2 && !game.vmode))) {
+    pool = annotateRoom(pool, { blockPct: 95, blockNote: "95% chance blocked on days 1 and 2" }, 'drafting-studio')
+    pool = annotateRoom(pool, { blockPct: 95, blockNote: "95% chance blocked on days 1 and 2" }, 'master-bedroom')
+  }
+
+  pool = annotateRoom(pool, { blockPct: 30, blockNote: "30% chance blocked after drafting 8 times" }, 'drafting-studio')
+
+  if (!(game.haveRoom46
+    || game.foundEpsenTomb
+    || (game.vmode && (2 <= day.day && day.day <= 7))
+    || (game.curseOrDare && (1 <= day.day && day.day <= 7))
+    || day.day >= 12
+  )) {
+    pool = annotateRoom(pool, { blockPct: 100, blockNote: "HLC blocked until Room 46, Epsen tomb, or day 12, unless in V-Mode" }, 'her-ladyships-chamber')
   }
 
   return pool
@@ -179,16 +196,15 @@ function setDynamicRarities(
   day: DayState,
   house: HouseState
 ): DraftPool {
-  const dynamicRarities = generateDynamicRarities(game, day)
+  const dynamicRarities = getDynamicRarities(game, day)
 
-  const { rarities: adHocRarities, annotations } = applyAdHocRarities(game, day, house)
+  const { rarities: adHocRarities, annotations } = getAdHocRarities(game, day, house)
   Object.assign(dynamicRarities, adHocRarities)
-
-  // Possibly should be something in here involving upgrade disks?
 
   // Apply conservatory/gear wrench overrides, which supersede all DRs
   Object.assign(dynamicRarities, game.rarityOverrides)
 
+  // Append rarity annotations for things we can't determine exactly
   pool = { ...pool, rarityOverrides: dynamicRarities }
   for (const [slug, notes] of Object.entries(annotations)) {
     for (const note of notes) {

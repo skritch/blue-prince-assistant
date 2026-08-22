@@ -62,6 +62,7 @@
         if ("pct" in a) return `${a.pct}% chance in pool`;
         if ("mirrorNote" in a) return a.mirrorNote;
         if ("rarityNote" in a) return a.rarityNote;
+        if ("blockNote" in a) return a.blockNote;
         return "";
       })
       .filter(Boolean)

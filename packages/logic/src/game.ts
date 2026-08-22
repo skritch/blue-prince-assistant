@@ -8,6 +8,7 @@ export interface GameState {
   haveWestGate: boolean
   haveRoom46: boolean
   haveTrophy: boolean
+  foundEpsenTomb: boolean
   vmode: boolean
   curseOrDare: boolean
 
@@ -50,6 +51,7 @@ export function initGameState(): GameState {
     haveWestGate: false,
     haveRoom46: false,
     haveTrophy: false,
+    foundEpsenTomb: false,
     vmode: false,
     curseOrDare: false,
     rarityOverrides: {},
@@ -65,6 +67,7 @@ export function initGameFull(): GameState {
     haveWestGate: true,
     haveRoom46: true,
     haveTrophy: true,
+    foundEpsenTomb: false,
     vmode: false,
     curseOrDare: false,
     rarityOverrides: {},

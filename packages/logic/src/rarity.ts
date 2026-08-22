@@ -27,7 +27,7 @@ export interface RarityOverride {
 export const RARITY_OVERRIDES: RarityOverride[] = rawOverrides as RarityOverride[]
 
 
-export function generateDynamicRarities(
+export function getDynamicRarities(
   game: GameState,
   day: DayState): Record<string, Rarity> {
   // https://www.reddit.com/r/BluePrince/comments/1lnn4y6/dynamic_rarity_room_rarity_changes_behind_the/
@@ -72,7 +72,7 @@ export interface AdHocRarityResult {
   annotations: Record<string, { rarityNote: string }[]>
 }
 
-export function applyAdHocRarities(
+export function getAdHocRarities(
   game: GameState,
   day: DayState,
   house: HouseState,
@@ -141,12 +141,12 @@ export function applyAdHocRarities(
 
   // Chamber of Mirrors
   if (day.day > 10 && !game.haveRoom46) {
-    annotate('chamber-of-mirrors', `~${Math.min(100, 8 * (day.day - 10))}% cumulative chance already standard (2)`)
+    annotate('chamber-of-mirrors', `~${Math.min(100, 8 * (day.day - 10))}% cumulative chance already standard`)
   }
 
   // Drafting Studio
   // Possible deduce from "studio additions"?
-  annotate('drafting-studio', 'becomes rare (4) once drafted 4-7 times')
+  annotate('drafting-studio', 'becomes rare once drafted 4-7 times')
 
   // Guest Bedroom
   if (!game.haveRoom46) {

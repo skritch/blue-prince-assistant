@@ -196,6 +196,10 @@
         <label data-tooltip="Adds Trophy Room"
           ><input type="checkbox" bind:checked={gameState.haveTrophy} /> Trophy Acquired</label
         >
+        <label
+          data-tooltip="One of several ways to unlock Her Ladyship's Chamber"
+          ><input type="checkbox" bind:checked={gameState.foundEpsenTomb} /> Epsen Tomb Found</label
+        >
       </div>
     </div>
 

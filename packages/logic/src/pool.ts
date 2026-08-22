@@ -18,7 +18,12 @@ export type RoomSource =
 type ChanceInPool = { pct: number }
 type MaybeMirrored = { mirrorNote: string }
 type ChanceOfRarity = { rarityNote: string }
-export type Annotation = ChanceInPool | MaybeMirrored | ChanceOfRarity
+type MaybeBlocked = { blockPct: number, blockNote: string }
+export type Annotation =
+  | ChanceInPool
+  | MaybeMirrored
+  | ChanceOfRarity
+  | MaybeBlocked
 
 export interface PooledRoom {
   room: Room
@@ -85,10 +90,12 @@ export function removeFromPool(pool: DraftPool, slugs: string[]): DraftPool {
   return { ...pool, rooms: pool.rooms.filter(({ room }) => !toRemove.has(room.slug)) }
 }
 
-export function annotateRoom(pool: DraftPool, annotation: Annotation, ...slugs: string[]): DraftPool {
-  const updated = { ...pool.annotations }
-  for (const slug of slugs) {
-    updated[slug] = [...(updated[slug] ?? []), annotation]
+export function annotateRoom(pool: DraftPool, annotation: Annotation, slug: string): DraftPool {
+  return {
+    ...pool,
+    annotations: {
+      ...pool.annotations,
+      [slug]: [...(pool.annotations[slug] ?? []), annotation]
+    }
   }
-  return { ...pool, annotations: updated }
 }
