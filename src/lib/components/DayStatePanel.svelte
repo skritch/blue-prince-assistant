@@ -40,7 +40,13 @@
               ><input
                 type="checkbox"
                 bind:checked={dayState.knightChess}
-              />Mantle of the Knight</label
+              />Knight Chess</label
+            >
+            <label data-tooltip="Also adds Armory, but with slightly different mechanics"
+              ><input
+                type="checkbox"
+                bind:checked={dayState.pawnChessKnight}
+              />Pawn Chess → Knight</label
             >
             <label data-tooltip="Adds Pump Room, Locker Room, and Sauna"
               ><input type="checkbox" bind:checked={dayState.poolInHouse} /> Pool</label
@@ -152,7 +158,7 @@
                   <option value={color}>{color}</option>
                 {/each}
               </select>
-              Banner of the King
+              King Chess
             </label>
             <label class="select-row">
               <select class="color-select" bind:value={dayState.scepterColor}>

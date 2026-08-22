@@ -12,6 +12,7 @@ export interface DayState {
   // --- Dynamic pool modifiers ---
   poolInHouse: boolean             // adds Locker Room, Sauna, Pump Room
   knightChess: boolean             // Adds Armory
+  pawnChessKnight: boolean         // Also adds Armory, but slightly different
   baconAndEggs: boolean            // adds Morning Room
   schoolhouseInHouse: boolean      // Alters Library rarity and adds classrooms
   chamberOfMirrorsInHouse: boolean // adds same-day duplicates of already-placed rooms
@@ -44,6 +45,7 @@ export function initDay(day: number): DayState {
     day,
     poolInHouse: false,
     knightChess: false,
+    pawnChessKnight: false,
     baconAndEggs: false,
     schoolhouseInHouse: false,
     chamberOfMirrorsInHouse: false,

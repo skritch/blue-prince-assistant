@@ -69,6 +69,7 @@ function getBasePool(
   if (day.poolInHouse) { pool = addToPool(pool, POOL_ADDITIONS, 'pool-in-house') }
   if (day.baconAndEggs) { pool = addToPool(pool, ['morning-room'], 'bacon-and-eggs') }
   if (day.knightChess) { pool = addToPool(pool, ['armory'], 'knight-chess') }
+  if (day.pawnChessKnight) { pool = addToPool(pool, ['armory'], 'pawn-chess') }
   if (day.aquariumExperimentActivations) {
     // TODO confirm this mechanic
     const ct = 3 * day.aquariumExperimentActivations
@@ -134,6 +135,9 @@ function applyDraftingBlocks(
   day: DayState,
   draft?: DraftParams
 ) {
+  // TODO:
+  // - try to incorporate blocks persisting from previous drafts? infeasible?
+
   if (!(game.haveRoom46
     || game.foundEpsenTomb
     || (game.vmode && (2 <= day.day && day.day <= 7))
@@ -215,8 +219,8 @@ function removeDraftedRooms(
   }
 
   // We just remove the first of each room from the pool
-  // TODO: all of this will get much worse if we try to handle *which* copy in the pool
-  //   has been drafted, e.g. if one is upgrade and one not or something.
+  // TODO: all of this will get much worse if we try to handle *which* copy
+  //   in the pool has been drafted, e.g. if one is upgrade and one not or something.
   const removed: Record<string, number> = {}
   const newRooms = pool.rooms.filter(({ room }) => {
     if ((removed[room.slug] ?? 0) < houseCounts[room.slug]) {
@@ -276,6 +280,11 @@ function filterForLocation(
       ? OUTER_ROOMS
       : getRoomsAt(draft.toLocation.tile, draft.toLocation.toDirection)
   )
+
+  // TODO:
+  // - idiosyncrasis of different classrooms
+  // - pawn armory
+
   return { ...pool, rooms: pool.rooms.filter(({ room }) => eligible.has(room.slug)) }
 }
 

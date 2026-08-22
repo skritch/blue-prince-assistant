@@ -9,6 +9,7 @@ export type RoomSource =
   | 'pool-in-house'
   | 'bacon-and-eggs'
   | 'knight-chess'
+  | 'pawn-chess'
   | 'schoolhouse'
   | 'laboratory'
   | 'com-permanent'
