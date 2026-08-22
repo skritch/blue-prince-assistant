@@ -4,7 +4,7 @@ import type { Direction, RoomColor, GridTile } from './types'
 export interface HouseDraftParams {
   toLocation: {
     tile: GridTile,
-    fromDirection: Direction,
+    toDirection: Direction,
   }
 
   fromRoomSlug?: string

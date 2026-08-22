@@ -1,8 +1,8 @@
 
-import { MIRROR_ROOMS, POOL_ADDITIONS, ROOM_46_REWARDS } from './rooms'
-import { getRoomsAt } from './roomLocations'
+import { MIRROR_ROOMS, OUTER_ROOMS, POOL_ADDITIONS, ROOM_46_REWARDS } from './rooms'
+import { classifyExitTo, getRoomsAt } from './roomLocations'
 import type { DayState } from './day'
-import { addToPool, annotateRoom, fromGameState, removeFromPool, type DraftPool } from './pool'
+import { addToPool, annotateRoom, blockDraft, fromGameState, removeFromPool, type DraftPool } from './pool'
 import type { HouseState } from './house'
 import { type GameState } from './game'
 import { getAdHocRarities, getDynamicRarities } from './rarity'
@@ -10,7 +10,7 @@ import { getAdHocRarities, getDynamicRarities } from './rarity'
 import type { DraftParams } from './draft'
 import type { DraftOdds } from './draftResult'
 
-
+// Incomplete algorithm that actually determines probabilities
 export function computeOdds(
   game: GameState,
   day: DayState,
@@ -20,18 +20,13 @@ export function computeOdds(
 
   var pool: DraftPool = fromGameState(game)
 
-  // Technically we need some state for "number of times a room has been drafted"
-
-
-  pool = buildCurrentPool(pool, game, day, house)
+  pool = getBasePool(pool, game, day, house)
+  pool = applyDraftingBlocks(pool, game, day, draft)
   pool = removeDraftedRooms(pool, house)
   pool = setDynamicRarities(pool, game, day, house)
   pool = setConditionalFilters(pool, game, day)
-  pool = filterDraftPool(pool, draft)
+  pool = filterForLocation(pool, draft)
 
-  // Handle per-slot logic, gems etc.
-
-  // what determines the very first draw of the day?
 
   return pool.rooms.map(({ room }) => ({
     room,
@@ -41,7 +36,8 @@ export function computeOdds(
 }
 
 
-export function computePool(
+// Basic algorithm to determine the eligible pool
+export function generateDraftPool(
   game: GameState,
   day: DayState,
   house: HouseState,
@@ -50,24 +46,23 @@ export function computePool(
 
   var pool: DraftPool = fromGameState(game)
 
-  pool = buildCurrentPool(pool, game, day, house)
+  pool = getBasePool(pool, game, day, house)
+  pool = applyDraftingBlocks(pool, game, day, draft)
   pool = removeDraftedRooms(pool, house)
   pool = setDynamicRarities(pool, game, day, house)
   if (draft !== undefined) {
-    pool = filterDraftPool(pool, draft)
+    pool = filterForLocation(pool, draft)
   }
   return pool
 }
 
-
-
-
-// Step 1: build the correct pool, and annotate drafting blocks
-function buildCurrentPool(
+// Build the drafting pool, based on game conditions and unlocks
+function getBasePool(
   pool: DraftPool,
   game: GameState,
   day: DayState,
-  house: HouseState
+  house: HouseState,
+  draft?: DraftParams
 ): DraftPool {
   if (game.haveRoom46) { pool = addToPool(pool, ROOM_46_REWARDS, 'room46') }
   if (game.haveTrophy && !game.haveRoom46) { pool = addToPool(pool, ['trophy-room'], 'trophy') }
@@ -129,8 +124,70 @@ function buildCurrentPool(
       }
     }
   }
+  return pool
+}
 
-  // Drafting Blocks
+// Apply drafting blocks, and annotate probabilistic ones.
+function applyDraftingBlocks(
+  pool: DraftPool,
+  game: GameState,
+  day: DayState,
+  draft?: DraftParams
+) {
+  if (!(game.haveRoom46
+    || game.foundEpsenTomb
+    || (game.vmode && (2 <= day.day && day.day <= 7))
+    || (game.curseOrDare && (1 <= day.day && day.day <= 7))
+    || day.day >= 12
+  )) {
+    pool = blockDraft(pool, 'her-ladyships-chamber')
+    // Annotation is wrong for this, but we should doc these somewhere
+    // pool = annotateRoom(pool, { blockPct: 100, blockNote: "HLC blocked until Room 46, Epsen tomb, or day 12, unless in V-Mode" }, 'her-ladyships-chamber')
+  }
+
+  if (draft !== undefined && draft !== 'outer') {
+    const loc = draft.toLocation
+    const exit = classifyExitTo(loc.tile, loc.toDirection)
+    if (exit == 'center' && ['N', 'S'].includes(loc.toDirection)) {
+      // note this block persists until next center N/S draft
+      pool = blockDraft(pool, 'tunnel')
+    }
+
+    if ((loc.tile.column == 'C' && loc.tile.row == 8) || loc.tile.row == 2) {
+      // Not sure if "block" is right mechanism here
+      pool = blockDraft(pool, 'foundation')
+    } else if (loc.tile.row == 3) {
+      // technically removes from exit list. Only applies to center tiles, but Foundation is not eligible for edges anyway
+      pool = annotateRoom(pool,
+        { blockPct: 90, blockNote: "Foundation block when drafting into rank 3 center tiles", },
+        'foundation')
+    }
+
+    if (
+      (['east-advance', 'west-advance'].includes(exit) && loc.tile.row == 8)
+      || (['east-retreat', 'west-retreat'].includes(exit) && loc.tile.row == 2)
+    ) {
+      // Unintended behavior here: secret-passage is blocked until 
+      // drafting some other advance/retreat on wings. Annotate?
+      pool = blockDraft(pool, 'secret-passage')
+      if (game.upgrades['spare-room'] == 'spare-secret-passage') {
+        pool = blockDraft(pool, 'spare-room')
+      }
+    }
+
+    if (loc.tile.row == 2 && exit == 'east-advance') {
+      // greenhouse block persists until another E advance, making W retreat impossible
+      pool = blockDraft(pool, 'greenhouse')
+    }
+
+    // Responsible for garage only appearing at 4+.
+    // Ignoring some exit lists subtleties that don't appear to do anything
+    if ([2, 3].includes(loc.tile.row)) {
+      pool = blockDraft(pool, 'garage')
+    }
+  }
+
+
   if (!game.curseOrDare && (day.day == 1 || (day.day == 2 && !game.vmode))) {
     pool = annotateRoom(pool, { blockPct: 95, blockNote: "95% chance blocked on days 1 and 2" }, 'drafting-studio')
     pool = annotateRoom(pool, { blockPct: 95, blockNote: "95% chance blocked on days 1 and 2" }, 'master-bedroom')
@@ -138,19 +195,10 @@ function buildCurrentPool(
 
   pool = annotateRoom(pool, { blockPct: 30, blockNote: "30% chance blocked after drafting 8 times" }, 'drafting-studio')
 
-  if (!(game.haveRoom46
-    || game.foundEpsenTomb
-    || (game.vmode && (2 <= day.day && day.day <= 7))
-    || (game.curseOrDare && (1 <= day.day && day.day <= 7))
-    || day.day >= 12
-  )) {
-    pool = annotateRoom(pool, { blockPct: 100, blockNote: "HLC blocked until Room 46, Epsen tomb, or day 12, unless in V-Mode" }, 'her-ladyships-chamber')
-  }
-
   return pool
 }
 
-// Step 2: Remove rooms already in the house.
+// Remove rooms already in the house.
 function removeDraftedRooms(
   pool: DraftPool,
   house: HouseState
@@ -189,7 +237,8 @@ function removeDraftedRooms(
 }
 
 
-// Step 3
+// Set dynamic rarities based on date and game state
+// Annotates probabilistic rarities.
 function setDynamicRarities(
   pool: DraftPool,
   game: GameState,
@@ -215,23 +264,22 @@ function setDynamicRarities(
 }
 
 
-// Step 4
-function filterDraftPool(
+// Filters the draft pool for a particular exit in the house
+function filterForLocation(
   pool: DraftPool,
   draft: DraftParams,
 ): DraftPool {
-  // positional logic / exit list stuff
   // https://www.reddit.com/r/BluePrince/comments/1ltsn1t/drafting_mechanics_room_placement_restrictions/
 
   const eligible = new Set(
     draft === 'outer'
-      ? getRoomsAt('outer')
-      : getRoomsAt(draft.toLocation.tile, draft.toLocation.fromDirection)
+      ? OUTER_ROOMS
+      : getRoomsAt(draft.toLocation.tile, draft.toLocation.toDirection)
   )
   return { ...pool, rooms: pool.rooms.filter(({ room }) => eligible.has(room.slug)) }
 }
 
-// Step 5
+// ... 
 function applyDraftLogic(
   pool: DraftPool,
   draft: DraftParams,

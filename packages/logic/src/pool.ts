@@ -51,18 +51,6 @@ for (const [baseSlug, entry] of Object.entries(UPGRADES as Record<string, { upgr
   if (Object.keys(bySlug).length > 0) UPGRADE_LOOKUP[baseSlug] = bySlug
 }
 
-export function fromGameState(game: GameState): DraftPool {
-  return {
-    rooms: game.pool.map((room) => {
-      const upgradeSlug = game.upgrades[room.slug]
-      const upgrade = upgradeSlug ? UPGRADE_LOOKUP[room.slug]?.[upgradeSlug] : undefined
-      return { room, upgrade }
-    }),
-    rarityOverrides: {},
-    annotations: {},
-  }
-}
-
 /**
  * Dynamically-computed pool for a specific draft, after all state effects are applied.
  * Intermediate representation between the input states and final DraftOdds.
@@ -74,6 +62,20 @@ export interface DraftPool {
   rarityOverrides: Record<string, Rarity>
   /** Annotations keyed by room slug */
   annotations: Record<string, Annotation[]>
+  blocks: Set<string>
+}
+
+export function fromGameState(game: GameState): DraftPool {
+  return {
+    rooms: game.pool.map((room) => {
+      const upgradeSlug = game.upgrades[room.slug]
+      const upgrade = upgradeSlug ? UPGRADE_LOOKUP[room.slug]?.[upgradeSlug] : undefined
+      return { room, upgrade }
+    }),
+    rarityOverrides: {},
+    annotations: {},
+    blocks: new Set<string>()
+  }
 }
 
 export function addToPool(pool: DraftPool, slugs: string[], source?: RoomSource): DraftPool {
@@ -97,5 +99,17 @@ export function annotateRoom(pool: DraftPool, annotation: Annotation, slug: stri
       ...pool.annotations,
       [slug]: [...(pool.annotations[slug] ?? []), annotation]
     }
+  }
+}
+
+export function blockDraft(pool: DraftPool, slug: string) {
+  const newBlocks = new Set(...pool.blocks)
+  newBlocks.add(slug)
+
+  // Remove it, but also mark it as blocked for later use.
+  pool = removeFromPool(pool, [slug])
+  return {
+    ...pool,
+    blocked: newBlocks
   }
 }

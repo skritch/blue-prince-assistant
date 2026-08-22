@@ -10,8 +10,8 @@ export type DraftResult =
 
 export function getTilePosition(tile: GridTile): TilePosition {
   const edges: Direction[] = []
-  if (tile.row === 1) edges.push('N')
-  if (tile.row === 9) edges.push('S')
+  if (tile.row === 1) edges.push('S')
+  if (tile.row === 9) edges.push('N')
   if (tile.column === 'A') edges.push('W')
   if (tile.column === 'E') edges.push('E')
 

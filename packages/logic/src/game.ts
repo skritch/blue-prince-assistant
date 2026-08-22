@@ -20,9 +20,7 @@ export interface GameState {
 
   chamberOfMirrorsAdditions: string[]
 
-  // TODO: implement room upgrades
-  // assuming CoM additions get the same upgrade as the original room
-  // we don't validate this object
+  // slug: upgraded slug
   upgrades: Record<string, string>
 }
 

@@ -20,7 +20,7 @@
 
   let column: TileColumn = $state("C");
   let row = $state<number>(5);
-  let fromDirection: Direction = $state("N");
+  let toDirection: Direction = $state("N");
   let fromRoomSlug = $state("");
   let gems = $state(0);
 
@@ -37,7 +37,7 @@
       draftParams = {
         toLocation: {
           tile: { column, row: row as TileRow },
-          fromDirection,
+          toDirection,
         },
         fromRoomSlug: fromRoomSlug || undefined,
         gems,
@@ -61,7 +61,7 @@
 
     {#if mode === "house"}
       <div class="inline-field">
-        <select bind:value={fromDirection}>
+        <select bind:value={toDirection}>
           {#each DIRECTIONS as d}
             <option value={d.value}>{d.label}</option>
           {/each}
