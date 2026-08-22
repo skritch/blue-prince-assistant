@@ -3,7 +3,16 @@ export type Rarity = 1 | 2 | 3 | 4 | null
 export type RoomColor = 'blue' | 'purple' | 'orange' | 'green' | 'gold' | 'red' | 'black'
 export type Direction = 'N' | 'S' | 'E' | 'W'
 export type TileColumn = 'A' | 'B' | 'C' | 'D' | 'E'
+export const COLUMNS: TileColumn[] = ['A', 'B', 'C', 'D', 'E']
 export type TileRow = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
+
+export type GridTile = { column: TileColumn; row: TileRow }
+export type Tile = GridTile | 'outer'
+export type TilePosition =
+  | { kind: 'center' }
+  | { kind: 'edge'; edge: Direction }
+  | { kind: 'corner'; edges: [Direction, Direction] }
+
 
 
 export interface UpgradeSpec {

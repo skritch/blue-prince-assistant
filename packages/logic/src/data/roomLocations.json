@@ -1,0 +1,902 @@
+{
+  "east-west": {
+    "spare-room": [
+      "west",
+      "east"
+    ],
+    "parlor": [
+      "west",
+      "east",
+      "west-pierce",
+      "east-pierce"
+    ],
+    "billiard-room": [
+      "west",
+      "east",
+      "west-pierce",
+      "east-pierce"
+    ],
+    "gallery": [
+      "west",
+      "east"
+    ],
+    "closet": [
+      "west",
+      "east",
+      "west-pierce",
+      "east-pierce"
+    ],
+    "walk-in-closet": [
+      "west",
+      "east",
+      "west-pierce",
+      "east-pierce"
+    ],
+    "attic": [
+      "west",
+      "east",
+      "west-pierce",
+      "east-pierce"
+    ],
+    "storeroom": [
+      "west",
+      "east",
+      "west-pierce",
+      "east-pierce"
+    ],
+    "nook": [
+      "west",
+      "east",
+      "west-pierce",
+      "east-pierce"
+    ],
+    "garage": [
+      "west-advance",
+      "west-pierce"
+    ],
+    "music-room": [
+      "west",
+      "east",
+      "west-pierce",
+      "east-pierce"
+    ],
+    "locker-room": [
+      "west",
+      "east"
+    ],
+    "den": [
+      "west",
+      "east",
+      "west-pierce",
+      "east-pierce"
+    ],
+    "wine-cellar": [
+      "west",
+      "east",
+      "west-pierce",
+      "east-pierce"
+    ],
+    "trophy-room": [
+      "west",
+      "east",
+      "west-pierce",
+      "east-pierce"
+    ],
+    "ballroom": [
+      "west",
+      "east"
+    ],
+    "pantry": [
+      "west",
+      "east",
+      "west-pierce",
+      "east-pierce"
+    ],
+    "rumpus-room": [
+      "west",
+      "east"
+    ],
+    "vault": [
+      "west",
+      "east",
+      "west-pierce",
+      "east-pierce"
+    ],
+    "office": [
+      "west",
+      "east",
+      "west-pierce",
+      "east-pierce"
+    ],
+    "drawing-room": [
+      "west",
+      "east",
+      "west-pierce",
+      "east-pierce"
+    ],
+    "study": [
+      "west",
+      "east",
+      "west-pierce",
+      "east-pierce"
+    ],
+    "library": [
+      "west",
+      "east",
+      "west-pierce",
+      "east-pierce"
+    ],
+    "chamber-of-mirrors": [],
+    "pool": [
+      "west",
+      "east",
+      "west-pierce",
+      "east-pierce"
+    ],
+    "drafting-studio": [
+      "west",
+      "east"
+    ],
+    "utility-closet": [
+      "west",
+      "east",
+      "west-pierce",
+      "east-pierce"
+    ],
+    "boiler-room": [
+      "west-retreat",
+      "east-advance"
+    ],
+    "pump-room": [
+      "west",
+      "east",
+      "west-pierce",
+      "east-pierce"
+    ],
+    "security": [
+      "west",
+      "east",
+      "west-pierce",
+      "east-pierce"
+    ],
+    "workshop": [
+      "west",
+      "east"
+    ],
+    "laboratory": [
+      "west",
+      "east",
+      "west-pierce",
+      "east-pierce"
+    ],
+    "sauna": [
+      "west",
+      "east",
+      "west-pierce",
+      "east-pierce"
+    ],
+    "coat-check": [
+      "west",
+      "east",
+      "west-pierce",
+      "east-pierce"
+    ],
+    "mail-room": [
+      "west",
+      "east",
+      "west-pierce",
+      "east-pierce"
+    ],
+    "freezer": [
+      "west",
+      "east",
+      "west-pierce",
+      "east-pierce"
+    ],
+    "dining-room": [
+      "west",
+      "east",
+      "west-pierce",
+      "east-pierce"
+    ],
+    "observatory": [
+      "west",
+      "east",
+      "west-pierce",
+      "east-pierce"
+    ],
+    "conference-room": [
+      "west",
+      "east",
+      "west-pierce",
+      "east-pierce"
+    ],
+    "aquarium": [
+      "west",
+      "east",
+      "west-pierce",
+      "east-pierce"
+    ],
+    "bedroom": [
+      "west",
+      "east",
+      "west-pierce",
+      "east-pierce"
+    ],
+    "boudoir": [
+      "west",
+      "east",
+      "west-pierce",
+      "east-pierce"
+    ],
+    "guest-bedroom": [
+      "west",
+      "east",
+      "west-pierce",
+      "east-pierce"
+    ],
+    "nursery": [
+      "west",
+      "east",
+      "west-pierce",
+      "east-pierce"
+    ],
+    "servants-quarters": [
+      "west",
+      "east",
+      "west-pierce",
+      "east-pierce"
+    ],
+    "bunk-room": [
+      "west",
+      "east",
+      "west-pierce",
+      "east-pierce"
+    ],
+    "her-ladyships-chamber": [
+      "west-retreat"
+    ],
+    "master-bedroom": [
+      "east",
+      "east-pierce"
+    ],
+    "west-wing-hall": [
+      "west",
+      "west-pierce"
+    ],
+    "east-wing-hall": [
+      "east",
+      "east-pierce"
+    ],
+    "corridor": [
+      "west",
+      "east"
+    ],
+    "secret-passage": [
+      "west",
+      "east"
+    ],
+    "foyer": [
+      "west",
+      "east"
+    ],
+    "terrace": [
+      "west-pierce",
+      "east-pierce"
+    ],
+    "patio": [
+      "west-advance",
+      "east-retreat",
+      "west-pierce",
+      "east-pierce"
+    ],
+    "courtyard": [
+      "west",
+      "east",
+      "west-pierce",
+      "east-pierce"
+    ],
+    "veranda": [
+      "west",
+      "east"
+    ],
+    "greenhouse": [
+      "west-retreat",
+      "east-advance"
+    ],
+    "morning-room": [
+      "west-retreat",
+      "east-advance",
+      "west-pierce",
+      "east-pierce"
+    ],
+    "commissary": [
+      "west",
+      "east",
+      "west-pierce",
+      "east-pierce"
+    ],
+    "kitchen": [
+      "west",
+      "east",
+      "west-pierce",
+      "east-pierce"
+    ],
+    "locksmith": [
+      "west",
+      "east",
+      "west-pierce",
+      "east-pierce"
+    ],
+    "showroom": [
+      "west",
+      "east"
+    ],
+    "laundry-room": [
+      "west",
+      "east",
+      "west-pierce",
+      "east-pierce"
+    ],
+    "armory": [
+      "west",
+      "east",
+      "west-pierce",
+      "east-pierce"
+    ],
+    "mount-holly-gift-shop": [
+      "west",
+      "east",
+      "west-pierce",
+      "east-pierce"
+    ],
+    "lavatory": [
+      "west",
+      "east",
+      "west-pierce",
+      "east-pierce"
+    ],
+    "chapel": [
+      "west",
+      "east",
+      "west-pierce",
+      "east-pierce"
+    ],
+    "maids-chamber": [
+      "west",
+      "east",
+      "west-pierce",
+      "east-pierce"
+    ],
+    "gymnasium": [
+      "west",
+      "east",
+      "west-pierce",
+      "east-pierce"
+    ],
+    "darkroom": [
+      "west",
+      "east",
+      "west-pierce",
+      "east-pierce"
+    ],
+    "furnace": [
+      "west",
+      "east",
+      "west-pierce",
+      "east-pierce"
+    ],
+    "dovecote": [
+      "west-pierce",
+      "east-pierce"
+    ],
+    "kennel": [
+      "west",
+      "east"
+    ],
+    "clock-tower": [
+      "west-retreat",
+      "east-retreat",
+      "west-pierce",
+      "east-pierce"
+    ],
+    "classroom": [
+      "west",
+      "east",
+      "west-pierce",
+      "east-pierce"
+    ],
+    "solarium": [
+      "west-retreat",
+      "east-retreat",
+      "west-pierce",
+      "east-pierce"
+    ],
+    "dormitory": [
+      "west",
+      "east",
+      "west-pierce",
+      "east-pierce"
+    ],
+    "casino": [
+      "west",
+      "east",
+      "west-pierce",
+      "east-pierce"
+    ],
+    "planetarium": [
+      "west",
+      "east",
+      "west-pierce",
+      "east-pierce"
+    ],
+    "treasure-trove": [
+      "west",
+      "east",
+      "west-pierce",
+      "east-pierce"
+    ],
+    "throne-room": [
+      "west-pierce",
+      "east-pierce"
+    ],
+    "lost-and-found": [
+      "west",
+      "east",
+      "west-pierce",
+      "east-pierce"
+    ],
+    "tunnel": [
+      "west",
+      "east"
+    ],
+    "closed-exhibit": [
+      "west",
+      "east",
+      "west-pierce",
+      "east-pierce"
+    ]
+  },
+  "north-south": {
+    "spare-room": [
+      "north",
+      "south"
+    ],
+    "parlor": [
+      "north",
+      "south",
+      "north-pierce",
+      "south-pierce"
+    ],
+    "billiard-room": [
+      "north",
+      "south",
+      "north-pierce",
+      "south-pierce"
+    ],
+    "gallery": [
+      "north",
+      "south"
+    ],
+    "closet": [
+      "north",
+      "south",
+      "north-pierce",
+      "south-pierce"
+    ],
+    "walk-in-closet": [
+      "north",
+      "south",
+      "north-pierce",
+      "south-pierce"
+    ],
+    "attic": [
+      "north",
+      "south",
+      "north-pierce",
+      "south-pierce"
+    ],
+    "storeroom": [
+      "north",
+      "south",
+      "north-pierce",
+      "south-pierce"
+    ],
+    "nook": [
+      "north",
+      "south",
+      "north-pierce",
+      "south-pierce"
+    ],
+    "music-room": [
+      "north",
+      "south",
+      "north-pierce",
+      "south-pierce"
+    ],
+    "locker-room": [
+      "north",
+      "south"
+    ],
+    "den": [
+      "north",
+      "south",
+      "north-pierce",
+      "south-pierce"
+    ],
+    "wine-cellar": [
+      "north",
+      "south",
+      "north-pierce",
+      "south-pierce"
+    ],
+    "trophy-room": [
+      "north",
+      "south",
+      "north-pierce",
+      "south-pierce"
+    ],
+    "ballroom": [
+      "north",
+      "south"
+    ],
+    "pantry": [
+      "north",
+      "south",
+      "north-pierce",
+      "south-pierce"
+    ],
+    "rumpus-room": [
+      "north",
+      "south"
+    ],
+    "vault": [
+      "north",
+      "south",
+      "north-pierce",
+      "south-pierce"
+    ],
+    "office": [
+      "north",
+      "south",
+      "north-pierce",
+      "south-pierce"
+    ],
+    "drawing-room": [
+      "north",
+      "south",
+      "north-pierce",
+      "south-pierce"
+    ],
+    "study": [
+      "north",
+      "south",
+      "north-pierce",
+      "south-pierce"
+    ],
+    "library": [
+      "north",
+      "south",
+      "north-pierce",
+      "south-pierce"
+    ],
+    "pool": [
+      "north",
+      "south",
+      "north-pierce",
+      "south-pierce"
+    ],
+    "drafting-studio": [
+      "north",
+      "south"
+    ],
+    "utility-closet": [
+      "north",
+      "south"
+    ],
+    "pump-room": [
+      "north",
+      "north-pierce",
+      "south-pierce"
+    ],
+    "security": [
+      "north",
+      "south",
+      "north-pierce",
+      "south-pierce"
+    ],
+    "workshop": [
+      "north",
+      "south"
+    ],
+    "laboratory": [
+      "north",
+      "south",
+      "north-pierce",
+      "south-pierce"
+    ],
+    "sauna": [
+      "south",
+      "north-pierce",
+      "south-pierce"
+    ],
+    "coat-check": [
+      "north",
+      "south",
+      "north-pierce",
+      "south-pierce"
+    ],
+    "mail-room": [
+      "north",
+      "south",
+      "north-pierce",
+      "south-pierce"
+    ],
+    "freezer": [
+      "north",
+      "south",
+      "north-pierce",
+      "south-pierce"
+    ],
+    "dining-room": [
+      "north",
+      "south",
+      "north-pierce",
+      "south-pierce"
+    ],
+    "observatory": [
+      "north",
+      "south",
+      "north-pierce",
+      "south-pierce"
+    ],
+    "conference-room": [
+      "north",
+      "south",
+      "north-pierce",
+      "south-pierce"
+    ],
+    "aquarium": [
+      "north",
+      "south",
+      "north-pierce",
+      "south-pierce"
+    ],
+    "bedroom": [
+      "north",
+      "south",
+      "north-pierce",
+      "south-pierce"
+    ],
+    "boudoir": [
+      "north-pierce",
+      "south-pierce"
+    ],
+    "guest-bedroom": [
+      "north",
+      "south",
+      "north-pierce",
+      "south-pierce"
+    ],
+    "nursery": [
+      "north",
+      "south",
+      "north-pierce",
+      "south-pierce"
+    ],
+    "servants-quarters": [
+      "north",
+      "south",
+      "north-pierce",
+      "south-pierce"
+    ],
+    "bunk-room": [
+      "north",
+      "south",
+      "north-pierce",
+      "south-pierce"
+    ],
+    "hallway": [
+      "north",
+      "south",
+      "north-pierce",
+      "south-pierce"
+    ],
+    "corridor": [
+      "north",
+      "south"
+    ],
+    "foyer": [
+      "north",
+      "south"
+    ],
+    "courtyard": [
+      "north",
+      "south",
+      "north-pierce",
+      "south-pierce"
+    ],
+    "commissary": [
+      "north",
+      "south",
+      "north-pierce",
+      "south-pierce"
+    ],
+    "kitchen": [
+      "north",
+      "south",
+      "north-pierce",
+      "south-pierce"
+    ],
+    "locksmith": [
+      "north",
+      "south",
+      "north-pierce",
+      "south-pierce"
+    ],
+    "showroom": [
+      "north",
+      "south"
+    ],
+    "laundry-room": [
+      "north",
+      "south",
+      "north-pierce",
+      "south-pierce"
+    ],
+    "armory": [
+      "north-pierce",
+      "south-pierce"
+    ],
+    "mount-holly-gift-shop": [
+      "south"
+    ],
+    "lavatory": [
+      "north",
+      "south",
+      "north-pierce",
+      "south-pierce"
+    ],
+    "chapel": [
+      "north",
+      "north-pierce",
+      "south-pierce"
+    ],
+    "maids-chamber": [
+      "north",
+      "north-pierce",
+      "south-pierce"
+    ],
+    "gymnasium": [
+      "north",
+      "north-pierce",
+      "south-pierce"
+    ],
+    "darkroom": [
+      "north",
+      "south",
+      "north-pierce",
+      "south-pierce"
+    ],
+    "furnace": [
+      "north",
+      "south",
+      "north-pierce",
+      "south-pierce"
+    ],
+    "dovecote": [
+      "north-pierce",
+      "south-pierce"
+    ],
+    "kennel": [
+      "south"
+    ],
+    "clock-tower": [
+      "north",
+      "south",
+      "north-pierce",
+      "south-pierce"
+    ],
+    "classroom": [
+      "north",
+      "south",
+      "north-pierce",
+      "south-pierce"
+    ],
+    "solarium": [
+      "north-pierce",
+      "south-pierce"
+    ],
+    "dormitory": [
+      "north"
+    ],
+    "casino": [
+      "north",
+      "south",
+      "north-pierce",
+      "south-pierce"
+    ],
+    "planetarium": [
+      "south",
+      "north-pierce",
+      "south-pierce"
+    ],
+    "treasure-trove": [
+      "north",
+      "south",
+      "north-pierce",
+      "south-pierce"
+    ],
+    "lost-and-found": [
+      "north",
+      "north-pierce",
+      "south-pierce"
+    ],
+    "closed-exhibit": [
+      "north",
+      "north-pierce",
+      "south-pierce"
+    ]
+  },
+  "corners": [
+    "parlor",
+    "billiard-room",
+    "closet",
+    "walk-in-closet",
+    "attic",
+    "storeroom",
+    "nook",
+    "music-room",
+    "wine-cellar",
+    "trophy-room",
+    "pantry",
+    "vault",
+    "office",
+    "study",
+    "library",
+    "utility-closet",
+    "pump-room",
+    "laboratory",
+    "sauna",
+    "coat-check",
+    "mail-room",
+    "freezer",
+    "observatory",
+    "bedroom",
+    "boudoir",
+    "guest-bedroom",
+    "nursery",
+    "servants-quarters",
+    "bunk-room",
+    "commissary",
+    "kitchen",
+    "locksmith",
+    "laundry-room",
+    "armory",
+    "lavatory",
+    "maids-chamber",
+    "furnace",
+    "clock-tower",
+    "classroom",
+    "solarium",
+    "dormitory",
+    "casino",
+    "planetarium",
+    "treasure-trove",
+    "lost-and-found",
+    "conservatory"
+  ],
+  "non-center": [
+    "garage",
+    "her-ladyships-chamber",
+    "master-bedroom",
+    "west-wing-hall",
+    "east-wing-hall",
+    "terrace",
+    "patio",
+    "veranda",
+    "greenhouse",
+    "morning-room",
+    "conservatory"
+  ]
+}

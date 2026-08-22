@@ -1,21 +1,11 @@
-import type { Direction, TileColumn, TileRow } from './types'
+import { COLUMNS, GridTile, TilePosition, type Direction, type TileColumn, type TileRow } from './types'
 
-
-export type GridTile = { column: TileColumn; row: TileRow }
-export type Tile = GridTile | 'outer'
-
-export type TilePosition =
-  | { kind: 'center' }
-  | { kind: 'edge'; edge: Direction }
-  | { kind: 'corner'; edges: [Direction, Direction] }
 
 export type DraftResult =
   | { kind: 'nonexistent' }
   | { kind: 'center' }
   | { kind: 'corner'; edges: [Direction, Direction] }
   | { kind: 'edge'; edge: Direction; entry: 'pierces' | 'edge' }
-
-const COLUMNS: TileColumn[] = ['A', 'B', 'C', 'D', 'E']
 
 export function getTilePosition(tile: GridTile): TilePosition {
   const edges: Direction[] = []

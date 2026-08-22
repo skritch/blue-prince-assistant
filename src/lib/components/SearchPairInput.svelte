@@ -1,9 +1,9 @@
 <script module lang="ts">
-  export type { Item, Entry } from './searchPairTypes'
+  export type { Item, Entry } from "./searchPairTypes";
 </script>
 
 <script lang="ts">
-  import type { Item, Entry } from './searchPairTypes'
+  import type { Item, Entry } from "./searchPairTypes";
   let {
     label,
     searchItems,
@@ -12,51 +12,55 @@
     onadd,
     onremove,
   }: {
-    label: string
-    searchItems: Item[]
-    secondOptions?: (keyId: string) => Item[]
-    entries: Entry[]
-    onadd: (keyId: string, valueId?: string) => void
-    onremove: (index: number) => void
-  } = $props()
+    label: string;
+    searchItems: Item[];
+    secondOptions?: (keyId: string) => Item[];
+    entries: Entry[];
+    onadd: (keyId: string, valueId?: string) => void;
+    onremove: (index: number) => void;
+  } = $props();
 
-  let query = $state('')
-  let pendingKey = $state<Item | null>(null)
-  let pendingValue = $state('')
-  let focused = $state(false)
+  let query = $state("");
+  let pendingKey = $state<Item | null>(null);
+  let pendingValue = $state("");
+  let focused = $state(false);
 
   let matches = $derived(
     focused && query && !pendingKey
       ? searchItems
           .filter((i) => i.label.toLowerCase().startsWith(query.toLowerCase()))
           .slice(0, 8)
-      : []
-  )
+      : [],
+  );
 
   let valueOptions = $derived(
-    pendingKey && secondOptions ? secondOptions(pendingKey!.id) : []
-  )
+    pendingKey && secondOptions ? secondOptions(pendingKey!.id) : [],
+  );
 
   function pick(item: Item) {
-    pendingKey = item
-    query = item.label
+    pendingKey = item;
+    query = item.label;
     if (!secondOptions) {
-      onadd(item.id)
-      query = ''
-      pendingKey = null
+      onadd(item.id);
+      query = "";
+      pendingKey = null;
     }
   }
 
   function pickValue(valueId: string) {
-    if (!pendingKey || !valueId) return
-    onadd(pendingKey.id, valueId)
-    query = ''
-    pendingKey = null
-    pendingValue = ''
+    if (!pendingKey || !valueId) return;
+    onadd(pendingKey.id, valueId);
+    query = "";
+    pendingKey = null;
+    pendingValue = "";
   }
 
   function onkeydown(e: KeyboardEvent) {
-    if (e.key === 'Escape') { query = ''; pendingKey = null; pendingValue = '' }
+    if (e.key === "Escape") {
+      query = "";
+      pendingKey = null;
+      pendingValue = "";
+    }
   }
 </script>
 
@@ -71,15 +75,22 @@
           bind:value={query}
           onfocus={() => (focused = true)}
           onblur={() => setTimeout(() => (focused = false), 150)}
-          oninput={() => { pendingKey = null; pendingValue = '' }}
+          oninput={() => {
+            pendingKey = null;
+            pendingValue = "";
+          }}
           {onkeydown}
-          placeholder="Search…"
+          placeholder="Search rooms..."
         />
         {#if matches.length > 0}
           <ul class="dropdown">
             {#each matches as item}
               <li>
-                <button type="button" class="dropdown-item" onmousedown={() => pick(item)}>
+                <button
+                  type="button"
+                  class="dropdown-item"
+                  onmousedown={() => pick(item)}
+                >
                   {item.label}
                 </button>
               </li>
@@ -108,9 +119,11 @@
         {#each entries as entry, i}
           <li class="entry">
             <span class="entry-label">
-              {entry.keyLabel}{entry.valueLabel ? ` → ${entry.valueLabel}` : ''}
+              {entry.keyLabel}{entry.valueLabel ? ` → ${entry.valueLabel}` : ""}
             </span>
-            <button type="button" class="remove-btn" onclick={() => onremove(i)}>×</button>
+            <button type="button" class="remove-btn" onclick={() => onremove(i)}
+              >×</button
+            >
           </li>
         {/each}
       </ul>
