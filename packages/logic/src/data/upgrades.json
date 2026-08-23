@@ -285,5 +285,14 @@
         "color": "orange"
       }
     ]
+  },
+  "throne-room": {
+    "upgrades": [
+      {
+        "name": "Throne of the Blue Prince",
+        "description": "The next time you draft 8 Blueprints in a row, permanently unlock all blue sealed doors.",
+        "color": "blue"
+      }
+    ]
   }
 }

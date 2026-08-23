@@ -279,7 +279,7 @@
     </div>
 
     <SearchPairInput
-      label="Upgrade Disks"
+      label="Upgraded Rooms"
       searchItems={upgradeSearchItems}
       secondOptions={upgradeOptions}
       entries={upgradeEntries}

@@ -284,36 +284,6 @@ function filterForLocation(
   return pool
 }
 
-// ... 
-function applyDraftLogic(
-  pool: DraftPool,
-  draft: DraftParams,
-): DraftPool {
-
-
-  if (draft != 'outer') {
-    if (draft.keyUsed) { }
-    if (draft.secretPassageColor) { }
-  }
-
-  // handle schoolhouse vs normal classrooms?
-  // handle chamber of mirrors rooms having different exits?
-
-  // weighted rooms
-  // https://www.reddit.com/r/BluePrince/comments/1lzdvv9/drafting_mechanics_weighted_rooms_the_library_and/
-
-
-  // fromRoom
-  // handle tunnel, duct drafts, library -> rare | bookshop
-  // https://www.reddit.com/r/BluePrince/comments/1lzdvv9/drafting_mechanics_weighted_rooms_the_library_and/
-
-  // previousDraft
-
-  // outer room stuff:
-  // https://www.reddit.com/r/BluePrince/comments/1liagtk/outer_room_basic_draft_rates_effects_of_rarity/
-  return pool
-}
-
 
 // Step 6
 function setConditionalFilters(
@@ -348,3 +318,35 @@ function setConditionalFilters(
 
   return pool
 }
+
+
+// ... 
+function applyDraftLogic(
+  pool: DraftPool,
+  draft: DraftParams,
+): DraftPool {
+
+
+  if (draft != 'outer') {
+    if (draft.keyUsed) { }
+    if (draft.secretPassageColor) { }
+  }
+
+  // handle schoolhouse vs normal classrooms?
+  // handle chamber of mirrors rooms having different exits?
+
+  // weighted rooms
+  // https://www.reddit.com/r/BluePrince/comments/1lzdvv9/drafting_mechanics_weighted_rooms_the_library_and/
+
+
+  // fromRoom
+  // handle tunnel, duct drafts, library -> rare | bookshop
+  // https://www.reddit.com/r/BluePrince/comments/1lzdvv9/drafting_mechanics_weighted_rooms_the_library_and/
+
+  // previousDraft
+
+  // outer room stuff:
+  // https://www.reddit.com/r/BluePrince/comments/1liagtk/outer_room_basic_draft_rates_effects_of_rarity/
+  return pool
+}
+
