@@ -180,7 +180,7 @@
 </script>
 
 <details class="panel">
-  <summary class="panel-header">Game State</summary>
+  <summary class="panel-header">Game</summary>
   <div class="fields">
     <div class="section">
       <div class="section-label">Unlocks</div>
@@ -198,7 +198,8 @@
         >
         <label
           data-tooltip="One of several ways to unlock Her Ladyship's Chamber"
-          ><input type="checkbox" bind:checked={gameState.foundEpsenTomb} /> Epsen Tomb Found</label
+          ><input type="checkbox" bind:checked={gameState.foundEpsenTomb} /> Epsen
+          Tomb Found</label
         >
       </div>
     </div>

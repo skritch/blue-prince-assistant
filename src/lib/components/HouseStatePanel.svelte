@@ -34,7 +34,7 @@
 </script>
 
 <details class="panel">
-  <summary class="panel-header">House State</summary>
+  <summary class="panel-header">House</summary>
   <div class="fields">
     <label class="inline-field">
       House Rank Reached:

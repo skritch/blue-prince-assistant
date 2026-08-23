@@ -19,6 +19,15 @@
   let dayState: DayState = $state(initDay(1));
   let houseState: HouseState = $state(initHouse());
   let draftParams: DraftParams | undefined = $state(undefined);
+  let draftKey = $state(0);
+
+  function resetAll() {
+    gameState = { ...initGameState() };
+    dayState = initDay(1);
+    houseState = initHouse();
+    draftParams = undefined;
+    draftKey++;
+  }
 
   let draftPool = $derived(computePool(gameState, dayState, houseState, draftParams));
 </script>
@@ -28,7 +37,10 @@
     <GameStatePanel bind:gameState />
     <DayStatePanel bind:dayState />
     <HouseStatePanel bind:houseState />
-    <DraftStatePanel bind:draftParams />
+    {#key draftKey}
+      <DraftStatePanel bind:draftParams />
+    {/key}
+    <button class="reset-btn" onclick={resetAll}>Reset all</button>
   </div>
   <div class="results">
     <PoolTable {draftPool} gameRarityOverrides={gameState.rarityOverrides} bind:houseState />
@@ -48,6 +60,23 @@
     flex-direction: column;
     gap: 0.5rem;
     flex: 0 0 390px;
+  }
+
+  .reset-btn {
+    margin-top: 0.25rem;
+    padding: 0.35rem 0.75rem;
+    font-size: 0.8rem;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    align-self: flex-start;
+  }
+
+  .reset-btn:hover {
+    background: var(--border);
+    color: var(--text);
   }
 
   .results {

@@ -18,7 +18,7 @@
 </script>
 
 <details class="panel">
-  <summary class="panel-header">Daily State</summary>
+  <summary class="panel-header">Day</summary>
   <div class="fields">
     <div class="inline-fields">
       <label class="inline-field">
@@ -42,7 +42,8 @@
                 bind:checked={dayState.knightChess}
               />Knight Chess</label
             >
-            <label data-tooltip="Also adds Armory, but with slightly different mechanics"
+            <label
+              data-tooltip="Also adds Armory, but with slightly different mechanics"
               ><input
                 type="checkbox"
                 bind:checked={dayState.pawnChessKnight}
