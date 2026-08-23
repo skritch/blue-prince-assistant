@@ -1,4 +1,4 @@
-export { computeOdds, generateDraftPool as computePool } from './logic'
+export { generateDraftPool as computePool } from './logic'
 export { roomsForPage, MIRROR_FLOORPLANS, UPGRADES, ROOMS, UNDRAFTABLE } from './rooms'
 
 export { initGameState, initGameFull, fillPage, addRoom, removeRoom } from './game'

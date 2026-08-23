@@ -69,6 +69,8 @@
       .join("\n");
   }
 
+  let activeTab: "pool" | "removed" = $state("pool");
+
   let sortedRooms = $derived(
     [...draftPool.rooms].sort((a, b) => {
       const ra = raritySort(
@@ -80,10 +82,64 @@
       return ra !== rb ? ra - rb : a.room.name.localeCompare(b.room.name);
     }),
   );
+
+  let sortedRemoved = $derived(
+    [...draftPool.removed].sort((a, b) => {
+      const ra = a.reason ?? "";
+      const rb = b.reason ?? "";
+      if (ra !== rb) {
+        if (!ra) return 1;
+        if (!rb) return -1;
+        return ra.localeCompare(rb);
+      }
+      const ra2 = raritySort(a.room.baseRarity);
+      const rb2 = raritySort(b.room.baseRarity);
+      return ra2 !== rb2 ? ra2 - rb2 : a.room.name.localeCompare(b.room.name);
+    }),
+  );
 </script>
 
 <section>
-  <h2>Draft Pool ({draftPool.rooms.length} rooms)</h2>
+  <div class="tabs">
+    <button
+      class="tab"
+      class:active={activeTab === "pool"}
+      onclick={() => (activeTab = "pool")}
+    >Pool ({draftPool.rooms.length})</button>
+    <button
+      class="tab"
+      class:active={activeTab === "removed"}
+      onclick={() => (activeTab = "removed")}
+    >Removed ({draftPool.removed.length})</button>
+  </div>
+
+  {#if activeTab === "removed"}
+    <table>
+      <thead>
+        <tr>
+          <th></th>
+          <th>Room</th>
+          <th>Rarity</th>
+          <th>Reason</th>
+        </tr>
+      </thead>
+      <tbody>
+        {#each sortedRemoved as { room, reason }, i (room.slug + (reason ?? "") + i)}
+          {@const effectiveRarity = room.baseRarity}
+          <tr>
+            <td class="colors">
+              {#each room.color as c}
+                <span class="color-dot color-{c}"></span>
+              {/each}
+            </td>
+            <td class="name">{room.name}</td>
+            <td class="rarity rarity-{effectiveRarity}">{rarityName(effectiveRarity)}</td>
+            <td class="reason">{reason ?? ""}</td>
+          </tr>
+        {/each}
+      </tbody>
+    </table>
+  {:else}
   <table>
     <thead>
       <tr>
@@ -172,12 +228,41 @@
       {/each}
     </tbody>
   </table>
+  {/if}
 </section>
 
 <style>
-  h2 {
-    font-size: 1.1rem;
+  .tabs {
+    display: flex;
+    gap: 0;
     margin-bottom: 0.75rem;
+    border-bottom: 2px solid var(--border);
+  }
+
+  .tab {
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    padding: 0.35rem 0.75rem;
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    cursor: pointer;
+  }
+
+  .tab.active {
+    color: var(--text);
+    border-bottom-color: var(--text);
+    font-weight: 600;
+  }
+
+  .tab:hover:not(.active) {
+    color: var(--text);
+  }
+
+  .reason {
+    color: var(--text-muted);
+    font-size: 0.8rem;
   }
 
   table {

@@ -1,5 +1,5 @@
 import { ROOM_BY_SLUG, UPGRADES } from './rooms'
-import type { GameState } from './game'
+import { UPGRADE_LOOKUP, type GameState } from './game'
 import type { Rarity, Room, RoomColor, UpgradeSpec } from './types'
 
 
@@ -32,24 +32,8 @@ export interface PooledRoom {
   upgrade?: UpgradeSpec
 }
 
-function toSlug(str: string): string {
-  return str.toLowerCase().replace(/['']/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')
-}
-
-type RawUpgrade = { name?: string; description?: string; color?: string | string[] }
-const UPGRADE_LOOKUP: Record<string, Record<string, UpgradeSpec>> = {}
-for (const [baseSlug, entry] of Object.entries(UPGRADES as Record<string, { upgrades: RawUpgrade[] }>)) {
-  const bySlug: Record<string, UpgradeSpec> = {}
-  for (const u of entry.upgrades) {
-    if (u.name) {
-      bySlug[toSlug(u.name)] = {
-        name: u.name,
-        description: u.description || undefined,
-        color: u.color ? ([u.color].flat() as RoomColor[]) : undefined,
-      }
-    }
-  }
-  if (Object.keys(bySlug).length > 0) UPGRADE_LOOKUP[baseSlug] = bySlug
+export interface RemovedRoom extends PooledRoom {
+  reason?: string
 }
 
 /**
@@ -61,9 +45,13 @@ export interface DraftPool {
   rooms: PooledRoom[]
   /** Effective rarity for each room in this draft, slug → rarity */
   rarityOverrides: Record<string, Rarity>
+
   /** Annotations keyed by room slug */
+  // TODO: affix to rooms themselves?
   annotations: Record<string, Annotation[]>
+
   blocks: Set<string>
+  removed: RemovedRoom[]
 }
 
 export function fromGameState(game: GameState): DraftPool {
@@ -75,7 +63,8 @@ export function fromGameState(game: GameState): DraftPool {
     }),
     rarityOverrides: {},
     annotations: {},
-    blocks: new Set<string>()
+    blocks: new Set<string>(),
+    removed: []
   }
 }
 
@@ -87,13 +76,20 @@ export function addToPool(pool: DraftPool, slugs: string[], source?: RoomSource)
   return { ...pool, rooms: [...pool.rooms, ...toAdd] }
 }
 
-// TODO: do we need to remove one?
-export function removeFromPool(pool: DraftPool, slugs: string[]): DraftPool {
+// Does not remove the room from annotations/blocks
+export function removeFromPool(pool: DraftPool, slugs: string[], reason?: string): DraftPool {
   const toRemove = new Set(slugs)
-  return { ...pool, rooms: pool.rooms.filter(({ room }) => !toRemove.has(room.slug)) }
+  const removed = pool.rooms
+    .filter(({ room }) => toRemove.has(room.slug))
+    .map((pr) => { return { ...pr, reason } })
+  return {
+    ...pool,
+    rooms: pool.rooms.filter(({ room }) => !toRemove.has(room.slug)),
+    removed: [...pool.removed, ...removed]
+  }
 }
 
-export function annotateRoom(pool: DraftPool, annotation: Annotation, slug: string): DraftPool {
+export function annotateRoom(pool: DraftPool, annotation: Annotation, slug: string, reason?: string): DraftPool {
   return {
     ...pool,
     annotations: {
@@ -103,12 +99,14 @@ export function annotateRoom(pool: DraftPool, annotation: Annotation, slug: stri
   }
 }
 
-export function blockDraft(pool: DraftPool, slug: string) {
+export function blockDraft(pool: DraftPool, slug: string, reason?: string) {
   const newBlocks = new Set(...pool.blocks)
   newBlocks.add(slug)
 
-  // Remove it, but also mark it as blocked for later use.
-  pool = removeFromPool(pool, [slug])
+  // Remove it, but also mark as blocked.
+  // Blocked rooms are still in "exit lists" and can be drafted
+  // in certain ways
+  pool = removeFromPool(pool, [slug], reason)
   return {
     ...pool,
     blocked: newBlocks

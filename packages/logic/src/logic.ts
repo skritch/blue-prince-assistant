@@ -8,33 +8,6 @@ import { type GameState } from './game'
 import { getAdHocRarities, getDynamicRarities } from './rarity'
 
 import type { DraftParams } from './draft'
-import type { DraftOdds } from './draftResult'
-
-// Incomplete algorithm that actually determines probabilities
-export function computeOdds(
-  game: GameState,
-  day: DayState,
-  draft: DraftParams,
-  house: HouseState,
-): DraftOdds[] {
-
-  var pool: DraftPool = fromGameState(game)
-
-  pool = getBasePool(pool, game, day, house)
-  pool = applyDraftingBlocks(pool, game, day, draft)
-  pool = removeDraftedRooms(pool, house)
-  pool = setDynamicRarities(pool, game, day, house)
-  pool = setConditionalFilters(pool, game, day)
-  pool = filterForLocation(pool, draft)
-
-
-  return pool.rooms.map(({ room }) => ({
-    room,
-    probability: 0,
-    inPool: false,
-  }))
-}
-
 
 // Basic algorithm to determine the eligible pool
 export function generateDraftPool(
@@ -47,12 +20,12 @@ export function generateDraftPool(
   var pool: DraftPool = fromGameState(game)
 
   pool = getBasePool(pool, game, day, house)
-  pool = applyDraftingBlocks(pool, game, day, draft)
   pool = removeDraftedRooms(pool, house)
-  pool = setDynamicRarities(pool, game, day, house)
   if (draft !== undefined) {
     pool = filterForLocation(pool, draft)
   }
+  pool = applyDraftingBlocks(pool, game, day, draft)
+  pool = setDynamicRarities(pool, game, day, house)
   return pool
 }
 
@@ -84,10 +57,9 @@ function getBasePool(
 
   // V-mode additions
   // https://www.reddit.com/r/BluePrinceUncensored/comments/1t4nmpn/v_mode_what_it_is_and_what_day_1_trophy_hunters/
-  if (game.vmode) {
-    if (day.day < 3) { pool = removeFromPool(pool, ['study']) }
-    if (day.day < 3) { pool = annotateRoom(pool, { pct: 5 }, 'master-bedroom') }
-    if (day.day < 5) { pool = annotateRoom(pool, { pct: 20 }, 'library') }
+  if (!game.vmode) {
+    if (day.day < 3) { pool = annotateRoom(pool, { pct: 5 }, 'master-bedroom', "day 1/2") }
+    if (day.day < 5) { pool = annotateRoom(pool, { pct: 20 }, 'library', "day 1/2") }
   }
 
   // Schoolhouse classrooms
@@ -144,26 +116,29 @@ function applyDraftingBlocks(
     || (game.curseOrDare && (1 <= day.day && day.day <= 7))
     || day.day >= 12
   )) {
-    pool = blockDraft(pool, 'her-ladyships-chamber')
-    // Annotation is wrong for this, but we should doc these somewhere
-    // pool = annotateRoom(pool, { blockPct: 100, blockNote: "HLC blocked until Room 46, Epsen tomb, or day 12, unless in V-Mode" }, 'her-ladyships-chamber')
+    pool = blockDraft(pool, 'her-ladyships-chamber', "blocked until Room 46, Epsen tomb, or day 12, but unblocked in v-mode before day 8")
+  }
+
+  if (!game.vmode) {
+    // What mechanic actually removes study? Is it a block?
+    if (day.day < 3) { pool = blockDraft(pool, 'study', "removed day 1/2, unless in v-mode") }
   }
 
   if (draft !== undefined && draft !== 'outer') {
     const loc = draft.toLocation
     const exit = classifyExitTo(loc.tile, loc.toDirection)
-    if (exit == 'center' && ['N', 'S'].includes(loc.toDirection)) {
+    if (exit == 'center' && ['W', 'E'].includes(loc.toDirection)) {
       // note this block persists until next center N/S draft
-      pool = blockDraft(pool, 'tunnel')
+      pool = blockDraft(pool, 'tunnel', "blocked when drafting W or E into a center tile until next draft N or S into a center tile")
     }
 
     if ((loc.tile.column == 'C' && loc.tile.row == 8) || loc.tile.row == 2) {
       // Not sure if "block" is right mechanism here
-      pool = blockDraft(pool, 'foundation')
+      pool = blockDraft(pool, 'foundation', "blocked in C8 and row 2")
     } else if (loc.tile.row == 3) {
       // technically removes from exit list. Only applies to center tiles, but Foundation is not eligible for edges anyway
       pool = annotateRoom(pool,
-        { blockPct: 90, blockNote: "Foundation block when drafting into rank 3 center tiles", },
+        { blockPct: 90, blockNote: "blocked when drafting into rank 3 center tiles", },
         'foundation')
     }
 
@@ -173,21 +148,22 @@ function applyDraftingBlocks(
     ) {
       // Unintended behavior here: secret-passage is blocked until 
       // drafting some other advance/retreat on wings. Annotate?
-      pool = blockDraft(pool, 'secret-passage')
+      const reason = "blocked when drafting north into row 8 or south into row 2"
+      pool = blockDraft(pool, 'secret-passage', reason)
       if (game.upgrades['spare-room'] == 'spare-secret-passage') {
-        pool = blockDraft(pool, 'spare-room')
+        pool = blockDraft(pool, 'spare-room', reason)
       }
     }
 
     if (loc.tile.row == 2 && exit == 'east-advance') {
       // greenhouse block persists until another E advance, making W retreat impossible
-      pool = blockDraft(pool, 'greenhouse')
+      pool = blockDraft(pool, 'greenhouse', "blocked when drafting north into E2 until next north draft on east wing")
     }
 
     // Responsible for garage only appearing at 4+.
     // Ignoring some exit lists subtleties that don't appear to do anything
     if ([2, 3].includes(loc.tile.row)) {
-      pool = blockDraft(pool, 'garage')
+      pool = blockDraft(pool, 'garage', "blocked in ranks 2-3")
     }
   }
 
@@ -198,6 +174,7 @@ function applyDraftingBlocks(
   }
 
   pool = annotateRoom(pool, { blockPct: 30, blockNote: "30% chance blocked after drafting 8 times" }, 'drafting-studio')
+
 
   return pool
 }
@@ -280,12 +257,24 @@ function filterForLocation(
       ? OUTER_ROOMS
       : getRoomsAt(draft.toLocation.tile, draft.toLocation.toDirection)
   )
+  const ineligible = pool.rooms
+    .filter(({ room }) => !eligible.has(room.slug))
+    .map(({ room }) => room.slug)
 
   // TODO:
   // - idiosyncrasis of different classrooms
   // - pawn armory
 
-  return { ...pool, rooms: pool.rooms.filter(({ room }) => eligible.has(room.slug)) }
+  let reason
+  if (draft != 'outer') {
+    const tile = draft.toLocation.tile
+    const loc = `${tile.column}${tile.row}`
+    reason = `ineglibile for drafting ${draft.toLocation.toDirection} into ${loc}`
+  } else {
+    reason = undefined
+  }
+
+  return removeFromPool(pool, ineligible, reason)
 }
 
 // ... 
