@@ -84,7 +84,7 @@
   );
 
   let sortedRemoved = $derived(
-    [...draftPool.removed].sort((a, b) => {
+    [...draftPool.removed].filter((r) => r.reason).sort((a, b) => {
       const ra = a.reason ?? "";
       const rb = b.reason ?? "";
       if (ra !== rb) {
@@ -144,12 +144,12 @@
     <thead>
       <tr>
         <th></th>
+        <th></th>
         <th>Room</th>
         <th>Rarity</th>
         <th>Doors</th>
         <th>Tags</th>
         <th>Source</th>
-        <th></th>
       </tr>
     </thead>
     <tbody>
@@ -172,6 +172,20 @@
           (s) => s === room.slug,
         ).length}
         <tr>
+          <td class="place-btns">
+            {#if placedCount > 0}
+              <span class="placed-count">{placedCount}</span>
+              <button
+                class="place-btn minus"
+                onclick={() => removeRoomFromHouse(room.slug)}>−</button
+              >
+            {/if}
+            <button
+              class="place-btn plus"
+              data-tooltip="add to house"
+              onclick={() => addRoomToHouse(room.slug)}>+</button
+            >
+          </td>
           <td class="colors">
             {#each upgrade?.color ?? room.color as c}
               <span class="color-dot color-{c}"></span>
@@ -209,20 +223,6 @@
             {#if source}<span class="source-label"
                 >{SOURCE_LABELS[source] ?? source}</span
               >{/if}
-          </td>
-          <td class="place-btns">
-            {#if placedCount > 0}
-              <span class="placed-count">{placedCount}</span>
-              <button
-                class="place-btn minus"
-                onclick={() => removeRoomFromHouse(room.slug)}>−</button
-              >
-            {/if}
-            <button
-              class="place-btn plus"
-              data-tooltip="add to house"
-              onclick={() => addRoomToHouse(room.slug)}>+</button
-            >
           </td>
         </tr>
       {/each}
@@ -562,8 +562,8 @@
 
   .place-btns {
     white-space: nowrap;
-    text-align: right;
-    padding-right: 0.4rem;
+    text-align: left;
+    padding-left: 0.4rem;
   }
 
   .placed-count {

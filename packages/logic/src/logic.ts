@@ -252,29 +252,36 @@ function filterForLocation(
 ): DraftPool {
   // https://www.reddit.com/r/BluePrince/comments/1ltsn1t/drafting_mechanics_room_placement_restrictions/
 
-  const eligible = new Set(
-    draft === 'outer'
-      ? OUTER_ROOMS
-      : getRoomsAt(draft.toLocation.tile, draft.toLocation.toDirection)
-  )
-  const ineligible = pool.rooms
-    .filter(({ room }) => !eligible.has(room.slug))
-    .map(({ room }) => room.slug)
-
   // TODO:
   // - idiosyncrasis of different classrooms
   // - pawn armory
 
-  let reason
-  if (draft != 'outer') {
-    const tile = draft.toLocation.tile
-    const loc = `${tile.column}${tile.row}`
-    reason = `ineglibile for drafting ${draft.toLocation.toDirection} into ${loc}`
+  if (draft === 'outer') {
+    const eligible = new Set(OUTER_ROOMS)
+    const ineligible = pool.rooms
+      .filter(({ room }) => !eligible.has(room.slug))
+      .map(({ room }) => room.slug)
+    pool = removeFromPool(pool, ineligible)
   } else {
-    reason = undefined
-  }
 
-  return removeFromPool(pool, ineligible, reason)
+    // Remove outer rooms first without giving a reason
+    pool = removeFromPool(pool, OUTER_ROOMS)
+
+    const eligible = new Set(
+      getRoomsAt(draft.toLocation.tile, draft.toLocation.toDirection)
+    )
+    const ineligible = pool.rooms
+      .filter(({ room }) => !eligible.has(room.slug))
+      .map(({ room }) => room.slug)
+    const loc = draft.toLocation
+    const coord = `${loc.tile.column}${loc.tile.row}`
+    const reason = `ineglibile for drafting ${loc.toDirection} into ${coord}`
+
+    pool = removeFromPool(pool, ineligible, reason)
+
+
+  }
+  return pool
 }
 
 // ... 
