@@ -14,8 +14,12 @@
   } from "bp-logic";
   import SearchPairInput from "./SearchPairInput.svelte";
   import type { Item, Entry } from "./searchPairTypes";
+  import { loadPanelOpen, savePanelOpen } from "../panelState";
 
   let { gameState = $bindable() }: { gameState: GameState } = $props();
+
+  let open = $state(loadPanelOpen("game", false));
+  $effect(() => savePanelOpen("game", open));
 
   const PAGE7_ROOMS = roomsForPage(7);
   const PAGE8_ROOMS = roomsForPage(8);
@@ -179,7 +183,7 @@
   }
 </script>
 
-<details class="panel">
+<details class="panel" bind:open>
   <summary class="panel-header">Game</summary>
   <div class="fields">
     <div class="section">

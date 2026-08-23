@@ -1,7 +1,11 @@
 <script lang="ts">
   import { type DayState, type RoomColor } from "bp-logic";
+  import { loadPanelOpen, savePanelOpen } from "../panelState";
 
   let { dayState = $bindable() }: { dayState: DayState } = $props();
+
+  let open = $state(loadPanelOpen("day", false));
+  $effect(() => savePanelOpen("day", open));
 
   const ROOM_COLORS: RoomColor[] = [
     "blue",
@@ -17,7 +21,7 @@
     "These options are not synced with rooms in the house, and should be set explicitly.";
 </script>
 
-<details class="panel">
+<details class="panel" bind:open>
   <summary class="panel-header">Day</summary>
   <div class="fields">
     <div class="inline-fields">

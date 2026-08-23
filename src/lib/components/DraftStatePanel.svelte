@@ -2,12 +2,17 @@
   import type { DraftParams, Direction, TileColumn, TileRow } from "bp-logic";
   import { ROOMS } from "bp-logic";
   import SearchInput from "./SearchInput.svelte";
+  import { loadPanelOpen, savePanelOpen } from "../panelState";
 
-  let { draftParams = $bindable() }: { draftParams: DraftParams | undefined } =
-    $props();
+  let {
+    draftParams = $bindable(),
+    initialDraft,
+  }: {
+    draftParams: DraftParams | undefined;
+    initialDraft?: DraftParams;
+  } = $props();
 
   type Mode = "none" | "outer" | "house";
-  let mode: Mode = $state("none");
 
   const COLUMNS: TileColumn[] = ["A", "B", "C", "D", "E"];
   const ROWS: TileRow[] = [1, 2, 3, 4, 5, 6, 7, 8, 9];
@@ -18,11 +23,22 @@
     { value: "W", label: "West" },
   ];
 
-  let column: TileColumn = $state("C");
-  let row = $state<number>(5);
-  let toDirection: Direction = $state("N");
-  let fromRoomSlug = $state("");
-  let gems = $state(0);
+  let open = $state(loadPanelOpen("draft", true));
+  $effect(() => savePanelOpen("draft", open));
+
+  const initHouse =
+    initialDraft && initialDraft !== "outer" ? initialDraft : undefined;
+
+  let mode: Mode = $state(
+    !initialDraft ? "none" : initialDraft === "outer" ? "outer" : "house",
+  );
+  let column: TileColumn = $state(initHouse?.toLocation.tile.column ?? "C");
+  let row = $state<number>(initHouse?.toLocation.tile.row ?? 5);
+  let toDirection: Direction = $state(
+    initHouse?.toLocation.toDirection ?? "N",
+  );
+  let fromRoomSlug = $state(initHouse?.fromRoomSlug ?? "");
+  let gems = $state(initHouse?.gems ?? 0);
 
   const roomOptions = ROOMS.map((r) => ({ id: r.slug, label: r.name })).sort(
     (a, b) => a.label.localeCompare(b.label),
@@ -46,7 +62,7 @@
   });
 </script>
 
-<details class="panel" open>
+<details class="panel" bind:open>
   <summary class="panel-header">Draft</summary>
   <div class="fields">
     <div class="mode-row">

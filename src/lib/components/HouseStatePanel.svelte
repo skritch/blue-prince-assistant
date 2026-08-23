@@ -2,8 +2,12 @@
   import { ROOMS, type HouseState } from "bp-logic";
   import SearchPairInput from "./SearchPairInput.svelte";
   import type { Entry } from "./searchPairTypes";
+  import { loadPanelOpen, savePanelOpen } from "../panelState";
 
   let { houseState = $bindable() }: { houseState: HouseState } = $props();
+
+  let open = $state(loadPanelOpen("house", false));
+  $effect(() => savePanelOpen("house", open));
 
   const roomNameBySlug = Object.fromEntries(ROOMS.map((r) => [r.slug, r.name]));
 
@@ -33,7 +37,7 @@
   }
 </script>
 
-<details class="panel">
+<details class="panel" bind:open>
   <summary class="panel-header">House</summary>
   <div class="fields">
     <label class="inline-field">

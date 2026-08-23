@@ -1,34 +1,36 @@
 <script lang="ts">
   import PoolVIew from "./lib/components/PoolView.svelte";
 
-  type Theme = 'system' | 'light' | 'dark';
+  type Theme = "system" | "light" | "dark";
 
-  let theme: Theme = $state((localStorage.getItem('theme') as Theme | null) ?? 'system');
+  let theme: Theme = $state(
+    (localStorage.getItem("theme") as Theme | null) ?? "system",
+  );
 
   $effect(() => {
-    if (theme === 'system') {
+    if (theme === "system") {
       delete document.documentElement.dataset.theme;
     } else {
       document.documentElement.dataset.theme = theme;
     }
-    localStorage.setItem('theme', theme);
+    localStorage.setItem("theme", theme);
   });
 </script>
 
 <main>
   <header>
-    <h1>Blue Prince Pool Assistant</h1>
+    <h1>Blue Prince Draft Assistant</h1>
   </header>
   <PoolVIew />
   <footer>
     <div class="theme-toggle" role="group" aria-label="Theme">
-      {#each ([['system', '🖥️'], ['light', '☀️'], ['dark', '🌙']] as [Theme, string][]) as [t, icon]}
+      {#each [["system", "🖥️"], ["light", "☀️"], ["dark", "🌙"]] as [Theme, string][] as [t, icon]}
         <button
           class="theme-btn"
           class:active={theme === t}
           aria-label={t}
-          onclick={() => (theme = t)}
-        >{icon}</button>
+          onclick={() => (theme = t)}>{icon}</button
+        >
       {/each}
     </div>
   </footer>
