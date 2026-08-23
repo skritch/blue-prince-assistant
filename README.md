@@ -23,3 +23,8 @@ Maybe we can go on to simulate a 3-room draft to some degree:
   - Show the pool for each slot, depending on current gem counts
   - Determine chance of a room appearing in a 3-room draft?
   - Calculate probability of drawing e.g. right turn, gemless straight, etc.?
+
+
+----
+
+If you like this, consider [Buying Me a Coffee](https://buymeacoffee.com/skritch)!
