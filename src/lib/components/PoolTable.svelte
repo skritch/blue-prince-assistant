@@ -121,11 +121,14 @@
           <th>Room</th>
           <th>Rarity</th>
           <th>Reason</th>
+          <th class="prob-col"><span class="prob-col-label" data-tooltip="~probability this room survives conditional filtering">P[in pool]</span></th>
         </tr>
       </thead>
       <tbody>
-        {#each sortedRemoved as { room, reason }, i (room.slug + (reason ?? "") + i)}
+        {#each sortedRemoved as { room, reason, p }, i (room.slug + (reason ?? "") + i)}
           {@const effectiveRarity = room.baseRarity}
+          {@const pDisplay = p.toFixed(2)}
+          {@const pFull = p.toPrecision(2)}
           <tr>
             <td class="colors">
               {#each room.color as c}
@@ -135,6 +138,7 @@
             <td class="name">{room.name}</td>
             <td class="rarity rarity-{effectiveRarity}">{rarityName(effectiveRarity)}</td>
             <td class="reason">{reason ?? ""}</td>
+            <td class="prob" data-tooltip={pFull}>{p < 1 ? pDisplay : ""}</td>
           </tr>
         {/each}
       </tbody>
@@ -148,12 +152,13 @@
         <th>Room</th>
         <th>Rarity</th>
         <th>Doors</th>
-        <th>Tags</th>
+        <th class="gems-col">Gems</th>
         <th>Source</th>
+        <th class="prob-col"><span class="prob-col-label" data-tooltip="~probability this room survives conditional filtering">P[in pool]</span></th>
       </tr>
     </thead>
     <tbody>
-      {#each sortedRooms as { room, source, upgrade }, i (room.slug + (source ?? "") + i)}
+      {#each sortedRooms as { room, source, upgrade, p }, i (room.slug + (source ?? "") + i)}
         {@const effectiveRarity =
           draftPool.rarityOverrides[room.slug] ?? room.baseRarity}
         {@const annotations = draftPool.annotations[room.slug]}
@@ -168,6 +173,12 @@
               .filter(Boolean)
               .join(" ")
           : (room.description ?? undefined)}
+        {@const TAG_LABELS: Record<string, string> = {
+          'dead-end': 'dead end', mechanical: 'mechanical',
+          tomorrow: 'tomorrow', drafting: 'drafting', outer: 'outer room',
+        }}
+        {@const tagLine = room.tags.map(t => TAG_LABELS[t] ?? t).join(', ')}
+        {@const tooltip = [tagLine, description].filter(Boolean).join('\n') || undefined}
         {@const placedCount = houseState.placedRooms.filter(
           (s) => s === room.slug,
         ).length}
@@ -191,7 +202,7 @@
               <span class="color-dot color-{c}"></span>
             {/each}
           </td>
-          <td class="name" data-tooltip={description}
+          <td class="name" data-tooltip={tooltip}
             >{upgrade?.name ?? room.name}</td
           >
           <td class="rarity rarity-{effectiveRarity}">
@@ -207,23 +218,13 @@
               >{/if}
           </td>
           <td class="doors">{room.doors ?? "—"}</td>
-          <td class="tags">
-            {#if room.tags.includes('dead-end')}<span class="tag tag-dead-end">dead end</span
-              >{/if}
-            {#if room.tags.includes('mechanical')}<span class="tag tag-mechanical"
-                >mechanical</span
-              >{/if}
-            {#if room.tags.includes('tomorrow')}<span class="tag tag-tomorrow">tomorrow</span
-              >{/if}
-            {#if room.tags.includes('drafting')}<span class="tag tag-drafting">drafting</span
-              >{/if}
-            {#if room.tags.includes('outer')}<span class="tag tag-outer">outer room</span>{/if}
-          </td>
+          <td class="gems">{room.baseGemCost || ""}</td>
           <td class="source">
             {#if source}<span class="source-label"
                 >{SOURCE_LABELS[source] ?? source}</span
               >{/if}
           </td>
+          <td class="prob" data-tooltip={p < 1 ? p.toPrecision(2) : undefined}>{p < 1 ? p.toFixed(2) : ""}</td>
         </tr>
       {/each}
     </tbody>
@@ -395,7 +396,7 @@
     border-radius: 4px;
     font-size: 0.75rem;
     font-weight: 400;
-    white-space: normal;
+    white-space: pre-line;
     width: max-content;
     max-width: 280px;
     pointer-events: none;
@@ -413,103 +414,73 @@
     text-align: center;
   }
 
-  .tags {
+  .gems-col {
+    text-align: center;
+  }
+
+  .gems {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+  }
+
+  .prob-col {
+    text-align: right;
+    color: var(--text-muted);
     white-space: nowrap;
+    cursor: help;
   }
 
-  .tag {
-    display: inline-block;
-    padding: 0.1rem 0.35rem;
-    border-radius: 3px;
-    font-size: 0.7rem;
-    font-weight: 500;
-    margin-right: 3px;
+  .prob-col-label {
+    position: relative;
+    cursor: help;
   }
 
-  .tag-dead-end {
-    background: #e5e7eb;
-    color: #6b7280;
-  }
-  .tag-mechanical {
-    background: #dbeafe;
-    color: #3b82f6;
-  }
-  .tag-tomorrow {
-    background: #ede9fe;
-    color: #7c3aed;
-  }
-  .tag-drafting {
-    background: #dcfce7;
-    color: #16a34a;
-  }
-  .tag-outer {
-    background: #ebe8d7;
-    color: #6b6245;
-  }
-
-  @media (prefers-color-scheme: dark) {
-    .tag-dead-end {
-      background: #374151;
-      color: #d1d5db;
-    }
-    .tag-mechanical {
-      background: #1e3a5f;
-      color: #93c5fd;
-    }
-    .tag-tomorrow {
-      background: #3b1f5e;
-      color: #d8b4fe;
-    }
-    .tag-drafting {
-      background: #14532d;
-      color: #86efac;
-    }
-    .tag-outer {
-      background: #2e2b1d;
-      color: #a8a07a;
-    }
+  .prob-col-label[data-tooltip]:hover::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: calc(100% + 6px);
+    right: 0;
+    background: #111827;
+    color: #f9fafb;
+    border: 1px solid #374151;
+    padding: 0.4rem 0.6rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 400;
+    text-transform: none;
+    letter-spacing: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 200px;
+    text-align: left;
+    pointer-events: none;
+    z-index: 10;
   }
 
-  :global(html[data-theme="dark"]) .tag-dead-end {
-    background: #374151;
-    color: #d1d5db;
-  }
-  :global(html[data-theme="dark"]) .tag-mechanical {
-    background: #1e3a5f;
-    color: #93c5fd;
-  }
-  :global(html[data-theme="dark"]) .tag-tomorrow {
-    background: #3b1f5e;
-    color: #d8b4fe;
-  }
-  :global(html[data-theme="dark"]) .tag-drafting {
-    background: #14532d;
-    color: #86efac;
-  }
-  :global(html[data-theme="dark"]) .tag-outer {
-    background: #451a03;
-    color: #fcd34d;
+.prob {
+    text-align: right;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    font-variant-numeric: tabular-nums;
+    position: relative;
+    cursor: default;
   }
 
-  :global(html[data-theme="light"]) .tag-dead-end {
-    background: #e5e7eb;
-    color: #6b7280;
-  }
-  :global(html[data-theme="light"]) .tag-mechanical {
-    background: #dbeafe;
-    color: #3b82f6;
-  }
-  :global(html[data-theme="light"]) .tag-tomorrow {
-    background: #ede9fe;
-    color: #7c3aed;
-  }
-  :global(html[data-theme="light"]) .tag-drafting {
-    background: #dcfce7;
-    color: #16a34a;
-  }
-  :global(html[data-theme="light"]) .tag-outer {
-    background: #fef3c7;
-    color: #b45309;
+  .prob[data-tooltip]:hover::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: calc(100% + 6px);
+    right: 0;
+    background: #111827;
+    color: #f9fafb;
+    border: 1px solid #374151;
+    padding: 0.4rem 0.6rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    white-space: nowrap;
+    pointer-events: none;
+    z-index: 10;
   }
 
   .source-label {

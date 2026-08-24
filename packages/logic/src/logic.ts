@@ -27,6 +27,7 @@ export function generateDraftPool(
     pool = filterForLocation(pool, draft)
   }
   pool = applyDraftingBlocks(pool, game, day, draft)
+  pool = applyFilters(pool, game, day, draft)
   pool = setDynamicRarities(pool, game, day, house)
   return pool
 }
@@ -60,6 +61,8 @@ function getBasePool(
   // V-mode additions
   // https://www.reddit.com/r/BluePrinceUncensored/comments/1t4nmpn/v_mode_what_it_is_and_what_day_1_trophy_hunters/
   if (!game.vmode) {
+    // TODO is this double-counting from the drafting block?
+    // I think yes.
     if (day.day < 3) { pool = annotateRoom(pool, { pct: 5 }, 'master-bedroom', "day 1/2") }
     if (day.day < 5) { pool = annotateRoom(pool, { pct: 20 }, 'library', "day 1/2") }
   }
@@ -103,6 +106,7 @@ function getBasePool(
 }
 
 // Apply drafting blocks, and annotate probabilistic ones.
+// TODO: update "p"
 function applyDraftingBlocks(
   pool: DraftPool,
   game: GameState,
@@ -292,20 +296,20 @@ function applyFilters(
   pool: DraftPool,
   game: GameState,
   day: DayState,
-  draft: DraftParams
+  draft?: DraftParams
 ): DraftPool {
 
-  // TODO: handle outer room different
-  // if (draft === 'outer') {
-  //   return pool
-  // }
+  // TODO: handle outer room differently
+  if (draft === 'outer') {
+    return pool
+  }
 
   const condFilters = getConditionalFilters(game, day)
 
-  // Iterate rooms and apply all filters
-  pool.rooms.map((pr) => {
+  // first apply non-conditional filters
+  const filteredPool = pool.rooms.map((pr) => {
     let p = 1.0
-    let reason: string | null = null
+    let failReason: string | null = null
 
     // Discard Filter -> ignore
 
@@ -313,7 +317,7 @@ function applyFilters(
     // TODO: secret passage does not affect runback, but prism does.
     // Outer rooms do not involve runback, prior draft is used.
     // Berry picker, secret garden, room 8 make a secret draw and apply it to runback
-    if ((draft !== 'outer') && (draft.previousDraft !== undefined)) {
+    if ((draft !== undefined && draft.previousDraft !== undefined)) {
       const isRunback = draft.previousDraft!.includes(pr.room.slug)
       // probabilistic based on rarity to first draft at a door
       // otherwise always filters
@@ -324,7 +328,7 @@ function applyFilters(
         }
       } else {
         p = 0
-        reason = "runback"
+        failReason = "runback"
       }
     }
 
@@ -332,23 +336,55 @@ function applyFilters(
     // Library Filter -> TODO. Where's this list?
     // Ignore Filter -> freezer, rumpus, blue crown -> ignore for now
 
-    // Conditional Filters
-    // TODO: cond. filters only apply to the first 
-    let condFilterResult = applyConditionalFilters(condFilters, pr)
-    if (condFilterResult.passable) {
-      p = p * condFilterResult.p
-      // ignoring passable list
-    } else {
-      p = 0
-      reason = condFilterResult.failReason
-    }
-
-
+    return [{ ...pr, p: pr.p * p }, failReason] as [PooledRoom, string]
   })
 
+  // Conditional filters
+  // Complicated because, if no rooms pass a conditional filter, the game will redraw 
+  // without without cond. filters. This is always possible, so the effect is just to
+  // artifically reduce the rarity of rooms not passing any filters. 
+  // We can't get this exactly right since we're ignoring some of the filters, esp.
+  // between-slot interactions.
+  const conditionalFilteredPool = filteredPool
+    .filter(([, fr]) => fr === null)
+    .map(([pr,]) => {
+      let pCond = 1.0
+      let failReason: string | null = null
+      let condFilterResult = applyConditionalFilters(condFilters, pr)
+      if (condFilterResult.passable) {
+        pCond = pCond * condFilterResult.p
+      } else {
+        pCond = 0
+        failReason = condFilterResult.failReason
+      }
+      return (
+        [
+          { ...pr, pCond: pr.p * pCond },
+          failReason] as [PooledRoom & { pCond: number }, string])
+    })
 
+  // Probability ofthat rooms passing conditional filter list
+  const pNoCondFilterPasses = conditionalFilteredPool.reduce((acc, [pr,]) => {
+    return acc * (1 - pr.pCond)
+  }, 1.0)
 
-  return pool
+  const finalPool = conditionalFilteredPool.map(([{ pCond, ...pr }, fr]) => {
+    if (pCond >= 0.0001) {
+      // Sum the two probabilities: first draw with pCond, 2nd with normal p
+      return [{ ...pr, p: pCond + pr.p * pNoCondFilterPasses }, fr]
+    } else {
+      // Multiply probabilities of all rooms not passing the conditional filters by pNoCondFilterPasses
+      return [{ ...pr, p: pr.p * pNoCondFilterPasses }, fr]
+    }
+  }) as [PooledRoom, string][]
+
+  const [newRooms, removedRooms] = partition(finalPool, ([pr,]) => (pr.p > 0.00001))
+
+  return {
+    ...pool,
+    rooms: newRooms.map(([pr,]) => pr),
+    removed: [...pool.removed, ...removedRooms.map(([pr, fr]) => { return { ...pr, reason: fr } })]
+  }
 }
 
 

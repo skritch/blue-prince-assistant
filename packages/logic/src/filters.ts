@@ -55,9 +55,9 @@ export function getConditionalFilters(
 
   let patioFilter
   if (day.greenhouseInHouse) {
-    patioFilter = roomFilter(PATIO_FILTER_BASE, 0.5, 'Patio')
+    patioFilter = roomFilter(PATIO_FILTER_BASE, 0.5, 'patio')
   } else {
-    roomFilter([...PATIO_FILTER_BASE, 'secret-passage'], 0.05, 'Patio')
+    roomFilter([...PATIO_FILTER_BASE, 'secret-passage'], 0.05, 'patio')
   }
 
   const minorBumpFilter = roomFilter([
@@ -65,20 +65,20 @@ export function getConditionalFilters(
     (day.day > 4 || game.vmode) && 'garage',
     day.greenhouseInHouse && 'secret-passage',
     (day.aquariumExperimentActivations || 0) > 0 && 'aquarium'
-  ].filter((s) => (s !== false)), 0.03, 'Minor Bump')
+  ].filter((s) => (s !== false)), 0.03, 'minor bump')
 
   const majorBumpFilter = roomFilter([
     'observatory', 'commissary',
     (day.aquariumExperimentActivations || 0) > 0 && 'aquarium'
-  ].filter((s) => (s !== false)), 0.13, 'Major Bump')
+  ].filter((s) => (s !== false)), 0.13, 'major bump')
 
   const filters: ConditionalFilter[] = [
     ...colors.map(c => colorFilter(c)),
     patioFilter,
-    day.schoolhouseInHouse && roomFilter(['classroom', 'dormitory', 'library'], 0.3, 'Schoolhouse'),
+    day.schoolhouseInHouse && roomFilter(['classroom', 'dormitory', 'library'], 0.3, 'schoolhouse'),
     day.southernCrossActive && roomFilter([
       'rotunda', 'passageway', 'great-hall', 'cloister', 'archives', 'weight-room', 'vestibule'
-    ], 0.4, 'Southern Cross'),
+    ], 0.4, 'southern cross'),
     // TODO: greenhouse upgrade should *remove* dead-end tag, but draxus still consider it 
     day.draxusActive && tagFilter("dead-end", 0.3),
     day.haveChronograph && tagFilter("tomorrow", 0.4),
@@ -109,7 +109,7 @@ export function applyConditionalFilters(
       failReason: `conditional filters: ${failed.map(([n,]) => n).join(", ")}`
     }
   }
-  const failChance = passable.reduce((acc, [_, p]) => acc * (1 - p), 1)
+  const failChance = passable.reduce((acc, [_, p]) => acc * (1 - p!), 1)
   return {
     passable: true,
     p: 1 - failChance,
@@ -123,23 +123,3 @@ export const RUNBACK_P_BY_RARITY = {
   3: 0.9,
   4: 0.99
 }
-
-function prevDraftRunbackFilter(previousRooms: string[], pool: DraftPool) {
-  return (pr: PooledRoom) => {
-    if (previousRooms.includes(pr.room.slug)) {
-      const rarity = pool.rarityOverrides[pr.room.slug] || pr.room.baseRarity
-      if (rarity !== null) { [rarity] }
-    }
-    return []
-  }
-}
-// let runbackFilter
-// if (draft !== 'outer' && draft.previousDraft) {
-//   if (draft.isFirstDraftAtDoor) {
-//     runbackFilter = prevDraftRunbackFilter(draft.previousDraft, pool)
-//   } else {
-//     runbackFilter = roomFilter(draft.previousDraft, 1.0)
-//   }
-// }
-
-// library
