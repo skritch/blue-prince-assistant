@@ -2,12 +2,14 @@
 import { MIRROR_ROOMS, OUTER_ROOMS, POOL_ADDITIONS, ROOM_46_REWARDS } from './rooms'
 import { classifyExitTo, getRoomsAt } from './roomLocations'
 import type { DayState } from './day'
-import { addToPool, annotateRoom, blockDraft, fromGameState, removeFromPool, type DraftPool } from './pool'
+import { addToPool, annotateRoom, blockDraft, fromGameState, removeFromPool, type DraftPool, type PooledRoom } from './pool'
 import type { HouseState } from './house'
 import { type GameState } from './game'
 import { getAdHocRarities, getDynamicRarities } from './rarity'
 
 import type { DraftParams } from './draft'
+import { applyConditionalFilters, getConditionalFilters, RUNBACK_P_BY_RARITY } from './filters'
+import { partition } from './utils'
 
 // Basic algorithm to determine the eligible pool
 export function generateDraftPool(
@@ -286,35 +288,65 @@ function filterForLocation(
 
 
 // Step 6
-function setConditionalFilters(
+function applyFilters(
   pool: DraftPool,
   game: GameState,
   day: DayState,
+  draft: DraftParams
 ): DraftPool {
 
-  // https://www.reddit.com/r/BluePrince/comments/1m4eer1/drafting_mechanics_conditional_filters_making/
-  // Multiple "conditional filters" apply at once.
-  // Rooms need to be accepted by one of them to be drawn.
-  // I don't think multiple of the same filter stack...
-  // Need to deal with upgraded rooms having different colors
+  // TODO: handle outer room different
+  // if (draft === 'outer') {
+  //   return pool
+  // }
 
-  // classrooms filter
-  // powered electromagnet mechanical filter
-  // chronograph -> tomorrow
-  // southern cross
-  // draxus
+  const condFilters = getConditionalFilters(game, day)
+
+  // Iterate rooms and apply all filters
+  pool.rooms.map((pr) => {
+    let p = 1.0
+    let reason: string | null = null
+
+    // Discard Filter -> ignore
+
+    // Runback Filter
+    // TODO: secret passage does not affect runback, but prism does.
+    // Outer rooms do not involve runback, prior draft is used.
+    // Berry picker, secret garden, room 8 make a secret draw and apply it to runback
+    if ((draft !== 'outer') && (draft.previousDraft !== undefined)) {
+      const isRunback = draft.previousDraft!.includes(pr.room.slug)
+      // probabilistic based on rarity to first draft at a door
+      // otherwise always filters
+      if (draft.isFirstDraftAtDoor) {
+        const rarity = pool.rarityOverrides[pr.room.slug] || pr.room.baseRarity
+        if (rarity !== null) {
+          p = 1 - RUNBACK_P_BY_RARITY[rarity]
+        }
+      } else {
+        p = 0
+        reason = "runback"
+      }
+    }
+
+    // Double Down Filter -> ignore
+    // Library Filter -> TODO. Where's this list?
+    // Ignore Filter -> freezer, rumpus, blue crown -> ignore for now
+
+    // Conditional Filters
+    // TODO: cond. filters only apply to the first 
+    let condFilterResult = applyConditionalFilters(condFilters, pr)
+    if (condFilterResult.passable) {
+      p = p * condFilterResult.p
+      // ignoring passable list
+    } else {
+      p = 0
+      reason = condFilterResult.failReason
+    }
 
 
+  })
 
 
-
-  if (day.chessColor) { }
-  if (day.scepterColor) { }
-  if (day.greenhouseInHouse) { }
-  if (day.furnaceInHouse) { }
-  if (day.schoolhouseInHouse) { }
-  if (day.southernCrossActive) { }
-  if (day.draxusActive) { }
 
   return pool
 }

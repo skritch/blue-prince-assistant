@@ -165,11 +165,13 @@ const rooms = rows
       directoryPage: dirPage,
       roomNumber: parseInt(r['#']),
       description: parseDescription(r['Room description']),
-      deadEnd: specialType.includes('Dead-End'),
-      mechanical: specialType.includes('Mechanical'),
-      tomorrow: specialType.includes('Tomorrow'),
-      drafting: specialType.includes('Drafting'),
-      outer: dirPage == 9
+      tags: [
+        specialType.includes('Dead-End') && 'dead-end',
+        specialType.includes('Mechanical') && 'mechanical',
+        specialType.includes('Tomorrow') && 'tomorrow',
+        specialType.includes('Drafting') && 'drafting',
+        dirPage == 9 && 'outer',
+      ].filter(Boolean),
     }
   })
   .filter(r => r.directoryPage !== 'other' && r.directoryPage !== 'underground' && r.directoryPage !== 'blackprint')

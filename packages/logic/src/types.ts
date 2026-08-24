@@ -15,10 +15,11 @@ export type TilePosition =
 
 
 
-export interface UpgradeSpec {
+export interface Upgrade {
   name?: string
   description?: string
   color?: RoomColor[]
+  tags?: string[]
 }
 
 /** Shape of an entry in rooms.json */
@@ -32,11 +33,7 @@ export interface Room {
   doors: number | null
   directoryPage: number  // 1-9
   roomNumber: number
-  deadEnd: boolean
-  mechanical: boolean
-  tomorrow: boolean
-  drafting: boolean
-  outer: boolean
+  tags: string[]
   description: string | null
 }
 

@@ -175,14 +175,14 @@ export function getAdHocRarities(
 
   // Electromagnet
   if (day.haveElectromagnet) {
-    for (const room of ROOMS.filter(r => r.mechanical)) {
+    for (const room of ROOMS.filter(r => r.tags.includes('mechanical'))) {
       annotate(room.slug, 'electromagnet biases mechanical rooms')
     }
   }
 
   // Chronograph
   if (day.haveChronograph) {
-    for (const room of ROOMS.filter(r => r.tomorrow)) {
+    for (const room of ROOMS.filter(r => r.tags.includes('tomorrow'))) {
       annotate(room.slug, 'chronograph biases tomorrow rooms')
     }
   }

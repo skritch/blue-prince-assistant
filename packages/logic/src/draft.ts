@@ -11,6 +11,7 @@ export interface HouseDraftParams {
   gems?: number
 
   previousDraft?: string[]
+  isFirstDraftAtDoor: boolean
   keyUsed?: 'silver' | 'secret-garden' | 'room-8' | ['prism', RoomColor]
   secretPassageColor?: Exclude<RoomColor, 'black' | 'blue'> | null
   boilerActivated?: boolean

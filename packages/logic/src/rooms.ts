@@ -1,8 +1,10 @@
-import type { Rarity, Room } from './types'
+import type { Rarity, Room, RoomColor, Upgrade } from './types'
 import rawRooms from './data/rooms.json'
 import rawMirrorRooms from './data/mirrorRooms.json'
+import { default as UPGRADES } from './data/upgrades.json'
 export { default as MIRROR_FLOORPLANS } from './data/mirrorFloorplans.json'
-export { default as UPGRADES } from './data/upgrades.json'
+
+export { UPGRADES }
 
 const RARITY_MAP: Record<string, Rarity> = {
   commonplace: 1,
@@ -38,3 +40,26 @@ export function roomsForPage(page: number): Room[] {
   return ROOMS.filter((r) => r.directoryPage === page)
 }
 
+
+function toSlug(str: string): string {
+  return str.toLowerCase().replace(/['']/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')
+}
+
+type RawUpgrade = { name?: string; description?: string; color?: string | string[], tags?: string[] }
+
+export const UPGRADE_LOOKUP: Record<string, Record<string, Upgrade>> = {}
+
+for (const [baseSlug, entry] of Object.entries(UPGRADES as Record<string, { upgrades: RawUpgrade[] }>)) {
+  const bySlug: Record<string, Upgrade> = {}
+  for (const u of entry.upgrades) {
+    if (u.name) {
+      bySlug[toSlug(u.name)] = {
+        name: u.name,
+        description: u.description || undefined,
+        color: u.color ? ([u.color].flat() as RoomColor[]) : undefined,
+        tags: u.tags
+      }
+    }
+  }
+  if (Object.keys(bySlug).length > 0) UPGRADE_LOOKUP[baseSlug] = bySlug
+}

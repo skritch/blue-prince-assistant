@@ -3,7 +3,10 @@
     "upgrades": [
       {
         "name": "Electric Eel Aquarium",
-        "description": "Power"
+        "description": "Power",
+        "tags": [
+          "mechanical"
+        ]
       },
       {
         "name": "Goldfish Aquarium",
@@ -19,7 +22,10 @@
     "upgrades": [
       {
         "name": "Break Room",
-        "description": "Gives you the Keycard the next day if you end the day inside."
+        "description": "Gives you the Keycard the next day if you end the day inside.",
+        "tags": [
+          "tomorrow"
+        ]
       },
       {
         "name": "Speakeasy",
@@ -157,7 +163,10 @@
         "description": "+1 trunk"
       },
       {
-        "description": "An extra Hallway is added to tomorrow's draft pool."
+        "description": "An extra Hallway is added to tomorrow's draft pool.",
+        "tags": [
+          "tomorrow"
+        ]
       }
     ]
   },

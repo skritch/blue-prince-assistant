@@ -208,16 +208,16 @@
           </td>
           <td class="doors">{room.doors ?? "—"}</td>
           <td class="tags">
-            {#if room.deadEnd}<span class="tag tag-dead-end">dead end</span
+            {#if room.tags.includes('dead-end')}<span class="tag tag-dead-end">dead end</span
               >{/if}
-            {#if room.mechanical}<span class="tag tag-mechanical"
+            {#if room.tags.includes('mechanical')}<span class="tag tag-mechanical"
                 >mechanical</span
               >{/if}
-            {#if room.tomorrow}<span class="tag tag-tomorrow">tomorrow</span
+            {#if room.tags.includes('tomorrow')}<span class="tag tag-tomorrow">tomorrow</span
               >{/if}
-            {#if room.drafting}<span class="tag tag-drafting">drafting</span
+            {#if room.tags.includes('drafting')}<span class="tag tag-drafting">drafting</span
               >{/if}
-            {#if room.outer}<span class="tag tag-outer">outer room</span>{/if}
+            {#if room.tags.includes('outer')}<span class="tag tag-outer">outer room</span>{/if}
           </td>
           <td class="source">
             {#if source}<span class="source-label"

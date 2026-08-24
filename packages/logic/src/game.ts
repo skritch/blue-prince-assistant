@@ -1,5 +1,5 @@
-import { ADHOC_ADDITIONS, POOL_ADDITIONS, ROOMS, ROOM_46_REWARDS, ROOM_BY_SLUG, UNDRAFTABLE, UPGRADES, roomsForPage } from './rooms'
-import type { Rarity, Room, RoomColor, UpgradeSpec } from './types'
+import { ADHOC_ADDITIONS, POOL_ADDITIONS, ROOMS, ROOM_46_REWARDS, ROOM_BY_SLUG, UNDRAFTABLE, roomsForPage } from './rooms'
+import type { Rarity, Room, RoomColor, Upgrade } from './types'
 
 
 
@@ -93,26 +93,4 @@ export function removeRoom(state: GameState, slug: string): GameState {
   const unlockedRooms = [...state.pool]
   unlockedRooms.splice(idx, 1)
   return { ...state, pool: unlockedRooms }
-}
-
-function toSlug(str: string): string {
-  return str.toLowerCase().replace(/['']/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')
-}
-
-type RawUpgrade = { name?: string; description?: string; color?: string | string[] }
-
-export const UPGRADE_LOOKUP: Record<string, Record<string, UpgradeSpec>> = {}
-
-for (const [baseSlug, entry] of Object.entries(UPGRADES as Record<string, { upgrades: RawUpgrade[] }>)) {
-  const bySlug: Record<string, UpgradeSpec> = {}
-  for (const u of entry.upgrades) {
-    if (u.name) {
-      bySlug[toSlug(u.name)] = {
-        name: u.name,
-        description: u.description || undefined,
-        color: u.color ? ([u.color].flat() as RoomColor[]) : undefined,
-      }
-    }
-  }
-  if (Object.keys(bySlug).length > 0) UPGRADE_LOOKUP[baseSlug] = bySlug
 }

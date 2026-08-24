@@ -1,6 +1,6 @@
-import { ROOM_BY_SLUG, UPGRADES } from './rooms'
-import { UPGRADE_LOOKUP, type GameState } from './game'
-import type { Rarity, Room, RoomColor, UpgradeSpec } from './types'
+import { ROOM_BY_SLUG, UPGRADE_LOOKUP, UPGRADES } from './rooms'
+import { type GameState } from './game'
+import type { Rarity, Room, RoomColor, Upgrade } from './types'
 
 
 export type RoomSource =
@@ -29,7 +29,7 @@ export type Annotation =
 export interface PooledRoom {
   room: Room
   source?: RoomSource
-  upgrade?: UpgradeSpec
+  upgrade?: Upgrade
 }
 
 export interface RemovedRoom extends PooledRoom {

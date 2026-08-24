@@ -39,6 +39,7 @@
   );
   let fromRoomSlug = $state(initHouse?.fromRoomSlug ?? "");
   let gems = $state(initHouse?.gems ?? 0);
+  let isFirstDraftAtDoor = $state(initHouse?.isFirstDraftAtDoor ?? false);
 
   const roomOptions = ROOMS.map((r) => ({ id: r.slug, label: r.name })).sort(
     (a, b) => a.label.localeCompare(b.label),
@@ -57,6 +58,7 @@
         },
         fromRoomSlug: fromRoomSlug || undefined,
         gems,
+        isFirstDraftAtDoor,
       };
     }
   });
@@ -106,6 +108,10 @@
         <label class="inline-field">
           Gems:
           <input type="number" min="0" bind:value={gems} />
+        </label>
+        <label class="inline-field">
+          <input type="checkbox" bind:checked={isFirstDraftAtDoor} />
+          First draft at door
         </label>
       </div>
     {/if}

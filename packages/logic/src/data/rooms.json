@@ -12,11 +12,7 @@
     "directoryPage": 1,
     "roomNumber": 1,
     "description": "Does not reset each day",
-    "deadEnd": false,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": false,
-    "outer": false
+    "tags": []
   },
   {
     "name": "Entrance Hall",
@@ -31,11 +27,7 @@
     "directoryPage": 1,
     "roomNumber": 2,
     "description": null,
-    "deadEnd": false,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": false,
-    "outer": false
+    "tags": []
   },
   {
     "name": "Spare Room",
@@ -50,11 +42,7 @@
     "directoryPage": 1,
     "roomNumber": 3,
     "description": null,
-    "deadEnd": false,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": false,
-    "outer": false
+    "tags": []
   },
   {
     "name": "Rotunda",
@@ -69,11 +57,7 @@
     "directoryPage": 1,
     "roomNumber": 4,
     "description": "Can rotate",
-    "deadEnd": false,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": false,
-    "outer": false
+    "tags": []
   },
   {
     "name": "Parlor",
@@ -88,11 +72,7 @@
     "directoryPage": 1,
     "roomNumber": 5,
     "description": null,
-    "deadEnd": false,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": false,
-    "outer": false
+    "tags": []
   },
   {
     "name": "Billiard Room",
@@ -107,11 +87,7 @@
     "directoryPage": 1,
     "roomNumber": 6,
     "description": null,
-    "deadEnd": false,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": false,
-    "outer": false
+    "tags": []
   },
   {
     "name": "Gallery",
@@ -126,11 +102,7 @@
     "directoryPage": 1,
     "roomNumber": 7,
     "description": null,
-    "deadEnd": false,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": false,
-    "outer": false
+    "tags": []
   },
   {
     "name": "Room 8",
@@ -145,11 +117,7 @@
     "directoryPage": 1,
     "roomNumber": 8,
     "description": null,
-    "deadEnd": false,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": false,
-    "outer": false
+    "tags": []
   },
   {
     "name": "Closet",
@@ -164,11 +132,9 @@
     "directoryPage": 1,
     "roomNumber": 9,
     "description": "2 items",
-    "deadEnd": true,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": false,
-    "outer": false
+    "tags": [
+      "dead-end"
+    ]
   },
   {
     "name": "Walk-In Closet",
@@ -183,11 +149,9 @@
     "directoryPage": 1,
     "roomNumber": 10,
     "description": "4 items",
-    "deadEnd": true,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": false,
-    "outer": false
+    "tags": [
+      "dead-end"
+    ]
   },
   {
     "name": "Attic",
@@ -202,11 +166,9 @@
     "directoryPage": 1,
     "roomNumber": 11,
     "description": "8 items",
-    "deadEnd": true,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": false,
-    "outer": false
+    "tags": [
+      "dead-end"
+    ]
   },
   {
     "name": "Storeroom",
@@ -221,11 +183,9 @@
     "directoryPage": 1,
     "roomNumber": 12,
     "description": "1 key, 1 gem, 1 coin",
-    "deadEnd": true,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": false,
-    "outer": false
+    "tags": [
+      "dead-end"
+    ]
   },
   {
     "name": "Nook",
@@ -240,11 +200,7 @@
     "directoryPage": 1,
     "roomNumber": 13,
     "description": "1 key",
-    "deadEnd": false,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": false,
-    "outer": false
+    "tags": []
   },
   {
     "name": "Garage",
@@ -259,11 +215,9 @@
     "directoryPage": 1,
     "roomNumber": 14,
     "description": "3 key",
-    "deadEnd": true,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": false,
-    "outer": false
+    "tags": [
+      "dead-end"
+    ]
   },
   {
     "name": "Music Room",
@@ -278,11 +232,7 @@
     "directoryPage": 1,
     "roomNumber": 15,
     "description": "1 major key, 1 minor key (major key means special key, minor keys means regular key)",
-    "deadEnd": false,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": false,
-    "outer": false
+    "tags": []
   },
   {
     "name": "Locker Room",
@@ -297,11 +247,7 @@
     "directoryPage": 1,
     "roomNumber": 16,
     "description": "Spread keys throughout the house",
-    "deadEnd": false,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": false,
-    "outer": false
+    "tags": []
   },
   {
     "name": "Den",
@@ -316,11 +262,7 @@
     "directoryPage": 1,
     "roomNumber": 17,
     "description": "1 gem",
-    "deadEnd": false,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": false,
-    "outer": false
+    "tags": []
   },
   {
     "name": "Wine Cellar",
@@ -335,11 +277,9 @@
     "directoryPage": 1,
     "roomNumber": 18,
     "description": "3 gem",
-    "deadEnd": true,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": false,
-    "outer": false
+    "tags": [
+      "dead-end"
+    ]
   },
   {
     "name": "Trophy Room",
@@ -354,11 +294,7 @@
     "directoryPage": 1,
     "roomNumber": 19,
     "description": "8 gem",
-    "deadEnd": false,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": false,
-    "outer": false
+    "tags": []
   },
   {
     "name": "Ballroom",
@@ -373,11 +309,7 @@
     "directoryPage": 1,
     "roomNumber": 20,
     "description": "Whenever you enter ballroom, set your gems to 2 gems",
-    "deadEnd": false,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": false,
-    "outer": false
+    "tags": []
   },
   {
     "name": "Pantry",
@@ -392,11 +324,7 @@
     "directoryPage": 1,
     "roomNumber": 21,
     "description": "4 coins",
-    "deadEnd": false,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": false,
-    "outer": false
+    "tags": []
   },
   {
     "name": "Rumpus Room",
@@ -411,11 +339,7 @@
     "directoryPage": 1,
     "roomNumber": 22,
     "description": "8 coins",
-    "deadEnd": false,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": false,
-    "outer": false
+    "tags": []
   },
   {
     "name": "Vault",
@@ -430,11 +354,9 @@
     "directoryPage": 1,
     "roomNumber": 23,
     "description": "40 coins",
-    "deadEnd": true,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": false,
-    "outer": false
+    "tags": [
+      "dead-end"
+    ]
   },
   {
     "name": "Office",
@@ -449,11 +371,7 @@
     "directoryPage": 1,
     "roomNumber": 24,
     "description": "Opportunity to earn and spread coins",
-    "deadEnd": false,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": false,
-    "outer": false
+    "tags": []
   },
   {
     "name": "Drawing Room",
@@ -468,11 +386,9 @@
     "directoryPage": 1,
     "roomNumber": 25,
     "description": "Draw new floor plans",
-    "deadEnd": false,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": true,
-    "outer": false
+    "tags": [
+      "drafting"
+    ]
   },
   {
     "name": "Study",
@@ -487,11 +403,10 @@
     "directoryPage": 1,
     "roomNumber": 26,
     "description": "Spend gems to redraw floor plans up to 8 times",
-    "deadEnd": true,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": true,
-    "outer": false
+    "tags": [
+      "dead-end",
+      "drafting"
+    ]
   },
   {
     "name": "Library",
@@ -506,11 +421,9 @@
     "directoryPage": 1,
     "roomNumber": 27,
     "description": "Discover less common floor plans while drafting in library",
-    "deadEnd": false,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": true,
-    "outer": false
+    "tags": [
+      "drafting"
+    ]
   },
   {
     "name": "Chamber Of Mirrors",
@@ -525,11 +438,10 @@
     "directoryPage": 1,
     "roomNumber": 28,
     "description": "Draft 2nd copies of rooms you already have in the house",
-    "deadEnd": true,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": true,
-    "outer": false
+    "tags": [
+      "dead-end",
+      "drafting"
+    ]
   },
   {
     "name": "Pool",
@@ -544,11 +456,9 @@
     "directoryPage": 1,
     "roomNumber": 29,
     "description": "Adds locker room, sauna, and pump room to today's draft pool",
-    "deadEnd": false,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": true,
-    "outer": false
+    "tags": [
+      "drafting"
+    ]
   },
   {
     "name": "Drafting Studio",
@@ -563,11 +473,9 @@
     "directoryPage": 1,
     "roomNumber": 30,
     "description": "Select a new floorplan to permanently add to your estate's draft pool",
-    "deadEnd": false,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": true,
-    "outer": false
+    "tags": [
+      "drafting"
+    ]
   },
   {
     "name": "Utility Closet",
@@ -582,11 +490,9 @@
     "directoryPage": 1,
     "roomNumber": 31,
     "description": "Breaker box",
-    "deadEnd": false,
-    "mechanical": true,
-    "tomorrow": false,
-    "drafting": false,
-    "outer": false
+    "tags": [
+      "mechanical"
+    ]
   },
   {
     "name": "Boiler Room",
@@ -601,11 +507,9 @@
     "directoryPage": 1,
     "roomNumber": 32,
     "description": "Power source",
-    "deadEnd": false,
-    "mechanical": true,
-    "tomorrow": false,
-    "drafting": false,
-    "outer": false
+    "tags": [
+      "mechanical"
+    ]
   },
   {
     "name": "Pump Room",
@@ -620,11 +524,9 @@
     "directoryPage": 1,
     "roomNumber": 33,
     "description": "Control water flow through the estate.",
-    "deadEnd": false,
-    "mechanical": true,
-    "tomorrow": false,
-    "drafting": false,
-    "outer": false
+    "tags": [
+      "mechanical"
+    ]
   },
   {
     "name": "Security",
@@ -639,11 +541,9 @@
     "directoryPage": 1,
     "roomNumber": 34,
     "description": "View inventory of all items currently in the house",
-    "deadEnd": false,
-    "mechanical": true,
-    "tomorrow": false,
-    "drafting": false,
-    "outer": false
+    "tags": [
+      "mechanical"
+    ]
   },
   {
     "name": "Workshop",
@@ -658,11 +558,9 @@
     "directoryPage": 1,
     "roomNumber": 35,
     "description": "Combine inventory to create new items",
-    "deadEnd": false,
-    "mechanical": true,
-    "tomorrow": false,
-    "drafting": false,
-    "outer": false
+    "tags": [
+      "mechanical"
+    ]
   },
   {
     "name": "Laboratory",
@@ -677,11 +575,9 @@
     "directoryPage": 1,
     "roomNumber": 36,
     "description": "Experimental house features",
-    "deadEnd": false,
-    "mechanical": true,
-    "tomorrow": false,
-    "drafting": false,
-    "outer": false
+    "tags": [
+      "mechanical"
+    ]
   },
   {
     "name": "Sauna",
@@ -696,11 +592,10 @@
     "directoryPage": 1,
     "roomNumber": 37,
     "description": "Tomorrow, you will start the day with 20 extra steps",
-    "deadEnd": true,
-    "mechanical": false,
-    "tomorrow": true,
-    "drafting": false,
-    "outer": false
+    "tags": [
+      "dead-end",
+      "tomorrow"
+    ]
   },
   {
     "name": "Coat Check",
@@ -715,11 +610,10 @@
     "directoryPage": 1,
     "roomNumber": 38,
     "description": "Check one item and retrieve it on another day",
-    "deadEnd": true,
-    "mechanical": false,
-    "tomorrow": true,
-    "drafting": false,
-    "outer": false
+    "tags": [
+      "dead-end",
+      "tomorrow"
+    ]
   },
   {
     "name": "Mail Room",
@@ -734,11 +628,10 @@
     "directoryPage": 1,
     "roomNumber": 39,
     "description": "A package will be delivered here the day after drafting this room",
-    "deadEnd": true,
-    "mechanical": false,
-    "tomorrow": true,
-    "drafting": false,
-    "outer": false
+    "tags": [
+      "dead-end",
+      "tomorrow"
+    ]
   },
   {
     "name": "Freezer",
@@ -753,11 +646,10 @@
     "directoryPage": 1,
     "roomNumber": 40,
     "description": "Freezes your accounts",
-    "deadEnd": true,
-    "mechanical": false,
-    "tomorrow": true,
-    "drafting": false,
-    "outer": false
+    "tags": [
+      "dead-end",
+      "tomorrow"
+    ]
   },
   {
     "name": "Dining Room",
@@ -772,11 +664,7 @@
     "directoryPage": 1,
     "roomNumber": 41,
     "description": "Each day a meal served in the dining room after rank 8 is reached",
-    "deadEnd": false,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": false,
-    "outer": false
+    "tags": []
   },
   {
     "name": "Observatory",
@@ -791,11 +679,7 @@
     "directoryPage": 1,
     "roomNumber": 42,
     "description": "1 star each time you drafted observatory",
-    "deadEnd": false,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": false,
-    "outer": false
+    "tags": []
   },
   {
     "name": "Conference Room",
@@ -810,11 +694,7 @@
     "directoryPage": 1,
     "roomNumber": 43,
     "description": "Whenever items would be spread throughout the house they are placed in this room instead",
-    "deadEnd": false,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": false,
-    "outer": false
+    "tags": []
   },
   {
     "name": "Aquarium",
@@ -835,11 +715,7 @@
     "directoryPage": 1,
     "roomNumber": 44,
     "description": "Aquarium is every color of room",
-    "deadEnd": false,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": false,
-    "outer": false
+    "tags": []
   },
   {
     "name": "Antechamber",
@@ -854,11 +730,7 @@
     "directoryPage": 1,
     "roomNumber": 45,
     "description": null,
-    "deadEnd": false,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": false,
-    "outer": false
+    "tags": []
   },
   {
     "name": "Room 46",
@@ -873,11 +745,7 @@
     "directoryPage": 1,
     "roomNumber": 46,
     "description": null,
-    "deadEnd": false,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": false,
-    "outer": false
+    "tags": []
   },
   {
     "name": "Bedroom",
@@ -892,11 +760,7 @@
     "directoryPage": 2,
     "roomNumber": 47,
     "description": "Whenever you enter this room gain 2 steps",
-    "deadEnd": false,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": false,
-    "outer": false
+    "tags": []
   },
   {
     "name": "Boudoir",
@@ -911,11 +775,7 @@
     "directoryPage": 2,
     "roomNumber": 48,
     "description": null,
-    "deadEnd": false,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": false,
-    "outer": false
+    "tags": []
   },
   {
     "name": "Guest Bedroom",
@@ -930,11 +790,9 @@
     "directoryPage": 2,
     "roomNumber": 49,
     "description": "10 steps",
-    "deadEnd": true,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": false,
-    "outer": false
+    "tags": [
+      "dead-end"
+    ]
   },
   {
     "name": "Nursery",
@@ -949,11 +807,10 @@
     "directoryPage": 2,
     "roomNumber": 50,
     "description": "Whenever you draft a bedroom gain 5 steps",
-    "deadEnd": true,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": true,
-    "outer": false
+    "tags": [
+      "dead-end",
+      "drafting"
+    ]
   },
   {
     "name": "Servant's Quarters",
@@ -968,11 +825,9 @@
     "directoryPage": 2,
     "roomNumber": 51,
     "description": "1 key for each bedroom in your house",
-    "deadEnd": true,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": false,
-    "outer": false
+    "tags": [
+      "dead-end"
+    ]
   },
   {
     "name": "Bunk Room",
@@ -987,11 +842,9 @@
     "directoryPage": 2,
     "roomNumber": 52,
     "description": "This room counts as 2 bedrooms",
-    "deadEnd": true,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": false,
-    "outer": false
+    "tags": [
+      "dead-end"
+    ]
   },
   {
     "name": "Her Ladyship's Chamber",
@@ -1006,11 +859,9 @@
     "directoryPage": 2,
     "roomNumber": 53,
     "description": "The next time you enter Boudoir, gain 10 steps; The next time you enter walk-in closet, gain 3 gems",
-    "deadEnd": true,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": false,
-    "outer": false
+    "tags": [
+      "dead-end"
+    ]
   },
   {
     "name": "Master Bedroom",
@@ -1025,11 +876,9 @@
     "directoryPage": 2,
     "roomNumber": 54,
     "description": "Add 1 Step for each room in your house",
-    "deadEnd": true,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": false,
-    "outer": false
+    "tags": [
+      "dead-end"
+    ]
   },
   {
     "name": "Hallway",
@@ -1044,11 +893,7 @@
     "directoryPage": 3,
     "roomNumber": 55,
     "description": null,
-    "deadEnd": false,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": false,
-    "outer": false
+    "tags": []
   },
   {
     "name": "West Wing Hall",
@@ -1063,11 +908,7 @@
     "directoryPage": 3,
     "roomNumber": 56,
     "description": null,
-    "deadEnd": false,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": false,
-    "outer": false
+    "tags": []
   },
   {
     "name": "East Wing Hall",
@@ -1082,11 +923,7 @@
     "directoryPage": 3,
     "roomNumber": 57,
     "description": null,
-    "deadEnd": false,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": false,
-    "outer": false
+    "tags": []
   },
   {
     "name": "Corridor",
@@ -1101,11 +938,7 @@
     "directoryPage": 3,
     "roomNumber": 58,
     "description": "Corridor is always left unlocked",
-    "deadEnd": false,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": false,
-    "outer": false
+    "tags": []
   },
   {
     "name": "Passageway",
@@ -1120,11 +953,7 @@
     "directoryPage": 3,
     "roomNumber": 59,
     "description": null,
-    "deadEnd": false,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": false,
-    "outer": false
+    "tags": []
   },
   {
     "name": "Secret Passage",
@@ -1139,11 +968,9 @@
     "directoryPage": 3,
     "roomNumber": 60,
     "description": "Leads to a room of a color of your choice",
-    "deadEnd": true,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": false,
-    "outer": false
+    "tags": [
+      "dead-end"
+    ]
   },
   {
     "name": "Foyer",
@@ -1158,11 +985,7 @@
     "directoryPage": 3,
     "roomNumber": 61,
     "description": "Hallway doors are always unlocked",
-    "deadEnd": false,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": false,
-    "outer": false
+    "tags": []
   },
   {
     "name": "Great Hall",
@@ -1177,11 +1000,7 @@
     "directoryPage": 3,
     "roomNumber": 62,
     "description": "7 locked doors",
-    "deadEnd": false,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": false,
-    "outer": false
+    "tags": []
   },
   {
     "name": "Terrace",
@@ -1196,11 +1015,9 @@
     "directoryPage": 4,
     "roomNumber": 63,
     "description": "Green rooms do not cost gems to draft",
-    "deadEnd": true,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": false,
-    "outer": false
+    "tags": [
+      "dead-end"
+    ]
   },
   {
     "name": "Patio",
@@ -1215,11 +1032,7 @@
     "directoryPage": 4,
     "roomNumber": 64,
     "description": "Spread gems in each green room",
-    "deadEnd": false,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": false,
-    "outer": false
+    "tags": []
   },
   {
     "name": "Courtyard",
@@ -1234,11 +1047,7 @@
     "directoryPage": 4,
     "roomNumber": 65,
     "description": null,
-    "deadEnd": false,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": false,
-    "outer": false
+    "tags": []
   },
   {
     "name": "Cloister",
@@ -1253,11 +1062,7 @@
     "directoryPage": 4,
     "roomNumber": 66,
     "description": null,
-    "deadEnd": false,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": false,
-    "outer": false
+    "tags": []
   },
   {
     "name": "Veranda",
@@ -1272,11 +1077,7 @@
     "directoryPage": 4,
     "roomNumber": 67,
     "description": "Greater chance of finding items in green rooms",
-    "deadEnd": false,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": false,
-    "outer": false
+    "tags": []
   },
   {
     "name": "Greenhouse",
@@ -1291,11 +1092,10 @@
     "directoryPage": 4,
     "roomNumber": 68,
     "description": "More likely to draw green rooms while drafting",
-    "deadEnd": true,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": true,
-    "outer": false
+    "tags": [
+      "dead-end",
+      "drafting"
+    ]
   },
   {
     "name": "Morning Room",
@@ -1310,11 +1110,9 @@
     "directoryPage": 4,
     "roomNumber": 69,
     "description": "2 gem, tomorrow start with 2 gem",
-    "deadEnd": false,
-    "mechanical": false,
-    "tomorrow": true,
-    "drafting": false,
-    "outer": false
+    "tags": [
+      "tomorrow"
+    ]
   },
   {
     "name": "Secret Garden",
@@ -1329,11 +1127,7 @@
     "directoryPage": 4,
     "roomNumber": 70,
     "description": "Spread fruit throughout the house",
-    "deadEnd": false,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": false,
-    "outer": false
+    "tags": []
   },
   {
     "name": "Commissary",
@@ -1348,11 +1142,7 @@
     "directoryPage": 5,
     "roomNumber": 71,
     "description": "Items for sale",
-    "deadEnd": false,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": false,
-    "outer": false
+    "tags": []
   },
   {
     "name": "Kitchen",
@@ -1367,11 +1157,7 @@
     "directoryPage": 5,
     "roomNumber": 72,
     "description": "Food for sale",
-    "deadEnd": false,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": false,
-    "outer": false
+    "tags": []
   },
   {
     "name": "Locksmith",
@@ -1386,11 +1172,9 @@
     "directoryPage": 5,
     "roomNumber": 73,
     "description": "Keys for sale",
-    "deadEnd": true,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": false,
-    "outer": false
+    "tags": [
+      "dead-end"
+    ]
   },
   {
     "name": "Showroom",
@@ -1405,11 +1189,7 @@
     "directoryPage": 5,
     "roomNumber": 74,
     "description": "Luxury items for sale",
-    "deadEnd": false,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": false,
-    "outer": false
+    "tags": []
   },
   {
     "name": "Laundry Room",
@@ -1424,11 +1204,9 @@
     "directoryPage": 5,
     "roomNumber": 75,
     "description": "Launder currency",
-    "deadEnd": true,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": false,
-    "outer": false
+    "tags": [
+      "dead-end"
+    ]
   },
   {
     "name": "Bookshop",
@@ -1443,11 +1221,7 @@
     "directoryPage": 5,
     "roomNumber": 76,
     "description": "Books for sale",
-    "deadEnd": false,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": false,
-    "outer": false
+    "tags": []
   },
   {
     "name": "Armory",
@@ -1463,11 +1237,7 @@
     "directoryPage": 5,
     "roomNumber": 77,
     "description": "Weapons and Armor for Sale",
-    "deadEnd": false,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": false,
-    "outer": false
+    "tags": []
   },
   {
     "name": "Mount Holly Gift Shop",
@@ -1482,11 +1252,7 @@
     "directoryPage": 5,
     "roomNumber": 78,
     "description": "Souvenirs for Sale",
-    "deadEnd": false,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": false,
-    "outer": false
+    "tags": []
   },
   {
     "name": "Lavatory",
@@ -1501,11 +1267,9 @@
     "directoryPage": 6,
     "roomNumber": 79,
     "description": null,
-    "deadEnd": true,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": false,
-    "outer": false
+    "tags": [
+      "dead-end"
+    ]
   },
   {
     "name": "Chapel",
@@ -1520,11 +1284,7 @@
     "directoryPage": 6,
     "roomNumber": 80,
     "description": "Whenever you enter chapel, lose 1 coin",
-    "deadEnd": false,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": false,
-    "outer": false
+    "tags": []
   },
   {
     "name": "Maid's Chamber",
@@ -1540,11 +1300,7 @@
     "directoryPage": 6,
     "roomNumber": 81,
     "description": "Less likely to find items laying around in your house",
-    "deadEnd": false,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": false,
-    "outer": false
+    "tags": []
   },
   {
     "name": "Archives",
@@ -1559,11 +1315,7 @@
     "directoryPage": 6,
     "roomNumber": 82,
     "description": "While drafting, you will no longer be able to see all 3 of your potential floor plans",
-    "deadEnd": false,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": false,
-    "outer": false
+    "tags": []
   },
   {
     "name": "Gymnasium",
@@ -1578,11 +1330,7 @@
     "directoryPage": 6,
     "roomNumber": 83,
     "description": "Whenever you enter gymnasium, lose 2 steps",
-    "deadEnd": false,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": false,
-    "outer": false
+    "tags": []
   },
   {
     "name": "Darkroom",
@@ -1597,11 +1345,9 @@
     "directoryPage": 6,
     "roomNumber": 84,
     "description": "You cannot see floor plans while drafting in this room",
-    "deadEnd": false,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": true,
-    "outer": false
+    "tags": [
+      "drafting"
+    ]
   },
   {
     "name": "Weight Room",
@@ -1616,11 +1362,7 @@
     "directoryPage": 6,
     "roomNumber": 85,
     "description": "Lose half your steps",
-    "deadEnd": false,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": false,
-    "outer": false
+    "tags": []
   },
   {
     "name": "Furnace",
@@ -1635,11 +1377,7 @@
     "directoryPage": 6,
     "roomNumber": 86,
     "description": "More likely to draw red rooms while drafting",
-    "deadEnd": false,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": false,
-    "outer": false
+    "tags": []
   },
   {
     "name": "Dovecote",
@@ -1654,11 +1392,7 @@
     "directoryPage": 7,
     "roomNumber": 87,
     "description": "Whenever you draw Dovecote while drafting, you may rotate floorplans.",
-    "deadEnd": false,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": false,
-    "outer": false
+    "tags": []
   },
   {
     "name": "Kennel",
@@ -1673,11 +1407,7 @@
     "directoryPage": 7,
     "roomNumber": 88,
     "description": "Each time you dig in a room, unlock all doors in that room.",
-    "deadEnd": false,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": false,
-    "outer": false
+    "tags": []
   },
   {
     "name": "Clock Tower",
@@ -1692,11 +1422,10 @@
     "directoryPage": 7,
     "roomNumber": 89,
     "description": "Tomorrow, you will start with 1 Key for every Tomorrow Room you Draft today.",
-    "deadEnd": true,
-    "mechanical": false,
-    "tomorrow": true,
-    "drafting": false,
-    "outer": false
+    "tags": [
+      "dead-end",
+      "tomorrow"
+    ]
   },
   {
     "name": "Dormitory",
@@ -1711,11 +1440,9 @@
     "directoryPage": 7,
     "roomNumber": 90,
     "description": "Each time you enter Dormitory after drafting a Drafting Room, Gain 10 Steps",
-    "deadEnd": true,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": false,
-    "outer": false
+    "tags": [
+      "dead-end"
+    ]
   },
   {
     "name": "Classroom",
@@ -1730,11 +1457,9 @@
     "directoryPage": 7,
     "roomNumber": 91,
     "description": "While drafting in the Classroom, you may draw new Floorplans one time for each Drafting Room in your House.",
-    "deadEnd": false,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": true,
-    "outer": false
+    "tags": [
+      "drafting"
+    ]
   },
   {
     "name": "Vestibule",
@@ -1749,11 +1474,7 @@
     "directoryPage": 7,
     "roomNumber": 92,
     "description": "Whenever you enter vestibule, 3 of the doors in this room unlock and the fourth one becomes locked.",
-    "deadEnd": false,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": false,
-    "outer": false
+    "tags": []
   },
   {
     "name": "Casino",
@@ -1768,11 +1489,7 @@
     "directoryPage": 7,
     "roomNumber": 93,
     "description": "Games of Chance",
-    "deadEnd": false,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": false,
-    "outer": false
+    "tags": []
   },
   {
     "name": "Solarium",
@@ -1787,11 +1504,7 @@
     "directoryPage": 7,
     "roomNumber": 94,
     "description": "You are more likely to draw Unusual and Rare rooms while drafting",
-    "deadEnd": false,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": false,
-    "outer": false
+    "tags": []
   },
   {
     "name": "Planetarium",
@@ -1806,11 +1519,9 @@
     "directoryPage": 8,
     "roomNumber": 95,
     "description": "If you call it a day in PLANETARIUM, gain 2 stars",
-    "deadEnd": true,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": false,
-    "outer": false
+    "tags": [
+      "dead-end"
+    ]
   },
   {
     "name": "Tunnel",
@@ -1825,11 +1536,7 @@
     "directoryPage": 8,
     "roomNumber": 96,
     "description": "Always draw tunnel while drafting in this room",
-    "deadEnd": false,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": false,
-    "outer": false
+    "tags": []
   },
   {
     "name": "Conservatory",
@@ -1844,11 +1551,9 @@
     "directoryPage": 8,
     "roomNumber": 97,
     "description": "Adjust the rarities of the floor plans in your house",
-    "deadEnd": false,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": true,
-    "outer": false
+    "tags": [
+      "drafting"
+    ]
   },
   {
     "name": "Closed Exhibit",
@@ -1863,11 +1568,7 @@
     "directoryPage": 8,
     "roomNumber": 98,
     "description": "The doors in this room are security locked",
-    "deadEnd": false,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": false,
-    "outer": false
+    "tags": []
   },
   {
     "name": "Mechanarium",
@@ -1882,11 +1583,9 @@
     "directoryPage": 8,
     "roomNumber": 99,
     "description": "The Mechanarium has one door for each Mechanical Room in your House.",
-    "deadEnd": false,
-    "mechanical": true,
-    "tomorrow": false,
-    "drafting": false,
-    "outer": false
+    "tags": [
+      "mechanical"
+    ]
   },
   {
     "name": "Treasure Trove",
@@ -1901,11 +1600,7 @@
     "directoryPage": 8,
     "roomNumber": 100,
     "description": "+5 coins for each time you have drafted treasure trove",
-    "deadEnd": false,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": false,
-    "outer": false
+    "tags": []
   },
   {
     "name": "Throne Room",
@@ -1920,11 +1615,7 @@
     "directoryPage": 8,
     "roomNumber": 101,
     "description": "Reclaim the crown",
-    "deadEnd": false,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": false,
-    "outer": false
+    "tags": []
   },
   {
     "name": "Lost And Found",
@@ -1939,11 +1630,7 @@
     "directoryPage": 8,
     "roomNumber": 102,
     "description": "Includes 2 Rare Items. Whenever you enter this room, you will lose 1 random inventory Item.",
-    "deadEnd": false,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": false,
-    "outer": false
+    "tags": []
   },
   {
     "name": "Shelter",
@@ -1958,11 +1645,10 @@
     "directoryPage": 9,
     "roomNumber": 103,
     "description": "Shelter from negative effects of next 3 red rooms drafted",
-    "deadEnd": true,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": false,
-    "outer": true
+    "tags": [
+      "dead-end",
+      "outer"
+    ]
   },
   {
     "name": "Shrine",
@@ -1977,11 +1663,10 @@
     "directoryPage": 9,
     "roomNumber": 104,
     "description": "Make an offering, receive a blessing",
-    "deadEnd": true,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": false,
-    "outer": true
+    "tags": [
+      "dead-end",
+      "outer"
+    ]
   },
   {
     "name": "Toolshed",
@@ -1996,11 +1681,10 @@
     "directoryPage": 9,
     "roomNumber": 105,
     "description": "2 special items",
-    "deadEnd": true,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": false,
-    "outer": true
+    "tags": [
+      "dead-end",
+      "outer"
+    ]
   },
   {
     "name": "Schoolhouse",
@@ -2015,11 +1699,11 @@
     "directoryPage": 9,
     "roomNumber": 106,
     "description": "Adds 8 classrooms to today's draft pool",
-    "deadEnd": true,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": true,
-    "outer": true
+    "tags": [
+      "dead-end",
+      "drafting",
+      "outer"
+    ]
   },
   {
     "name": "Hovel",
@@ -2034,11 +1718,10 @@
     "directoryPage": 9,
     "roomNumber": 107,
     "description": "Special floorplans now cost additional steps instead of gems",
-    "deadEnd": true,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": false,
-    "outer": true
+    "tags": [
+      "dead-end",
+      "outer"
+    ]
   },
   {
     "name": "Root Cellar",
@@ -2053,11 +1736,10 @@
     "directoryPage": 9,
     "roomNumber": 108,
     "description": "Rooms in your house will be more likely to contain dig spots today",
-    "deadEnd": true,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": false,
-    "outer": true
+    "tags": [
+      "dead-end",
+      "outer"
+    ]
   },
   {
     "name": "Trading Post",
@@ -2072,11 +1754,10 @@
     "directoryPage": 9,
     "roomNumber": 109,
     "description": "Items for trade",
-    "deadEnd": true,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": false,
-    "outer": true
+    "tags": [
+      "dead-end",
+      "outer"
+    ]
   },
   {
     "name": "Tomb",
@@ -2091,10 +1772,9 @@
     "directoryPage": 9,
     "roomNumber": 110,
     "description": "Each time you draft a dead end spread 5 coins in the tomb",
-    "deadEnd": true,
-    "mechanical": false,
-    "tomorrow": false,
-    "drafting": false,
-    "outer": true
+    "tags": [
+      "dead-end",
+      "outer"
+    ]
   }
 ]
