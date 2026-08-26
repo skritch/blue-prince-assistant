@@ -64,7 +64,7 @@ export function fromGameState(game: GameState): DraftPool {
     rooms: game.pool.map((room) => {
       const upgradeSlug = game.upgrades[room.slug]
       const upgrade = upgradeSlug ? UPGRADE_LOOKUP[room.slug]?.[upgradeSlug] : undefined
-      return { room, upgrade, p: 1.0, pCond: 1.0 }
+      return { room, upgrade, p: 1.0}
     }),
     rarityOverrides: {},
     annotations: {},
@@ -76,7 +76,7 @@ export function fromGameState(game: GameState): DraftPool {
 export function addToPool(pool: DraftPool, slugs: string[], source?: RoomSource): DraftPool {
   // Does not check if rooms already exist, as draft pool supports duplicates
   // Currently does not validate slugs
-  const toAdd = slugs.map((s) => ({ room: ROOM_BY_SLUG[s], p: 1.0, pCond: 1.0, source }))
+  const toAdd = slugs.map((s) => ({ room: ROOM_BY_SLUG[s], p: 1.0, source }))
   if (toAdd.length === 0) return pool
   return { ...pool, rooms: [...pool.rooms, ...toAdd] }
 }

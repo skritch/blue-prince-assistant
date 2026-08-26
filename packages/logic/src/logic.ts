@@ -296,12 +296,12 @@ function applyLocation(
 }
 
 
-// Step 6
 function applyFilters(
   pool: DraftPool,
   game: GameState,
   day: DayState,
-  draft?: DraftParams
+  draft?: DraftParams,
+  useConditionalFilters: boolean = true
 ): DraftPool {
 
   // TODO: handle outer room differently
@@ -309,10 +309,9 @@ function applyFilters(
     return pool
   }
 
-  const condFilters = getConditionalFilters(game, day)
 
   // first apply non-conditional filters
-  const filteredPool = pool.rooms.map((pr) => {
+  let filteredPool = pool.rooms.map((pr) => {
     let p = 1.0
     let failReason: string | null = null
 
@@ -324,16 +323,18 @@ function applyFilters(
     // Berry picker, secret garden, room 8 make a secret draw and apply it to runback
     if ((draft !== undefined && draft.previousDraft !== undefined)) {
       const isRunback = draft.previousDraft!.includes(pr.room.slug)
-      // probabilistic based on rarity to first draft at a door
-      // otherwise always filters
-      if (draft.isFirstDraftAtDoor) {
-        const rarity = pool.rarityOverrides[pr.room.slug] || pr.room.baseRarity
-        if (rarity !== null) {
-          p = 1 - RUNBACK_P_BY_RARITY[rarity]
+      if (isRunback) {
+        // probabilistic based on rarity to first draft at a door
+        // otherwise always filters
+        if (draft.isFirstDraftAtDoor) {
+          const rarity = pool.rarityOverrides[pr.room.slug] || pr.room.baseRarity
+          if (rarity !== null) {
+            p = 1 - RUNBACK_P_BY_RARITY[rarity]
+          }
+        } else {
+          p = 0
+          failReason = "runback"
         }
-      } else {
-        p = 0
-        failReason = "runback"
       }
     }
 
@@ -344,27 +345,36 @@ function applyFilters(
     return [{ ...pr, p: pr.p * p }, failReason] as [PooledRoom, string]
   })
 
-  // Conditional filters
-  const conditionalFilteredPool = filteredPool
-    .filter(([, fr]) => fr === null)
-    .map(([pr,]) => {
-      let p
-      let failReason: string | null = null
-      let condFilterResult = applyConditionalFilters(condFilters, pr)
-      if ('p' in condFilterResult) {
-        p = pr.p * condFilterResult.p
-      } else {
-        p = 0
-        failReason = condFilterResult.failReason
-      }
-      return (
-        [
-          { ...pr, p: p },
-          failReason
-        ] as [PooledRoom, string])
-    })
+  if (useConditionalFilters) {
+    const condFilters = getConditionalFilters(game, day)
+    // Conditional filters
+    filteredPool = filteredPool
+      .map(([pr, fr]) => {
+        if (fr !== null) {
+          return [pr, fr]
+        }
 
-  const [newRooms, removedRooms] = partition(conditionalFilteredPool, ([pr,]) => (pr.p > 0.00001))
+        let p
+        let failReason: string | null = null
+        let condFilterResult = applyConditionalFilters(condFilters, pr)
+        if ('p' in condFilterResult) {
+          p = pr.p * condFilterResult.p
+        } else {
+          p = 0
+          failReason = condFilterResult.failReason
+        }
+        return (
+          [
+            { ...pr, p: p },
+            failReason
+          ] as [PooledRoom, string])
+      })
+
+  }
+  
+  const [newRooms, removedRooms] = partition(
+    filteredPool, ([pr,]) => (pr.p > 0)
+  )
 
   return {
     ...pool,
@@ -375,62 +385,64 @@ function applyFilters(
 
 
 // WIP more-complete impl.
-function applyDraftLogic(
+// Actual Procedure, approximately:
+//
+// Divide into 8 decks, free|gem x 4 rarities
+// First determine free vs. gem based on "Rare checks"
+// Determine a "base rarity" based on rank, date, etc.
+// - Start with base-rarity deck.
+// - Filter it based on runback/conditional etc.
+// - If it has ~3+ rooms, draw from it
+//   If less but nonempty, repeat computation for other rarity decks. 
+//     Select one at random and draw from it.
+// If all that fails, repeat with no conditional filters active and a new rarity, 
+//   but discards still discarded?
+// If that fails, repeat with all decks mixed together.
+// Validate: duplicates, 3x dead-ends, gem in slot 1.
+
+// Our procedure to determine approximate probabilities:
+// 
+// Apply filters to the whole pool.
+// Divide into 8 decks.
+// For each slot:
+// - find probability of each deck being chosen (rarity x free | gem).
+// - simulate the whole deck-fallback procedure, which is deterministic:
+//   - if no decks have enough cards, fallback to draw 2
+//     - TODO
+//   - if not enough cards in deck, next rarity is used in priority order.
+//   - should be able to determine exactly whether the resulting draw is from the first deck,
+//     or 1/(number of viable decks)
+//   - If one deck survives, assign:
+//     p(card) = p(deck) * 1/(cards in deck), p(in pool) = p(deck) 
+//   - If multiple, assign for each:
+//     p(card) = 1/(viable decks) * p(deck) * 1/(cards in deck), p(in pool) = p(deck) 
+//     (Note we consider all the cards to be "in the pool" here.)
+// - for each room in the overall pool, sum the probabilities across 
+//   all 8 rarity x free | gem possiblities.
+// - do we try to do validation? at least for 3 dead-ends?
+// 
+// Draw 2: as above, but no conditional filters.
+// Can occur separately two branches: original was free vs. gem.
+// Add p(draw 2) * (draw 2 probability vector)
+//
+// Returns the pool for each slot, keyed by slug, with "p" set appropriately.
+function draftSlots(
   pool: DraftPool,
   game: GameState,
   day: DayState,
   house: HouseState,
   draft: DraftParams,
-): DraftPool {
+  useConditionalFilters: boolean = true
+): [Record<string, PooledRoom>, Record<string, PooledRoom>, Record<string, PooledRoom>] {
 
   // TODO
   // https://www.reddit.com/r/BluePrince/comments/1liagtk/outer_room_basic_draft_rates_effects_of_rarity/
   if (draft == 'outer') {
-    return pool 
+    return [{}, {}, {}] 
   }
 
-  // Actual Procedure, approximately:
-  //
-  // Divide into 8 decks, free|gem x 4 rarities
-  // First determine free vs. gem based on "Rare checks"
-  // Determine a "base rarity" based on rank, date, etc.
-  // - Start with base-rarity deck.
-  // - Filter it based on runback/conditional etc.
-  // - If it has ~3+ rooms, draw from it
-  //   If less but nonempty, repeat computation for other rarity decks. 
-  //     Select one at random and draw from it.
-  // If all that fails, repeat with no conditional filters active and a new rarity, 
-  //   but discards still discarded?
-  // If that fails, repeat with all decks mixed together.
-  // Validate: duplicates, 3x dead-ends, gem in slot 1.
-
-  // Our procedure to determine approximate probabilities:
-  // 
-  // Apply filters to the whole pool.
-  // Divide into 8 decks.
-  // For each slot:
-  // - find probability of each deck being chosen (rarity x free | gem).
-  // - simulate the whole deck-fallback procedure, which is deterministic:
-  //   - if no decks have enough cards, fallback to draw 2...
-  //   - if not enough cards in deck, next rarity is used in priority order.
-  //   - should be able to determine exactly whether the resulting draw is from the first deck,
-  //     or 1/(number of viable decks)
-  //   - If one deck survives, assign:
-  //     p(card) = p(deck) * 1/(cards in deck), p(in pool) = p(deck) 
-  //   - If multiple, assign for each:
-  //     p(card) = 1/(viable decks) * p(deck) * 1/(cards in deck), p(in pool) = p(deck) 
-  //     (Note we consider all the cards to be "in the pool" here.)
-  // - for each room in the overall pool, sum the probabilities across 
-  //   all 8 rarity x free | gem possiblities.
-  // - do we try to do validation? at least for 3 dead-ends?
-  // 
-  // Draw 2: as above, but no conditional filters.
-  // Can occur separately two branches: original was free vs. gem.
-  // Add p(draw 2) * (draw 2 probability vector)
-
-
   // Apply runback/conditional filters in advance, why not?
-  const filteredPool = applyFilters(pool, game, day, draft)
+  const filteredPool = applyFilters(pool, game, day, draft, useConditionalFilters)
 
 
   // Split into 8 decks: 4 free by rarity, 4 gem by rarity
@@ -443,32 +455,54 @@ function applyDraftLogic(
   }
 
   // Counting Cards step
-  const effectiveDecks = countCards(decks, day.day, game.vmode, game.haveRoom46)
+  const effectiveDecks: DeckList = countCards(decks, day.day, game.vmode, game.haveRoom46)
 
-  // TODO: if any decks wind up empty, retry the whole draw without filters.
+  // If the first draw's choice of (free | gem) x rarity, with all fallbacks,
+  // failed to find a deck with enough cards to draw from, the draw has failed.
+  // A new draw will tried, *with a new choice of gems and rarities*, but without
+  // conditional filters.
+  // Therefore we should run this whole algorithm again, without cond. filters,
+  // and then insert its entire result for that slot as the effectiveDeck to be 
+  // drawn from for that gem/rarity combo.
+  // TODO: cards only have a chance of being accepted by filters...
+  let draft2slotPools
+  if (useConditionalFilters) {
+    draft2slotPools = draftSlots(pool, game, day, house, draft, false)
+  } else {
+    draft2slotPools = [{}, {}, {}]
+  }
+  
 
   const rank = draft.toLocation.tile.row
-  const pGems = getPGemBySlot(
-    draft.gems || 0, house.placedRooms.length - 2, rank, day.day, game.vmode
-  )
   const slots = [1, 2, 3]
 
   // Determine the pool per-slot, with probabilities of each room
   const slotPools = slots.map((s) => {
     const slotPool: Record<string, PooledRoom> = {}
 
+    // Replace empty decks with the result of draw 2 for this slot
+    const draft2pool = Object.values(draft2slotPools[s - 1])
+    const effDecksForSlot = effectiveDecks.map(
+      (deck) => deck.length > 0 ? deck : draft2pool
+    )
+
     const pRarities = getRarityProbabilities(
       day.day, s as 1 | 2 | 3, draft.toLocation.tile.row, false
     )
-    const pGem = pGems[s - 1]
+    const pGem = getPGemBySlot(
+      draft.gems || 0, 
+      s as 1 | 2 | 3, 
+      house.placedRooms.length - 2, rank, day.day, game.vmode
+    )
     const pDecks = Array(8).fill(0)
     for (const [rarityIdx, pRarity] of pRarities.entries()) {
       pDecks[rarityIdx] = pRarity * (1 - pGem)
       pDecks[rarityIdx + 4] = pRarity * pGem
     }
     
-    for (const [deckIdx, deck] of effectiveDecks.entries()) {
+    for (const [deckIdx, deck] of effDecksForSlot.entries()) {
       const pDeck = pDecks[deckIdx]
+
       for (const pr of deck) {
         if (!slotPool[pr.room.slug]) {
           slotPool[pr.room.slug] = {... pr, p: pr.p * pDeck}
@@ -480,6 +514,19 @@ function applyDraftLogic(
     }
     return slotPool
   })
+
+  return slotPools as [Record<string, PooledRoom>, Record<string, PooledRoom>, Record<string, PooledRoom>]
+}
+
+export function applyDraftLogic(
+  pool: DraftPool,
+  game: GameState,
+  day: DayState,
+  house: HouseState,
+  draft: DraftParams,
+  useConditionalFilters: boolean = true) {
+
+  const slotPools = draftSlots(pool, game, day, house, draft, useConditionalFilters)
 
   // Finally, return the pool with the per-slot probabilities attached
   const finalRooms = pool.rooms.map((pr) => {

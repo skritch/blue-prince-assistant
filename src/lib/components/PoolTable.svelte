@@ -154,7 +154,7 @@
         <th>Doors</th>
         <th class="gems-col">Gems</th>
         <th>Source</th>
-        <th class="prob-col" colspan="3"><span class="prob-col-label" data-tooltip="probability this room appears in each slot">P[slot]</span></th>
+        <th class="prob-col" colspan="3" style="text-align: center;"><span class="prob-col-label" data-tooltip="probability this room appears in each slot">%[slot]</span></th>
       </tr>
     </thead>
     <tbody>
@@ -225,8 +225,10 @@
               >{/if}
           </td>
           {#if pSlot}
-            {#each pSlot as slotP}
-              <td class="prob" data-tooltip={slotP > 0 && slotP < 1 ? slotP.toPrecision(2) : undefined}>{slotP > 0 ? slotP.toFixed(2) : ""}</td>
+            {#each pSlot as slotP, idx}
+              {@const pctValue = slotP * 100}
+              {@const display = pctValue === 0 ? "" : pctValue.toFixed(1)}
+              <td class="prob" data-tooltip={(slotP * 100).toPrecision(2) + '%'}>{display}</td>
             {/each}
           {:else}
             <td class="prob" colspan="3"></td>

@@ -83,24 +83,30 @@ function rareCheckSlot3Chance(gems: number, roomsDrafted: number, rank: number) 
 
 export function getPGemBySlot(
   gems: number, 
+  slot: 1 | 2 | 3,
   roomsDrafted: number,
   rank: TileRow, 
   day: number, 
   vMode: boolean
-):  [number, number, number] {
+): number {
+  let pGems: [number, number, number]
   if (
     (vMode && roomsDrafted < 3)
     || (day == 1 && roomsDrafted < 6)
     || (day == 2 && roomsDrafted < 5)
     || (day == 3 && roomsDrafted < 4)
-  ) return [0, 0, 0]
+  ) { 
+    pGems = [0, 0, 0] 
+  }
 
   const slot2chance = rareCheckSlot2Chance(gems, rank)
   const slot3chance = rareCheckSlot3Chance(gems, roomsDrafted, rank)
 
   // If slot 2 gets a rare check, slot 3 automatically does
   // Scale down slot3chance by chance 1 - slot2chance
-  return [0, slot2chance, (1 - slot2chance) * slot3chance]
+  pGems = [0, slot2chance, (1 - slot2chance) * slot3chance]
+
+  return pGems[slot - 1]
 }
 
 export function getRarityProbabilities(
@@ -169,7 +175,6 @@ export function countCards(
   vmode: boolean,
   haveRoom46: boolean,
 ): DeckList {
-  const deckLengths = decks.map((d) => d.length)
 
   // Counting Cards step
   const cardsForDraw = getCardsForDraw(day, vmode, haveRoom46)
@@ -180,30 +185,42 @@ export function countCards(
   // Or an empty array, in which case drawing failed.
   const acceptedDecks: Deck[][] = Array(8).fill([])
 
-  for (const [idx, dl] of deckLengths.entries()) {
+  // Marking / accepting decks steps
+  for (let idx = 0; idx < 8; idx ++) {
     const rarity = idx % 4 + 1 as Rarity
     const freeGem = Math.floor(idx / 4) as 0 | 1
 
     // Simpler to iterate all 4 rarities start with this one.
     const withFallbacks = [rarity, ...RARITY_FALLBACKS[rarity]]
+    let markedDecks: Deck[] = []
 
     for (const rarity2 of withFallbacks) {
-        const idx2 = (rarity2 - 1) + 4 * freeGem
+      const idx2 = (rarity2 - 1) + 4 * freeGem
+      const dl2 = decks[idx2].length
 
-      if (dl >= cardsForDraw[idx2]) {
-        acceptedDecks[idx] = [...acceptedDecks[idx], decks[idx2]]
+      // TODO: is this logic right?
+      // Do we choose randomly among "marked" decks if there is a deck
+      // passing the first check?
+      if (dl2 >= cardsForDraw[idx2]) {
+        // Maybe should be
+        // = [ decks[idx2] ]
+        acceptedDecks[idx] = [...markedDecks, decks[idx2]]
         // Stop iterating fallbacks when we get a deck that passing card-counting
         break
-      } else if (dl > 0) {
-        acceptedDecks[idx] = [...acceptedDecks[idx], decks[idx2]]
+      } else if (dl2 > 0) {
+        // As long as it has any cards, "mark" it for inclusion
+       markedDecks = [...markedDecks, decks[idx2]]
       }
     }
+    
+    // If we get here and no deck has been accepted, the draw failed
+    // and acceptedDecks[idx] will be empty
   }
 
   // We can go ahead and calculate the effective probability of each card
-  // for each deck. We make no attempt to account for cards which might
-  // be probabilistically absent. 
-  // TODO: do so.
+  // for each deck. We make no attempt to account for cards which already
+  // have a probability of being absent.
+  // TODO: do so?
   // TODO: distinguish "p[in pool]" from "p[chosen]"...?
   const effectiveDecks = acceptedDecks.map((decklist) => {
     if (decklist.length == 1) {

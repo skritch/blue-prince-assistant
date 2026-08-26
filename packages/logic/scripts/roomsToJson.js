@@ -48,6 +48,11 @@ const NAME_CORRECTIONS = {
   'walk in closet': 'Walk-In Closet'
 }
 
+// Rarity corrections for rooms with incorrect data in CSV
+const RARITY_CORRECTIONS = {
+  'wine-cellar': 'unusual'
+}
+
 function canonicalName(raw) {
   return NAME_CORRECTIONS[raw.toLowerCase()] ?? toTitleCase(raw)
 }
@@ -159,7 +164,7 @@ const rooms = rows
       slug,
       assetPath: `rooms/${slug}.png`,
       color: extractColor(section),
-      baseRarity: parseRarity(r['Rarity']),
+      baseRarity: RARITY_CORRECTIONS[slug] ?? parseRarity(r['Rarity']),
       baseGemCost: parseGemCost(r['Gem cost']),
       doors: DOOR_OVERRIDES[slug] ?? parseDoors(r['Doors']),
       directoryPage: dirPage,

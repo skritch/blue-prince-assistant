@@ -5,4 +5,10 @@ import { svelte } from '@sveltejs/vite-plugin-svelte'
 export default defineConfig({
   plugins: [svelte()],
   base: '/blue-prince-assistant/',
+  build: {
+    sourcemap: true,
+  },
+  server: {
+    sourcemapIgnoreList: false,
+  },
 })
