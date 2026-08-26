@@ -1,5 +1,5 @@
 import type { DayState } from "./day"
-import type { DraftParams } from "./draft"
+import type { DraftParams, HouseDraftParams } from "./draft"
 import type { GameState } from "./game"
 import { type DraftPool, type PooledRoom } from "./pool"
 import { type RoomColor } from "./types"
@@ -90,36 +90,70 @@ export function getConditionalFilters(
   return filters
 }
 
-type CondFilterResult =
-  | { passable: true, p: number }
-  | { passable: false, p: 0, failReason: string }
+
+
+type FilterResult =
+  | { p: number }  // probability of passing this filter
+  | { failReason: string }
 
 export function applyConditionalFilters(
   filters: ConditionalFilter[],
   pr: PooledRoom
-): CondFilterResult {
+): FilterResult {
 
   const results: [string, number | null][] = filters.map(f => f(pr))
 
   const [passable, failed] = partition(results, ([, p]) => (p !== null))
   if (passable.length === 0) {
     return {
-      passable: false,
-      p: 0,
       failReason: `conditional filters: ${failed.map(([n,]) => n).join(", ")}`
     }
   }
   const failChance = passable.reduce((acc, [_, p]) => acc * (1 - p!), 1)
   return {
-    passable: true,
     p: 1 - failChance,
   }
 }
 
-// runback
+
 export const RUNBACK_P_BY_RARITY = {
   1: 0.6,
   2: 0.8,
   3: 0.9,
   4: 0.99
+}
+
+
+// Applies Runback and other filters, modifying pr.p and 
+// possibly returning a reason for rejection.
+export function applyOtherFilters(
+  pr: PooledRoom,
+  pool: DraftPool,
+  draft: HouseDraftParams
+): FilterResult {
+  // Discard Filter -> ignore
+
+  // Runback Filter
+  // TODO: secret passage does not affect runback, but prism does.
+  // Outer rooms do not involve runback, prior draft is used.
+  // Berry picker, secret garden, room 8 make a secret draw and apply it to runback
+  if ((draft !== undefined && draft.previousDraft !== undefined)) {
+    const isRunback = draft.previousDraft!.includes(pr.room.slug)
+    // probabilistic based on rarity, if first draft at a door
+    // otherwise always applies.
+    if (draft.isFirstDraftAtDoor) {
+      const rarity = pool.rarityOverrides[pr.room.slug] || pr.room.baseRarity
+      if (rarity !== null) {
+        return { p: 1 - RUNBACK_P_BY_RARITY[rarity] }
+      }
+    } else {
+      return { failReason: "runback" }
+    }
+  }
+
+  // Double Down Filter -> ignore
+  // Library Filter -> TODO. Where's this list?
+  // Ignore Filter -> freezer, rumpus, blue crown -> ignore for now
+
+  return { p: 1 }
 }
