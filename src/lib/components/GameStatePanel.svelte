@@ -143,7 +143,7 @@
   function addRarity(slug: string, rarityId?: string) {
     if (!rarityId) return;
     const rarity: Rarity =
-      rarityId === "null" ? null : (Number(rarityId) as Rarity);
+      Number(rarityId) as Rarity;
     gameState = {
       ...gameState,
       rarityOverrides: { ...gameState.rarityOverrides, [slug]: rarity },

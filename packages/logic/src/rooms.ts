@@ -6,7 +6,7 @@ export { default as MIRROR_FLOORPLANS } from './data/mirrorFloorplans.json'
 
 export { UPGRADES }
 
-const RARITY_MAP: Record<string, Rarity> = {
+const RARITY_MAP: Record<string, Rarity | null> = {
   commonplace: 1,
   standard: 2,
   unusual: 3,

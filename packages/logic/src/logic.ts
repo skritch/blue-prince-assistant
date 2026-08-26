@@ -7,9 +7,10 @@ import type { HouseState } from './house'
 import { type GameState } from './game'
 import { getAdHocRarities, getDynamicRarities } from './rarity'
 
-import type { DraftParams } from './draft'
-import { applyConditionalFilters, applyOtherFilters, getConditionalFilters, RUNBACK_P_BY_RARITY } from './filters'
+import { countCards, getPGemBySlot, getRarityProbabilities, type DeckList, type DraftParams } from './draft'
+import { applyConditionalFilters, getConditionalFilters, RUNBACK_P_BY_RARITY } from './filters'
 import { partition } from './utils'
+import type { Rarity } from './types'
 
 // Basic algorithm to determine the eligible pool
 export function generateDraftPool(
@@ -27,8 +28,10 @@ export function generateDraftPool(
     pool = applyLocation(pool, draft)
   }
   pool = applyDraftingBlocks(pool, game, day, draft)
-  pool = applyFilters(pool, game, day, draft)
   pool = setDynamicRarities(pool, game, day, house)
+  if (draft !== undefined) {
+    pool = applyDraftLogic(pool, game, day, house, draft)
+  }
   return pool
 }
 
@@ -106,7 +109,7 @@ function getBasePool(
 }
 
 // Apply drafting blocks, and annotate probabilistic ones.
-// TODO: update "p"
+// TODO: update "p" instead of attaching annotations
 function applyDraftingBlocks(
   pool: DraftPool,
   game: GameState,
@@ -242,6 +245,7 @@ function setDynamicRarities(
 
   // Append rarity annotations for things we can't determine exactly
   pool = { ...pool, rarityOverrides: dynamicRarities }
+  
   for (const [slug, notes] of Object.entries(annotations)) {
     for (const note of notes) {
       pool = annotateRoom(pool, note, slug)
@@ -259,8 +263,9 @@ function applyLocation(
   // https://www.reddit.com/r/BluePrince/comments/1ltsn1t/drafting_mechanics_room_placement_restrictions/
 
   // TODO:
-  // - idiosyncrasis of different classrooms
+  // - idiosyncrasies of different classrooms
   // - pawn armory
+  // - chamber of mirrors rooms having different exits
 
   if (draft === 'outer') {
     const eligible = new Set(OUTER_ROOMS)
@@ -292,7 +297,6 @@ function applyLocation(
 
 
 // Step 6
-// First draft impl: ignores detailed drafted mechanics. 
 function applyFilters(
   pool: DraftPool,
   game: GameState,
@@ -341,45 +345,26 @@ function applyFilters(
   })
 
   // Conditional filters
-  // Complicated because, if no rooms pass a conditional filter, the game will redraw 
-  // without without cond. filters. This is always possible, so the effect is just to
-  // artifically reduce the rarity of rooms not passing any filters. 
-  // We can't get this exactly right since we're ignoring some of the filters, esp.
-  // between-slot interactions.
   const conditionalFilteredPool = filteredPool
     .filter(([, fr]) => fr === null)
     .map(([pr,]) => {
-      let pCond = 1.0
+      let p
       let failReason: string | null = null
       let condFilterResult = applyConditionalFilters(condFilters, pr)
       if ('p' in condFilterResult) {
-        pCond = pCond * condFilterResult.p
+        p = pr.p * condFilterResult.p
       } else {
-        pCond = 0
+        p = 0
         failReason = condFilterResult.failReason
       }
       return (
         [
-          { ...pr, pCond: pr.p * pCond },
-          failReason] as [PooledRoom & { pCond: number }, string])
+          { ...pr, p: p },
+          failReason
+        ] as [PooledRoom, string])
     })
 
-  // Probability ofthat rooms passing conditional filter list
-  const pNoCondFilterPasses = conditionalFilteredPool.reduce((acc, [pr,]) => {
-    return acc * (1 - pr.pCond)
-  }, 1.0)
-
-  const finalPool = conditionalFilteredPool.map(([{ pCond, ...pr }, fr]) => {
-    if (pCond >= 0.0001) {
-      // Sum the two probabilities: first draw with pCond, 2nd with normal p
-      return [{ ...pr, p: pCond + pr.p * pNoCondFilterPasses }, fr]
-    } else {
-      // Multiply probabilities of all rooms not passing the conditional filters by pNoCondFilterPasses
-      return [{ ...pr, p: pr.p * pNoCondFilterPasses }, fr]
-    }
-  }) as [PooledRoom, string][]
-
-  const [newRooms, removedRooms] = partition(finalPool, ([pr,]) => (pr.p > 0.00001))
+  const [newRooms, removedRooms] = partition(conditionalFilteredPool, ([pr,]) => (pr.p > 0.00001))
 
   return {
     ...pool,
@@ -389,30 +374,20 @@ function applyFilters(
 }
 
 
-// WIP full impl.
+// WIP more-complete impl.
 function applyDraftLogic(
   pool: DraftPool,
   game: GameState,
+  day: DayState,
+  house: HouseState,
   draft: DraftParams,
-  day: DayState
 ): DraftPool {
 
   // TODO
+  // https://www.reddit.com/r/BluePrince/comments/1liagtk/outer_room_basic_draft_rates_effects_of_rarity/
   if (draft == 'outer') {
-    return pool
+    return pool 
   }
-
-  // Split into 8 decks
-  const decks: Record<string, PooledRoom[]> = {}
-  for (const pr of pool.rooms) {
-    const rarity = pool.rarityOverrides[pr.room.slug] || pr.room.baseRarity
-    const freeGem = pr.room.baseGemCost > 0 ? 'gem' : 'free'
-    const deck = `${rarity}-${freeGem}`
-    decks[deck] = [... (decks[deck] || []), pr]
-  }
-
-  const condFilters = getConditionalFilters(game, day)
-
 
   // Actual Procedure, approximately:
   //
@@ -436,8 +411,7 @@ function applyDraftLogic(
   // For each slot:
   // - find probability of each deck being chosen (rarity x free | gem).
   // - simulate the whole deck-fallback procedure, which is deterministic:
-  //   - if no decks have enough cards, fallback to draw 2:
-  //     
+  //   - if no decks have enough cards, fallback to draw 2...
   //   - if not enough cards in deck, next rarity is used in priority order.
   //   - should be able to determine exactly whether the resulting draw is from the first deck,
   //     or 1/(number of viable decks)
@@ -455,26 +429,67 @@ function applyDraftLogic(
   // Add p(draw 2) * (draw 2 probability vector)
 
 
-  for (const attempt of [1, 2, 3]) {
-    for (const [deck, rooms] of Object.entries(decks)) {
-      for (let pr of rooms) {
-        let filterResult = applyOtherFilters(pr, pool, draft)
+  // Apply runback/conditional filters in advance, why not?
+  const filteredPool = applyFilters(pool, game, day, draft)
 
-        if (attempt == 1) {
-          let condFilterResult = applyConditionalFilters(condFilters, pr)
+
+  // Split into 8 decks: 4 free by rarity, 4 gem by rarity
+  const decks = Array(8).fill([]) as DeckList
+  for (const pr of filteredPool.rooms) {
+    const rarity: Rarity = filteredPool.rarityOverrides[pr.room.slug] || pr.room.baseRarity
+    const freeGem = pr.room.baseGemCost > 0 ? 1 : 0
+    const deckIdx = (rarity - 1) + 4 * freeGem
+    decks[deckIdx] = [... decks[deckIdx], pr]
+  }
+
+  // Counting Cards step
+  const effectiveDecks = countCards(decks, day.day, game.vmode, game.haveRoom46)
+
+  // TODO: if any decks wind up empty, retry the whole draw without filters.
+
+  const rank = draft.toLocation.tile.row
+  const pGems = getPGemBySlot(
+    draft.gems || 0, house.placedRooms.length - 2, rank, day.day, game.vmode
+  )
+  const slots = [1, 2, 3]
+
+  // Determine the pool per-slot, with probabilities of each room
+  const slotPools = slots.map((s) => {
+    const slotPool: Record<string, PooledRoom> = {}
+
+    const pRarities = getRarityProbabilities(
+      day.day, s as 1 | 2 | 3, draft.toLocation.tile.row, false
+    )
+    const pGem = pGems[s - 1]
+    const pDecks = Array(8).fill(0)
+    for (const [rarityIdx, pRarity] of pRarities.entries()) {
+      pDecks[rarityIdx] = pRarity * (1 - pGem)
+      pDecks[rarityIdx + 4] = pRarity * pGem
+    }
+    
+    for (const [deckIdx, deck] of effectiveDecks.entries()) {
+      const pDeck = pDecks[deckIdx]
+      for (const pr of deck) {
+        if (!slotPool[pr.room.slug]) {
+          slotPool[pr.room.slug] = {... pr, p: pr.p * pDeck}
+        } else {
+          // Probabilities add
+          slotPool[pr.room.slug] = {... pr, p: slotPool[pr.room.slug].p + pr.p * pDeck}
         }
       }
     }
-  }
+    return slotPool
+  })
 
+  // Finally, return the pool with the per-slot probabilities attached
+  const finalRooms = pool.rooms.map((pr) => {
+    return {
+      ...pr,
+      pSlot: slotPools.map((sp) => sp[pr.room.slug] ? sp[pr.room.slug].p : 0)
+    } as PooledRoom
+  })
+  return { ...pool, rooms: finalRooms }
 
-
-
-
-
-
-  // handle schoolhouse vs normal classrooms?
-  // handle chamber of mirrors rooms having different exits?
 
   // weighted rooms
   // https://www.reddit.com/r/BluePrince/comments/1lzdvv9/drafting_mechanics_weighted_rooms_the_library_and/
@@ -483,12 +498,5 @@ function applyDraftLogic(
   // fromRoom
   // handle tunnel, duct drafts, library -> rare | bookshop
   // https://www.reddit.com/r/BluePrince/comments/1lzdvv9/drafting_mechanics_weighted_rooms_the_library_and/
-
-  // previousDraft
-
-  // outer room stuff:
-  // https://www.reddit.com/r/BluePrince/comments/1liagtk/outer_room_basic_draft_rates_effects_of_rarity/
-
-  return pool
 }
 

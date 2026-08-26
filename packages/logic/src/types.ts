@@ -1,5 +1,5 @@
 /** 1 = commonplace, 2 = standard, 3 = unusual, 4 = rare, null = special */
-export type Rarity = 1 | 2 | 3 | 4 | null
+export type Rarity = 1 | 2 | 3 | 4
 export type RoomColor = 'blue' | 'purple' | 'orange' | 'green' | 'gold' | 'red' | 'black'
 export type Direction = 'N' | 'S' | 'E' | 'W'
 export type TileColumn = 'A' | 'B' | 'C' | 'D' | 'E'
@@ -28,7 +28,7 @@ export interface Room {
   slug: string
   assetPath: string
   color: RoomColor[]
-  baseRarity: Rarity
+  baseRarity: Rarity | null
   baseGemCost: number
   doors: number | null
   directoryPage: number  // 1-9
@@ -36,4 +36,3 @@ export interface Room {
   tags: string[]
   description: string | null
 }
-

@@ -31,7 +31,7 @@
     houseState = { ...houseState, placedRooms: arr };
   }
 
-  function raritySort(r: Rarity): number {
+  function raritySort(r: Rarity | null): number {
     return r === null ? 5 : r;
   }
 
@@ -136,7 +136,7 @@
               {/each}
             </td>
             <td class="name">{room.name}</td>
-            <td class="rarity rarity-{effectiveRarity}">{rarityName(effectiveRarity)}</td>
+            <td class="rarity rarity-{effectiveRarity}">{effectiveRarity ? rarityName(effectiveRarity) : ""}</td>
             <td class="reason">{reason ?? ""}</td>
             <td class="prob" data-tooltip={pFull}>{p < 1 ? pDisplay : ""}</td>
           </tr>
@@ -154,11 +154,11 @@
         <th>Doors</th>
         <th class="gems-col">Gems</th>
         <th>Source</th>
-        <th class="prob-col"><span class="prob-col-label" data-tooltip="~probability this room survives conditional filtering">P[in pool]</span></th>
+        <th class="prob-col" colspan="3"><span class="prob-col-label" data-tooltip="probability this room appears in each slot">P[slot]</span></th>
       </tr>
     </thead>
     <tbody>
-      {#each sortedRooms as { room, source, upgrade, p }, i (room.slug + (source ?? "") + i)}
+      {#each sortedRooms as { room, source, upgrade, p, pSlot }, i (room.slug + (source ?? "") + i)}
         {@const effectiveRarity =
           draftPool.rarityOverrides[room.slug] ?? room.baseRarity}
         {@const annotations = draftPool.annotations[room.slug]}
@@ -224,7 +224,13 @@
                 >{SOURCE_LABELS[source] ?? source}</span
               >{/if}
           </td>
-          <td class="prob" data-tooltip={p < 1 ? p.toPrecision(2) : undefined}>{p < 1 ? p.toFixed(2) : ""}</td>
+          {#if pSlot}
+            {#each pSlot as slotP}
+              <td class="prob" data-tooltip={slotP > 0 && slotP < 1 ? slotP.toPrecision(2) : undefined}>{slotP > 0 ? slotP.toFixed(2) : ""}</td>
+            {/each}
+          {:else}
+            <td class="prob" colspan="3"></td>
+          {/if}
         </tr>
       {/each}
     </tbody>

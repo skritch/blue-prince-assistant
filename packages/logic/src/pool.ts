@@ -30,8 +30,11 @@ export interface PooledRoom {
   room: Room
   source?: RoomSource
   upgrade?: Upgrade,
-  p: number
-  pCond: number
+  // probability of actually drafting
+  // not really possible to calculate, but we use this as an intermediate value
+  p: number 
+  pInPool?: number
+  pSlot?: [number, number, number]
 }
 
 export interface RemovedRoom extends PooledRoom {
