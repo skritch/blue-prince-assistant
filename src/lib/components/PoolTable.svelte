@@ -154,7 +154,7 @@
         <th>Doors</th>
         <th class="gems-col">Gems</th>
         <th>Source</th>
-        <th class="prob-col" colspan="3" style="text-align: center;"><span class="prob-col-label" data-tooltip="probability this room appears in each slot">%[slot]</span></th>
+        <th class="prob-col" colspan="3" style="text-align: center;"><span class="prob-col-label" data-tooltip="approximate chance this room appears in each slot">%[slot]</span></th>
       </tr>
     </thead>
     <tbody>
@@ -303,6 +303,8 @@
 
   .colors {
     white-space: nowrap;
+    width: 90px;
+    min-width: 90px;
   }
 
   .color-dot {
@@ -491,6 +493,11 @@
     z-index: 10;
   }
 
+  .source {
+    width: 90px;
+    min-width: 90px;
+  }
+
   .source-label {
     font-size: 0.75rem;
     color: var(--text-muted);
@@ -543,6 +550,8 @@
     white-space: nowrap;
     text-align: left;
     padding-left: 0.4rem;
+    width: 72px;
+    min-width: 72px;
   }
 
   .placed-count {
