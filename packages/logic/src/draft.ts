@@ -2,6 +2,7 @@ import type { Direction, RoomColor, GridTile, TileRow, Rarity } from './types'
 
 import rawRarityProbabilities from './data/rarityProbabilities.json'
 import type { PooledRoom } from './pool'
+import { binomialAtLeast } from './math'
 
 
 const RARITY_PROBABILITIES = rawRarityProbabilities as unknown as Record<string, Record<'byRank', [number, number, number, number][]>>
@@ -80,11 +81,11 @@ function rareCheckSlot3Chance(gems: number, roomsDrafted: number, rank: number) 
 }
 
 export function getPGemBySlot(
-  gems: number, 
+  gems: number,
   slot: 1 | 2 | 3,
   roomsDrafted: number,
-  rank: TileRow, 
-  day: number, 
+  rank: TileRow,
+  day: number,
   vMode: boolean
 ): number {
   let pGems: [number, number, number]
@@ -93,8 +94,8 @@ export function getPGemBySlot(
     || (day == 1 && roomsDrafted < 6)
     || (day == 2 && roomsDrafted < 5)
     || (day == 3 && roomsDrafted < 4)
-  ) { 
-    pGems = [0, 0, 0] 
+  ) {
+    pGems = [0, 0, 0]
   }
 
   const slot2chance = rareCheckSlot2Chance(gems, rank)
@@ -137,26 +138,26 @@ export function getRarityProbabilities(
 
 export const RARITY_FALLBACKS = {
   1: [2, 3, 4],
-  2: [1, 3, 4], 
+  2: [1, 3, 4],
   3: [2, 1, 4],
   4: [3, 2, 1]
 }
 export const LIBRARY_RARITY_FALLBACKS = {
   1: [4, 3, 2],
-  2: [4, 3, 1], 
+  2: [4, 3, 1],
   3: [4, 2, 1],
   4: [3, 2, 1]
 }
 
 // array of 8 counts for accepting cards
 export function getCardsForDraw(
-  day: number, 
+  day: number,
   vmode: boolean,
   room46: boolean,
 ) {
   const free = [3, 3, 3, 3]
   let gem
-  if (vmode || room46 || day >= 16 ) { gem = [5, 5, 4, 4]}
+  if (vmode || room46 || day >= 16) { gem = [5, 5, 4, 4] }
   if (day >= 8) { gem = [4, 4, 3, 3] }
   else { gem = [4, 3, 3, 3] }
   return [...free, ...gem]
@@ -165,14 +166,18 @@ export function getCardsForDraw(
 export type Deck = PooledRoom[]
 export type DeckList = [Deck, Deck, Deck, Deck, Deck, Deck, Deck, Deck]
 
-// Step of the drafting process where we determine which "deck" has enough
-// cards to draw from. 
+// Step of the drafting process where we determine which "decks" have enough
+// cards to draw from. We return an array of 8 "effective" decks, which have
+// already incorporated all rarity fallbacks and assigned probabilities to
+// each card, along with a probability of each accepted deck having *actually*
+// been accepted (given that its cards have been filtered out, making it too
+// small to actually accept.)
 export function countCards(
   decks: DeckList,
-  day: number, 
+  day: number,
   vmode: boolean,
   haveRoom46: boolean,
-): DeckList {
+): { effectiveDecks: DeckList, acceptancePs: number[] } {
 
   // Counting Cards step
   const cardsForDraw = getCardsForDraw(day, vmode, haveRoom46)
@@ -180,11 +185,25 @@ export function countCards(
   // List of lists of decks we might consider, indexed by rarity x freegem
   // Each entry will contain either a single deck, to draw from,
   // A list of decks, from which one should be chosen randomly,
-  // Or an empty array, in which case drawing failed.
+  // Or an empty array, in which case drawing 100% failed.
   const acceptedDecks: Deck[][] = Array(8).fill([])
 
+  // Most filters only keep cards with some probability. Even if the filtered
+  // pool has enough cards, there is a good chance it won't, and a draft 2 will occur.
+  // It would be infeasible to simulate every possibility, so our plan is:
+  // - for each deck, along with its fallbacks...
+  // - when we first come to a deck which possibly has enough cards to draw from...
+  // - find the average probability of each of those cards being in the deck...
+  //   (usually around 0.4, excep for the rarity bump filters around 0.3)
+  // - for N cards, and k = cardsForDraw for this deck, p = average p
+  // - P(has enough cards) = P(k or more of N p-coins come up heads)
+  //                       = 1 - BinomialCDF(k-1; N, p)
+  // This will miss all cases where the first big-enough deck we encounter randomly
+  // *doesn't* have enough cards, but a later deck would have enough.
+  const acceptancePs: number[] = Array(8).fill(0)
+
   // Marking / accepting decks steps
-  for (let idx = 0; idx < 8; idx ++) {
+  for (let idx = 0; idx < 8; idx++) {
     const rarity = idx % 4 + 1 as Rarity
     const freeGem = Math.floor(idx / 4) as 0 | 1
 
@@ -194,24 +213,32 @@ export function countCards(
 
     for (const rarity2 of withFallbacks) {
       const idx2 = (rarity2 - 1) + 4 * freeGem
-      const dl2 = decks[idx2].length
+      const k = cardsForDraw[idx2]
+      const d2 = decks[idx2]
 
       // TODO: is this logic right?
       // Do we choose randomly among "marked" decks if there is a deck
-      // passing the first check?
-      if (dl2 >= cardsForDraw[idx2]) {
-        // Maybe should be
-        // = [ decks[idx2] ]
-        acceptedDecks[idx] = [...markedDecks, decks[idx2]]
+      // passing the first check? Most will be nearly empty... seems weird.
+      if (d2.length >= k) {
+        acceptedDecks[idx] = [...markedDecks, d2]
+
+        // Record the approximate P(this actually has enough cards)
+        const sumPs = d2
+          .map((room) => room.p)
+          .reduce((acc, cur) => acc + cur)
+        const avgP = sumPs / d2.length
+        const pAccepted = binomialAtLeast(d2.length, avgP, k - 1)
+        acceptancePs[idx] = pAccepted
+
         // Stop iterating fallbacks when we get a deck that passing card-counting
         break
-      } else if (dl2 > 0) {
+      } else if (d2.length > 0) {
         // As long as it has any cards, "mark" it for inclusion
-       markedDecks = [...markedDecks, decks[idx2]]
+        markedDecks = [...markedDecks, d2]
       }
     }
-    
-    // If we get here and no deck has been accepted, the draw failed
+
+    // If we get here and no deck has been accepted, the draw definitely failed
     // and acceptedDecks[idx] will be empty
   }
 
@@ -224,14 +251,15 @@ export function countCards(
     if (decklist.length == 1) {
       const deck = decklist[0]
       const pRoom = 1 / deck.length
-      return deck.map((pr) => ({ ...pr, p: pr.p * pRoom}))
+      return deck.map((pr) => ({ ...pr, p: pr.p * pRoom }))
     }
     if (decklist.length > 1) {
       const pDeck = 1 / decklist.length
       return decklist
         .map((deck) => {
           const pRoom = 1 / decklist.length
-          return deck.map((pr) => ({ ...pr, p: pr.p * pRoom * pDeck}))}
+          return deck.map((pr) => ({ ...pr, p: pr.p * pRoom * pDeck }))
+        }
         )
         .reduce((acc, cur) => ([...acc, ...cur]), [])
     }
@@ -240,7 +268,7 @@ export function countCards(
     }
   }) as DeckList
 
-  return effectiveDecks
+  return { effectiveDecks, acceptancePs: acceptancePs }
 }
 
 

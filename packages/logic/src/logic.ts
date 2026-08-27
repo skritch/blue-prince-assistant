@@ -245,7 +245,7 @@ function setDynamicRarities(
 
   // Append rarity annotations for things we can't determine exactly
   pool = { ...pool, rarityOverrides: dynamicRarities }
-  
+
   for (const [slug, notes] of Object.entries(annotations)) {
     for (const note of notes) {
       pool = annotateRoom(pool, note, slug)
@@ -371,7 +371,7 @@ function applyFilters(
       })
 
   }
-  
+
   const [newRooms, removedRooms] = partition(
     filteredPool, ([pr,]) => (pr.p > 0)
   )
@@ -383,6 +383,120 @@ function applyFilters(
   }
 }
 
+// Most of the drafting logic is here, factored out of the main function so it
+// can call itself recursively for redraws.
+function draftSlots(
+  pool: DraftPool,
+  game: GameState,
+  day: DayState,
+  house: HouseState,
+  draft: DraftParams,
+  useConditionalFilters: boolean = true
+): [Record<string, PooledRoom>, Record<string, PooledRoom>, Record<string, PooledRoom>] {
+
+  // TODO
+  // https://www.reddit.com/r/BluePrince/comments/1liagtk/outer_room_basic_draft_rates_effects_of_rarity/
+  if (draft == 'outer') {
+    return [{}, {}, {}]
+  }
+
+  // Apply runback/conditional filters in advance, why not?
+  const filteredPool = applyFilters(pool, game, day, draft, useConditionalFilters)
+
+
+  // Split into 8 decks: 4 free by rarity, 4 gem by rarity
+  const decks = Array(8).fill([]) as DeckList
+  for (const pr of filteredPool.rooms) {
+    const rarity: Rarity = filteredPool.rarityOverrides[pr.room.slug] || pr.room.baseRarity
+    const freeGem = pr.room.baseGemCost > 0 ? 1 : 0
+    const deckIdx = (rarity - 1) + 4 * freeGem
+    decks[deckIdx] = [...decks[deckIdx], pr]
+  }
+
+  // Counting Cards step
+  const { effectiveDecks, acceptancePs } = countCards(decks, day.day, game.vmode, game.haveRoom46)
+
+  // If the first draw's choice of (free | gem) x rarity, with all fallbacks,
+  // failed to find a deck with enough cards to draw from, the draw has failed.
+  // A new draw will tried, *with a new choice of gems and rarities*, but without
+  // conditional filters.
+  // Therefore we should run this whole algorithm again, without cond. filters,
+  // and then insert its entire result for that slot as the effectiveDeck to be 
+  // drawn from for that gem/rarity combo.
+  // TODO: cards only have a chance of being accepted by filters...
+  let draw2pools
+  if (useConditionalFilters) {
+    draw2pools = draftSlots(pool, game, day, house, draft, false)
+  } else {
+    draw2pools = [{}, {}, {}]
+  }
+
+
+  const rank = draft.toLocation.tile.row
+  const slots = [1, 2, 3]
+
+  // Determine the pool per-slot, with probabilities of each room
+  const slotPools = slots.map((s) => {
+    const slotPool: Record<string, PooledRoom> = {}
+    const pRarities = getRarityProbabilities(
+      day.day, s as 1 | 2 | 3, draft.toLocation.tile.row, false
+    )
+    const pGem = getPGemBySlot(
+      draft.gems || 0,
+      s as 1 | 2 | 3,
+      house.placedRooms.length - 2, rank, day.day, game.vmode
+    )
+    const pDecks = Array(8).fill(0)
+    for (const [rarityIdx, pRarity] of pRarities.entries()) {
+      pDecks[rarityIdx] = pRarity * (1 - pGem)
+      pDecks[rarityIdx + 4] = pRarity * pGem
+    }
+
+    // For each deck, handle the case where it might have been rejected earlier 
+    // during the counting-cards step, causing a second draw. These add the same
+    // rooms, regardless of which deck choice caused the 2nd draw
+    // Keep track of the probability of a second draw here.
+    let pRedraw = 0
+
+    for (const [deckIdx, deck] of effectiveDecks.entries()) {
+      const pDeck = pDecks[deckIdx]
+      const pAccepted = acceptancePs[deckIdx]
+      pRedraw = pRedraw + pDeck * (1 - pAccepted)
+
+      for (const pr of deck) {
+        if (!slotPool[pr.room.slug]) {
+          slotPool[pr.room.slug] = { ...pr, p: pr.p * pDeck * pAccepted }
+        } else {
+          slotPool[pr.room.slug] = {
+            ...pr,
+            // Add to existing probability mass
+            p: slotPool[pr.room.slug].p + pr.p * pDeck * pAccepted
+          }
+        }
+      }
+    }
+
+    // The result of a redraw for this slot
+    const draw2pool: Record<string, PooledRoom> = draw2pools[s - 1]
+
+    // Add redraw results to probability mass
+    for (const pr of Object.values(draw2pool)) {
+      if (!slotPool[pr.room.slug]) {
+        slotPool[pr.room.slug] = { ...pr, p: pr.p * pRedraw }
+      } else {
+        slotPool[pr.room.slug] = {
+          ...pr,
+          // Add to existing probability mass
+          p: slotPool[pr.room.slug].p + pr.p * pRedraw
+        }
+      }
+    }
+
+    return slotPool
+  })
+
+  return slotPools as [Record<string, PooledRoom>, Record<string, PooledRoom>, Record<string, PooledRoom>]
+}
 
 // WIP more-complete impl.
 // Actual Procedure, approximately:
@@ -426,98 +540,6 @@ function applyFilters(
 // Add p(draw 2) * (draw 2 probability vector)
 //
 // Returns the pool for each slot, keyed by slug, with "p" set appropriately.
-function draftSlots(
-  pool: DraftPool,
-  game: GameState,
-  day: DayState,
-  house: HouseState,
-  draft: DraftParams,
-  useConditionalFilters: boolean = true
-): [Record<string, PooledRoom>, Record<string, PooledRoom>, Record<string, PooledRoom>] {
-
-  // TODO
-  // https://www.reddit.com/r/BluePrince/comments/1liagtk/outer_room_basic_draft_rates_effects_of_rarity/
-  if (draft == 'outer') {
-    return [{}, {}, {}] 
-  }
-
-  // Apply runback/conditional filters in advance, why not?
-  const filteredPool = applyFilters(pool, game, day, draft, useConditionalFilters)
-
-
-  // Split into 8 decks: 4 free by rarity, 4 gem by rarity
-  const decks = Array(8).fill([]) as DeckList
-  for (const pr of filteredPool.rooms) {
-    const rarity: Rarity = filteredPool.rarityOverrides[pr.room.slug] || pr.room.baseRarity
-    const freeGem = pr.room.baseGemCost > 0 ? 1 : 0
-    const deckIdx = (rarity - 1) + 4 * freeGem
-    decks[deckIdx] = [... decks[deckIdx], pr]
-  }
-
-  // Counting Cards step
-  const effectiveDecks: DeckList = countCards(decks, day.day, game.vmode, game.haveRoom46)
-
-  // If the first draw's choice of (free | gem) x rarity, with all fallbacks,
-  // failed to find a deck with enough cards to draw from, the draw has failed.
-  // A new draw will tried, *with a new choice of gems and rarities*, but without
-  // conditional filters.
-  // Therefore we should run this whole algorithm again, without cond. filters,
-  // and then insert its entire result for that slot as the effectiveDeck to be 
-  // drawn from for that gem/rarity combo.
-  // TODO: cards only have a chance of being accepted by filters...
-  let draft2slotPools
-  if (useConditionalFilters) {
-    draft2slotPools = draftSlots(pool, game, day, house, draft, false)
-  } else {
-    draft2slotPools = [{}, {}, {}]
-  }
-  
-
-  const rank = draft.toLocation.tile.row
-  const slots = [1, 2, 3]
-
-  // Determine the pool per-slot, with probabilities of each room
-  const slotPools = slots.map((s) => {
-    const slotPool: Record<string, PooledRoom> = {}
-
-    // Replace empty decks with the result of draw 2 for this slot
-    const draft2pool = Object.values(draft2slotPools[s - 1])
-    const effDecksForSlot = effectiveDecks.map(
-      (deck) => deck.length > 0 ? deck : draft2pool
-    )
-
-    const pRarities = getRarityProbabilities(
-      day.day, s as 1 | 2 | 3, draft.toLocation.tile.row, false
-    )
-    const pGem = getPGemBySlot(
-      draft.gems || 0, 
-      s as 1 | 2 | 3, 
-      house.placedRooms.length - 2, rank, day.day, game.vmode
-    )
-    const pDecks = Array(8).fill(0)
-    for (const [rarityIdx, pRarity] of pRarities.entries()) {
-      pDecks[rarityIdx] = pRarity * (1 - pGem)
-      pDecks[rarityIdx + 4] = pRarity * pGem
-    }
-    
-    for (const [deckIdx, deck] of effDecksForSlot.entries()) {
-      const pDeck = pDecks[deckIdx]
-
-      for (const pr of deck) {
-        if (!slotPool[pr.room.slug]) {
-          slotPool[pr.room.slug] = {... pr, p: pr.p * pDeck}
-        } else {
-          // Probabilities add
-          slotPool[pr.room.slug] = {... pr, p: slotPool[pr.room.slug].p + pr.p * pDeck}
-        }
-      }
-    }
-    return slotPool
-  })
-
-  return slotPools as [Record<string, PooledRoom>, Record<string, PooledRoom>, Record<string, PooledRoom>]
-}
-
 export function applyDraftLogic(
   pool: DraftPool,
   game: GameState,
