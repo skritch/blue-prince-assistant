@@ -22,7 +22,7 @@ export class PVec {
     return Object.entries(this.data)
   }
 
-  size(): number {
+  get length(): number {
     return Object.keys(this.data).length
   }
 

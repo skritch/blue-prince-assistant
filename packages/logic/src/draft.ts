@@ -2,7 +2,7 @@ import type { Direction, RoomColor, GridTile, TileRow, Rarity } from './types'
 
 import rawRarityProbabilities from './data/rarityProbabilities.json'
 import type { PooledRoom } from './pool'
-import { binomialAtLeast } from './math'
+import { binomialAtLeast, PVec } from './math'
 
 
 const RARITY_PROBABILITIES = rawRarityProbabilities as unknown as Record<string, Record<'byRank', [number, number, number, number][]>>
@@ -163,7 +163,7 @@ export function getCardsForDraw(
   return [...free, ...gem]
 }
 
-export type Deck = PooledRoom[]
+export type Deck = PVec
 export type DeckList = [Deck, Deck, Deck, Deck, Deck, Deck, Deck, Deck]
 
 // Step of the drafting process where we determine which "decks" have enough
@@ -207,7 +207,7 @@ export function countCards(
     const rarity = idx % 4 + 1 as Rarity
     const freeGem = Math.floor(idx / 4) as 0 | 1
 
-    // Simpler to iterate all 4 rarities start with this one.
+    // Simpler to iterate all 4 rarities starting with this one.
     const withFallbacks = [rarity, ...RARITY_FALLBACKS[rarity]]
     let markedDecks: Deck[] = []
 
@@ -223,10 +223,7 @@ export function countCards(
         acceptedDecks[idx] = [...markedDecks, d2]
 
         // Record the approximate P(this actually has enough cards)
-        const sumPs = d2
-          .map((room) => room.p)
-          .reduce((acc, cur) => acc + cur)
-        const avgP = sumPs / d2.length
+        const avgP = d2.mean()
         const pAccepted = binomialAtLeast(d2.length, avgP, k - 1)
         acceptancePs[idx] = pAccepted
 
@@ -239,7 +236,7 @@ export function countCards(
     }
 
     // If we get here and no deck has been accepted, the draw definitely failed
-    // and acceptedDecks[idx] will be empty
+    // acceptedDecks[idx] will be [] and acceptancePs[idx] will be 0
   }
 
   // We can go ahead and calculate the effective probability of each card
@@ -251,17 +248,17 @@ export function countCards(
     if (decklist.length == 1) {
       const deck = decklist[0]
       const pRoom = 1 / deck.length
-      return deck.map((pr) => ({ ...pr, p: pr.p * pRoom }))
+      return deck.mult(pRoom)
     }
     if (decklist.length > 1) {
       const pDeck = 1 / decklist.length
       return decklist
         .map((deck) => {
           const pRoom = 1 / decklist.length
-          return deck.map((pr) => ({ ...pr, p: pr.p * pRoom * pDeck }))
+          return deck.mult(pRoom * pDeck)
         }
         )
-        .reduce((acc, cur) => ([...acc, ...cur]), [])
+        .reduce((acc, cur) => acc.add(cur), PVec.empty())
     }
     else {
       return []

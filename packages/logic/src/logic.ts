@@ -11,6 +11,7 @@ import { countCards, getPGemBySlot, getRarityProbabilities, type DeckList, type 
 import { applyConditionalFilters, getConditionalFilters, RUNBACK_P_BY_RARITY } from './filters'
 import { partition } from './utils'
 import type { Rarity } from './types'
+import { PVec } from './math'
 
 // Basic algorithm to determine the eligible pool
 export function generateDraftPool(
@@ -392,12 +393,12 @@ function draftSlots(
   house: HouseState,
   draft: DraftParams,
   useConditionalFilters: boolean = true
-): [Record<string, PooledRoom>, Record<string, PooledRoom>, Record<string, PooledRoom>] {
+): [PVec, PVec, PVec] {
 
   // TODO
   // https://www.reddit.com/r/BluePrince/comments/1liagtk/outer_room_basic_draft_rates_effects_of_rarity/
   if (draft == 'outer') {
-    return [{}, {}, {}]
+    return [PVec.empty(), PVec.empty(), PVec.empty()]
   }
 
   // Apply runback/conditional filters in advance, why not?
@@ -405,12 +406,12 @@ function draftSlots(
 
 
   // Split into 8 decks: 4 free by rarity, 4 gem by rarity
-  const decks = Array(8).fill([]) as DeckList
+  const decks = Array(8).fill(PVec.empty()) as DeckList
   for (const pr of filteredPool.rooms) {
     const rarity: Rarity = filteredPool.rarityOverrides[pr.room.slug] || pr.room.baseRarity
     const freeGem = pr.room.baseGemCost > 0 ? 1 : 0
     const deckIdx = (rarity - 1) + 4 * freeGem
-    decks[deckIdx] = [...decks[deckIdx], pr]
+    decks[deckIdx] = decks[deckIdx].set(pr.room.slug, pr.p)
   }
 
   // Counting Cards step
@@ -424,20 +425,19 @@ function draftSlots(
   // and then insert its entire result for that slot as the effectiveDeck to be 
   // drawn from for that gem/rarity combo.
   // TODO: cards only have a chance of being accepted by filters...
-  let draw2pools
-  if (useConditionalFilters) {
-    draw2pools = draftSlots(pool, game, day, house, draft, false)
-  } else {
-    draw2pools = [{}, {}, {}]
-  }
-
+  const draw2pools = (useConditionalFilters
+    ? draftSlots(pool, game, day, house, draft, false)
+    : [PVec.empty(), PVec.empty(), PVec.empty()]
+  )
 
   const rank = draft.toLocation.tile.row
   const slots = [1, 2, 3]
 
   // Determine the pool per-slot, with probabilities of each room
   const slotPools = slots.map((s) => {
-    const slotPool: Record<string, PooledRoom> = {}
+
+    let slotPool = PVec.empty()
+
     const pRarities = getRarityProbabilities(
       day.day, s as 1 | 2 | 3, draft.toLocation.tile.row, false
     )
@@ -463,39 +463,18 @@ function draftSlots(
       const pAccepted = acceptancePs[deckIdx]
       pRedraw = pRedraw + pDeck * (1 - pAccepted)
 
-      for (const pr of deck) {
-        if (!slotPool[pr.room.slug]) {
-          slotPool[pr.room.slug] = { ...pr, p: pr.p * pDeck * pAccepted }
-        } else {
-          slotPool[pr.room.slug] = {
-            ...pr,
-            // Add to existing probability mass
-            p: slotPool[pr.room.slug].p + pr.p * pDeck * pAccepted
-          }
-        }
-      }
+      slotPool = slotPool.add(deck.mult(pDeck * pAccepted))
     }
 
     // The result of a redraw for this slot
-    const draw2pool: Record<string, PooledRoom> = draw2pools[s - 1]
+    const draw2pool: PVec = draw2pools[s - 1]
 
     // Add redraw results to probability mass
-    for (const pr of Object.values(draw2pool)) {
-      if (!slotPool[pr.room.slug]) {
-        slotPool[pr.room.slug] = { ...pr, p: pr.p * pRedraw }
-      } else {
-        slotPool[pr.room.slug] = {
-          ...pr,
-          // Add to existing probability mass
-          p: slotPool[pr.room.slug].p + pr.p * pRedraw
-        }
-      }
-    }
-
+    slotPool = slotPool.add(draw2pool.mult(pRedraw))
     return slotPool
   })
 
-  return slotPools as [Record<string, PooledRoom>, Record<string, PooledRoom>, Record<string, PooledRoom>]
+  return slotPools as [PVec, PVec, PVec]
 }
 
 // WIP more-complete impl.
@@ -554,7 +533,7 @@ export function applyDraftLogic(
   const finalRooms = pool.rooms.map((pr) => {
     return {
       ...pr,
-      pSlot: slotPools.map((sp) => sp[pr.room.slug] ? sp[pr.room.slug].p : 0)
+      pSlot: slotPools.map((sp) => sp.get(pr.room.slug) || 0)
     } as PooledRoom
   })
   return { ...pool, rooms: finalRooms }
