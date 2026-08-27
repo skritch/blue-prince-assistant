@@ -22,8 +22,6 @@ export interface HouseDraftParams {
   boilerActivated?: boolean
 
 
-  // TODO: Buggy stuff
-  // - drafting blocks: greenhouse, secret passags, tunnel
 }
 
 export type DraftParams = HouseDraftParams | 'outer'

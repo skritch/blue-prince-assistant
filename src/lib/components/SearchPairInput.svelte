@@ -186,7 +186,7 @@
   .text-input {
     width: 100%;
     padding: 0.25rem 0.4rem;
-    font-size: 0.8rem;
+    font-size: 0.7rem;
     border: 1px solid var(--border);
     border-radius: 3px;
     background: var(--bg);
@@ -285,6 +285,7 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    font-size: 0.7rem;
   }
 
   .remove-btn {

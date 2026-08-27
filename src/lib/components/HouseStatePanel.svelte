@@ -50,12 +50,14 @@
       House Rank Reached:
       <input type="number" min="1" max="9" bind:value={houseState.maxRank} />
     </label>
-    <SearchPairInput
-      label="Placed Rooms ({houseState.placedRooms.length})"
-      searchItems={roomSearchItems}
-      entries={placedEntries}
-      onadd={addRoom}
-      onremove={removeRoom}
-    />
+    {#key houseState.placedRooms}
+      <SearchPairInput
+        label="Placed Rooms ({houseState.placedRooms.length})"
+        searchItems={roomSearchItems}
+        entries={placedEntries}
+        onadd={addRoom}
+        onremove={removeRoom}
+      />
+    {/key}
   </div>
 </details>
