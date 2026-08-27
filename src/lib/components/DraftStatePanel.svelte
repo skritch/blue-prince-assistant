@@ -39,7 +39,10 @@
   );
   let fromRoomSlug = $state(initHouse?.fromRoomSlug ?? "");
   let gems = $state(initHouse?.gems ?? 0);
-  let isFirstDraftAtDoor = $state(initHouse?.isFirstDraftAtDoor ?? false);
+  let isReroll = $state(!(initHouse?.isFirstDraftAtDoor ?? true));
+  let previousDraft = $state<[string, string, string]>(
+    initHouse?.previousDraft ?? ["", "", ""]
+  );
 
   const roomOptions = ROOMS.map((r) => ({ id: r.slug, label: r.name })).sort(
     (a, b) => a.label.localeCompare(b.label),
@@ -51,6 +54,7 @@
     } else if (mode === "outer") {
       draftParams = "outer";
     } else {
+      const hasPreviousDraft = previousDraft.some((s) => s !== "");
       draftParams = {
         toLocation: {
           tile: { column, row: row as TileRow },
@@ -58,7 +62,10 @@
         },
         fromRoomSlug: fromRoomSlug || undefined,
         gems,
-        isFirstDraftAtDoor,
+        isFirstDraftAtDoor: !isReroll,
+        previousDraft: hasPreviousDraft
+          ? (previousDraft as [string, string, string])
+          : undefined,
       };
     }
   });
@@ -100,19 +107,30 @@
         </select>
       </div>
 
-      <div class="inline-fields">
-        <label class="inline-field">
-          From:
-          <SearchInput items={roomOptions} bind:value={fromRoomSlug} placeholder="room..." />
-        </label>
-        <label class="inline-field">
-          Gems:
-          <input type="number" min="0" bind:value={gems} />
-        </label>
-        <label class="inline-field">
-          <input type="checkbox" bind:checked={isFirstDraftAtDoor} />
-          First draft at door
-        </label>
+      <div class="draft-cols">
+        <div class="draft-col">
+          <div class="section-label">Previous draft:</div>
+          <div class="prev-input"><SearchInput items={roomOptions} bind:value={previousDraft[0]} placeholder="slot 1" /></div>
+          <div class="prev-input"><SearchInput items={roomOptions} bind:value={previousDraft[1]} placeholder="slot 2" /></div>
+          <div class="prev-input"><SearchInput items={roomOptions} bind:value={previousDraft[2]} placeholder="slot 3" /></div>
+
+          <label class="checkbox-field">
+            <input type="checkbox" bind:checked={isReroll} />
+            Is reroll
+          </label>
+
+          <div class="drafting-from-section">
+            <div class="section-label">Drafting from:</div>
+            <div class="from-room-input"><SearchInput items={roomOptions} bind:value={fromRoomSlug} placeholder="room" /></div>
+          </div>
+        </div>
+
+        <div class="draft-col">
+          <label class="inline-field">
+            Gems:
+            <input type="number" min="0" bind:value={gems} />
+          </label>
+        </div>
       </div>
     {/if}
   </div>
@@ -129,5 +147,48 @@
     display: flex;
     align-items: center;
     gap: 0.3rem;
+  }
+
+  .draft-cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    align-items: start;
+  }
+
+  .draft-col {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  .section-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-muted);
+    margin-bottom: 0.15rem;
+  }
+
+  .prev-input {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .prev-input :global(.text-input),
+  .from-room-input :global(.text-input) {
+    font-size: 0.7rem;
+  }
+
+  .from-room-input {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .checkbox-field {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
   }
 </style>

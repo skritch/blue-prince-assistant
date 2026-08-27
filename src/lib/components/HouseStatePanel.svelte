@@ -17,9 +17,10 @@
   })).sort((a, b) => a.label.localeCompare(b.label));
 
   let placedEntries: Entry[] = $derived(
-    houseState.placedRooms.map((slug) => ({
+    houseState.placedRooms.map((slug, i) => ({
       keyId: slug,
       keyLabel: roomNameBySlug[slug] ?? slug,
+      removable: !((i === 0 && slug === 'entrance-hall') || (i === 1 && slug === 'antechamber')),
     })),
   );
 
@@ -31,6 +32,11 @@
   }
 
   function removeRoom(i: number) {
+    // Don't allow removing the original entrance hall or antechamber (first two positions)
+    const slug = houseState.placedRooms[i];
+    if (i === 0 && slug === 'entrance-hall') return;
+    if (i === 1 && slug === 'antechamber') return;
+
     const arr = [...houseState.placedRooms];
     arr.splice(i, 1);
     houseState = { ...houseState, placedRooms: arr };
@@ -45,7 +51,7 @@
       <input type="number" min="1" max="9" bind:value={houseState.maxRank} />
     </label>
     <SearchPairInput
-      label="Placed Rooms"
+      label="Placed Rooms ({houseState.placedRooms.length})"
       searchItems={roomSearchItems}
       entries={placedEntries}
       onadd={addRoom}

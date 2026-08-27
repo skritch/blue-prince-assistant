@@ -110,7 +110,7 @@
       class="tab"
       class:active={activeTab === "removed"}
       onclick={() => (activeTab = "removed")}
-    >Removed ({draftPool.removed.length})</button>
+    >Removed ({sortedRemoved.length})</button>
   </div>
 
   {#if activeTab === "removed"}

@@ -121,9 +121,11 @@
             <span class="entry-label">
               {entry.keyLabel}{entry.valueLabel ? ` → ${entry.valueLabel}` : ""}
             </span>
-            <button type="button" class="remove-btn" onclick={() => onremove(i)}
-              >×</button
-            >
+            {#if entry.removable !== false}
+              <button type="button" class="remove-btn" onclick={() => onremove(i)}
+                >×</button
+              >
+            {/if}
           </li>
         {/each}
       </ul>
