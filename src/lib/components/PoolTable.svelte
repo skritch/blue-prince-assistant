@@ -114,6 +114,18 @@
       return ra2 !== rb2 ? ra2 - rb2 : a.room.name.localeCompare(b.room.name);
     }),
   );
+
+  let slotTotals = $derived(() => {
+    const totals = [0, 0, 0];
+    for (const { pSlot } of sortedRooms) {
+      if (pSlot) {
+        for (let i = 0; i < 3; i++) {
+          totals[i] += pSlot[i];
+        }
+      }
+    }
+    return totals;
+  });
 </script>
 
 <section>
@@ -260,6 +272,16 @@
         </tr>
       {/each}
     </tbody>
+    <tfoot>
+      <tr class="totals-row">
+        <td colspan="7"></td>
+        {#each slotTotals() as total, idx}
+          {@const pctValue = total * 100}
+          {@const display = pctValue.toFixed(1)}
+          <td class="prob total">{display}</td>
+        {/each}
+      </tr>
+    </tfoot>
   </table>
   {/if}
 </section>
@@ -660,5 +682,14 @@
   .place-btn.minus:hover {
     background: #ef444422;
     color: #ef4444;
+  }
+
+  .totals-row {
+    border-top: 2px solid var(--border);
+  }
+
+  .totals-row .total {
+    font-weight: 600;
+    color: var(--text);
   }
 </style>

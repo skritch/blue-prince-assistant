@@ -38,8 +38,7 @@ function getBasePool(
   pool: DraftPool,
   game: GameState,
   day: DayState,
-  house: HouseState,
-  draft?: DraftParams
+  house: HouseState
 ): DraftPool {
   if (game.haveRoom46) { pool = addToPool(pool, ROOM_46_REWARDS, 'room46') }
   if (game.haveTrophy && !game.haveRoom46) { pool = addToPool(pool, ['trophy-room'], 'trophy') }

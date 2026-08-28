@@ -50,7 +50,8 @@ const NAME_CORRECTIONS = {
 
 // Rarity corrections for rooms with incorrect data in CSV
 const RARITY_CORRECTIONS = {
-  'wine-cellar': 'unusual'
+  'wine-cellar': 'unusual',
+  'coat-check': 'standard'
 }
 
 function canonicalName(raw) {

@@ -139,18 +139,6 @@ function getRarityProbabilities(
   return RARITY_PROBABILITIES[`week${week}_slot23`]['byRank'][rankRow]
 }
 
-export const RARITY_FALLBACKS = {
-  1: [2, 3, 4],
-  2: [1, 3, 4],
-  3: [2, 1, 4],
-  4: [3, 2, 1]
-}
-export const LIBRARY_RARITY_FALLBACKS = {
-  1: [4, 3, 2],
-  2: [4, 3, 1],
-  3: [4, 2, 1],
-  4: [3, 2, 1]
-}
 
 
 export function getPDeck(
@@ -266,6 +254,20 @@ export function initDecks(
     decks[deckIdx] = decks[deckIdx].set(pr.room.slug, pr.p)
   }
   return decks
+}
+
+
+const RARITY_FALLBACKS = {
+  1: [2, 3, 4],
+  2: [1, 3, 4],
+  3: [2, 1, 4],
+  4: [3, 2, 1]
+}
+const LIBRARY_RARITY_FALLBACKS = {
+  1: [4, 3, 2],
+  2: [4, 3, 1],
+  3: [4, 2, 1],
+  4: [3, 2, 1]
 }
 
 
