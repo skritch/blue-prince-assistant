@@ -262,12 +262,7 @@
           checked={gameState.vmode}
           onchange={(e) => setFlag("vmode", e.currentTarget.checked)}
         />
-        Veteran Mode<a
-          href="https://blueprince.wiki.gg/wiki/Spoilers:Veteran_Mode"
-          target="_blank"
-          rel="noopener"
-          class="wiki-link">↗</a
-        >
+        Veteran Mode
       </label>
       <label
         ><input
@@ -372,17 +367,5 @@
 
   .btn.active:hover {
     opacity: 0.85;
-  }
-
-  .wiki-link {
-    color: var(--accent);
-    text-decoration: none;
-    font-size: 0.65rem;
-    vertical-align: super;
-    line-height: 0;
-  }
-
-  .wiki-link:hover {
-    text-decoration: underline;
   }
 </style>

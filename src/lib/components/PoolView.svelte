@@ -5,6 +5,7 @@
     initDay,
     initHouse,
     ROOMS,
+    roomsForPage,
     type GameState,
     type DayState,
     type HouseState,
@@ -101,13 +102,21 @@
     const randInt = (min: number, max: number) =>
       Math.floor(Math.random() * (max - min + 1)) + min;
 
-    // Get rooms by rarity
+    const lockedSlugs = new Set([
+      ...roomsForPage(7).map((r) => r.slug),
+      ...roomsForPage(8).map((r) => r.slug),
+    ]);
+
+    // Get rooms by rarity, excluding locked pages 7/8
     const commonRooms = ROOMS.filter(
       (r) =>
         r.baseRarity === 1 &&
-        !["entrance-hall", "antechamber"].includes(r.slug),
+        !["entrance-hall", "antechamber"].includes(r.slug) &&
+        !lockedSlugs.has(r.slug),
     );
-    const standardRooms = ROOMS.filter((r) => r.baseRarity === 2);
+    const standardRooms = ROOMS.filter(
+      (r) => r.baseRarity === 2 && !lockedSlugs.has(r.slug),
+    );
     const standardNonDeadEnd = standardRooms.filter(
       (r) => !r.tags.includes("dead-end"),
     );
@@ -152,35 +161,14 @@
       pick(undraftedCommon).slug,
     ];
 
-    // Maybe add found floorplans (50% chance for each)
-    const possibleFloorplans = [
-      "conservatory",
-      "planetarium",
-      "closet-exhibit",
-      "tunnel",
-    ];
-    const foundFloorplans = possibleFloorplans.filter(
-      () => Math.random() > 0.5,
-    );
-
     // Pick a random day < 30
     const randomDay = randInt(1, 29);
-
-    // Update state
-    const basePool = initGameState().pool;
-    const additionalRooms = foundFloorplans
-      .map((slug) => ROOMS.find((r) => r.slug === slug))
-      .filter((r): r is (typeof ROOMS)[number] => r !== undefined);
 
     dayState = initDay(randomDay);
 
     gameState = {
       ...initGameState(),
       haveWestGate: true,
-      pool:
-        additionalRooms.length > 0
-          ? [...basePool, ...additionalRooms]
-          : basePool,
     };
 
     houseState = {

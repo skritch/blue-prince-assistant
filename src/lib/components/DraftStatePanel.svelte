@@ -86,7 +86,7 @@
           <div class="prev-input"><SearchInput items={roomOptions} bind:value={previousDraft[1]} placeholder="slot 2" /></div>
           <div class="prev-input"><SearchInput items={roomOptions} bind:value={previousDraft[2]} placeholder="slot 3" /></div>
 
-          <label class="checkbox-field">
+          <label class="checkbox-field" data-tooltip="When rerolling, all three rooms from the previous draft are always filtered out. On the first draft at a door, they only have a chance of being removed.">
             <input type="checkbox" bind:checked={isReroll} />
             Is reroll
           </label>

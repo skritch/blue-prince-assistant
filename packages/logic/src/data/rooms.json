@@ -491,7 +491,8 @@
     "roomNumber": 31,
     "description": "Breaker box",
     "tags": [
-      "mechanical"
+      "mechanical",
+      "dead-end"
     ]
   },
   {

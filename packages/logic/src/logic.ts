@@ -113,9 +113,9 @@ function applyDraftingBlocks(
   day: DayState,
   draft?: DraftParams
 ) {
+
   // TODO:
   // - try to incorporate blocks persisting from previous drafts? infeasible?
-
   if (!(game.haveRoom46
     || game.foundEpsenTomb
     || (game.vmode && (2 <= day.day && day.day <= 7))
@@ -125,10 +125,12 @@ function applyDraftingBlocks(
     pool = blockDraft(pool, 'her-ladyships-chamber', "blocked until Room 46, Epsen tomb, or day 12, but unblocked in v-mode before day 8")
   }
 
-  if (!game.vmode) {
-    // What mechanic actually removes study? Is it a block?
-    if (day.day < 3) { pool = blockDraft(pool, 'study', "blocked day 1/2, unless in v-mode. Maybe?") }
+  // What mechanic actually removes study? Is it a block?
+  // TODO: I've definitely seen a study day 1, though V-mode should not kick in until day 2.
+  if (day.day < 3 && !game.vmode) {
+    pool = blockDraft(pool, 'study', "blocked day 1/2, unless in v-mode.")
   }
+
 
   if (draft !== undefined && draft !== 'outer') {
     const loc = draft.toLocation

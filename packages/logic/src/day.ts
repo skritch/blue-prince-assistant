@@ -9,32 +9,34 @@ import type { RoomColor } from "./types"
 export interface DayState {
   day: number
 
-  // --- Dynamic pool modifiers ---
-  knightChess: boolean             // Adds Armory
-  pawnChessKnight: boolean         // Also adds Armory, but slightly different
-  baconAndEggs: boolean            // adds Morning Room
-  aquariumExperimentActivations: number | null    // (Laboratory) adds extra Aquariums to pool
-
-  // --- Rarity biases ---
-  southernCrossActive: boolean     // Boosts certain rooms
-  draxusActive: boolean            // Dead ends more common
-  chessColor: RoomColor | null     // Chess piece color boost (null = inactive)
-  scepterColor: RoomColor | null   // Royal Scepter color boost (null = inactive)
-
 
   // --- Items ---
+  baconAndEggs: boolean            // adds Morning Room
   haveBatteryPack: boolean
   haveGearWrench: boolean
   haveElectromagnet: boolean
   haveChronograph: boolean
+  scepterColor: RoomColor | null   // Royal Scepter color boost (null = inactive)
 
-  // Has subtle effects even if the Foundation has since been removed from the house
-  haveDraftedFoundation: boolean
+  // Chess
+  knightChess: boolean             // Adds Armory
+  chessColor: RoomColor | null     // Chess piece color boost (null = inactive)
 
-  // --- Misc ---
+  // --- Constellations---
+  southernCrossActive: boolean     // Boosts certain rooms
+  draxusActive: boolean            // Dead ends more common
+
+  // --- Item Rooms ---
   mailRoomUsed: boolean            // Mail Room rarity effect triggers after first use
-  coatCheckUsed: boolean           // Coat Check item available
-  coatCheckDraftedToday: number    // Times Coat Check room has been drafted today (affects rarity)
+  coatCheckUsed: boolean           // Coat Check item available(affects rarity)
+
+  // --- Minor---
+  coatCheckDraftedToday: number    // Times Coat Check room has been drafted today 
+  aquariumExperimentActivations: number | null    // (Laboratory) adds extra Aquariums to pool
+  // Has subtle effects even if the Foundation has since been removed from the house
+  haveDraftedFoundation: boolean   // Should be game state or house?
+  pawnChessKnight: boolean         // Also adds Armory, but slightly different
+
 }
 export function initDay(day: number): DayState {
   return {

@@ -92,6 +92,13 @@ const DOOR_OVERRIDES = {
   'her-ladyships-chamber': 1,
 }
 
+// Extra tags to add beyond what the CSV provides
+const TAG_OVERRIDES = {
+  'utility-closet': ['dead-end'],
+}
+
+
+
 function extractDirectoryPage(section) {
   for (const part of section.split(',').map(s => s.trim())) {
     if (part === 'Additions') continue
@@ -177,6 +184,7 @@ const rooms = rows
         specialType.includes('Tomorrow') && 'tomorrow',
         specialType.includes('Drafting') && 'drafting',
         dirPage == 9 && 'outer',
+        ...(TAG_OVERRIDES[slug] ?? []),
       ].filter(Boolean),
     }
   })

@@ -17,8 +17,7 @@
     "black",
   ];
 
-  const NOT_SYNCED =
-    "These options are not synced with rooms in the house, and should be set explicitly.";
+
 </script>
 
 <details class="panel" bind:open>
@@ -32,128 +31,15 @@
     </div>
 
     <div class="day-cols">
-      <!-- LEFT COLUMN -->
+      <!-- LEFT COLUMN: Items -->
       <div class="day-col">
         <div class="section">
-          <div class="section-label">
-            Added Floorplans
-            <span class="help-icon" data-tooltip={NOT_SYNCED}>?</span>
-          </div>
+          <div class="section-label">Items</div>
           <div class="checks">
-            <label data-tooltip="Adds Armory"
-              ><input
-                type="checkbox"
-                bind:checked={dayState.knightChess}
-              />Knight Chess</label
-            >
-            <label
-              data-tooltip="Also adds Armory, but with slightly different mechanics"
-              ><input
-                type="checkbox"
-                bind:checked={dayState.pawnChessKnight}
-              />Pawn Chess → Knight</label
-            >
             <label data-tooltip="Adds Morning Room"
               ><input type="checkbox" bind:checked={dayState.baconAndEggs} /> Bacon
               &amp; Eggs</label
             >
-            <label
-              class="select-row"
-              data-tooltip="Each experiment activation adds 3 aquariums to the pool. Also sets Aquarium to commonplace."
-            >
-              <input
-                type="number"
-                min="0"
-                class="narrow"
-                value={dayState.aquariumExperimentActivations ?? ""}
-                oninput={(e) => {
-                  const v = e.currentTarget.valueAsNumber;
-                  dayState.aquariumExperimentActivations = isNaN(v) ? null : v;
-                }}
-              />
-              Aquarium Experiments
-            </label>
-          </div>
-        </div>
-
-        <div class="section">
-          <div class="section-label">Misc.</div>
-          <div class="checks">
-            <label
-              data-tooltip="Lowers Master Bedroom from rare to unusual. Unknown effect if Foundation is no longer in the house."
-              ><input
-                type="checkbox"
-                bind:checked={dayState.haveDraftedFoundation}
-              /> Foundation Drafted</label
-            >
-            <label
-              data-tooltip="Mail Room is set to common rarity when a package is available"
-              ><input type="checkbox" bind:checked={dayState.mailRoomUsed} /> Mail
-              Room Package</label
-            >
-            <label data-tooltip="Coat Check rarity mechanism is unknown"
-              ><input type="checkbox" bind:checked={dayState.coatCheckUsed} /> Coat
-              Checked Item</label
-            >
-            <label
-              class="select-row"
-              data-tooltip="Coat Check becomes more rare each time it appears in a draft"
-            >
-              <input
-                type="number"
-                min="0"
-                max="2"
-                class="narrow"
-                bind:value={dayState.coatCheckDraftedToday}
-              />
-              Coat Check Appearances
-            </label>
-          </div>
-        </div>
-      </div>
-
-      <!-- RIGHT COLUMN -->
-      <div class="day-col">
-        <div class="section">
-          <div class="section-label">
-            Draft Biases
-            <span class="help-icon" data-tooltip={NOT_SYNCED}>?</span>
-          </div>
-          <div class="checks">
-            <label data-tooltip="Rooms with four doors appear more often"
-              ><input
-                type="checkbox"
-                bind:checked={dayState.southernCrossActive}
-              /> Southern Cross Constellation</label
-            >
-            <label data-tooltip="Dead end rooms appear more often"
-              ><input type="checkbox" bind:checked={dayState.draxusActive} /> Draxus
-              Constellation</label
-            >
-            <label class="select-row">
-              <select class="color-select" bind:value={dayState.chessColor}>
-                <option value={null}>—</option>
-                {#each ROOM_COLORS as color}
-                  <option value={color}>{color}</option>
-                {/each}
-              </select>
-              King Chess
-            </label>
-            <label class="select-row">
-              <select class="color-select" bind:value={dayState.scepterColor}>
-                <option value={null}>—</option>
-                {#each ROOM_COLORS as color}
-                  <option value={color}>{color}</option>
-                {/each}
-              </select>
-              Royal Scepter
-            </label>
-          </div>
-        </div>
-
-        <div class="section">
-          <div class="section-label">Items</div>
-          <div class="checks">
             <label data-tooltip="Chance of setting Workshop to standard"
               ><input type="checkbox" bind:checked={dayState.haveBatteryPack} />
               Battery Pack</label
@@ -171,6 +57,69 @@
             <label data-tooltip="Tomorrow rooms appear more often"
               ><input type="checkbox" bind:checked={dayState.haveChronograph} />
               Chronograph</label
+            >
+            <label class="select-row">
+              <select class="color-select" bind:value={dayState.scepterColor}>
+                <option value={null}>—</option>
+                {#each ROOM_COLORS as color}
+                  <option value={color}>{color}</option>
+                {/each}
+              </select>
+              Royal Scepter
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT COLUMN: Chess, Constellations, Item Rooms -->
+      <div class="day-col">
+        <div class="section">
+          <div class="section-label">Chess</div>
+          <div class="checks">
+            <label data-tooltip="Adds Armory"
+              ><input
+                type="checkbox"
+                bind:checked={dayState.knightChess}
+              /> Knight Chess</label
+            >
+            <label class="select-row">
+              <select class="color-select" bind:value={dayState.chessColor}>
+                <option value={null}>—</option>
+                {#each ROOM_COLORS as color}
+                  <option value={color}>{color}</option>
+                {/each}
+              </select>
+              King Chess
+            </label>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-label">Constellations</div>
+          <div class="checks">
+            <label data-tooltip="Rooms with four doors appear more often"
+              ><input
+                type="checkbox"
+                bind:checked={dayState.southernCrossActive}
+              /> Southern Cross</label
+            >
+            <label data-tooltip="Dead end rooms appear more often"
+              ><input type="checkbox" bind:checked={dayState.draxusActive} /> Draxus</label
+            >
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-label">Item Rooms</div>
+          <div class="checks">
+            <label
+              data-tooltip="Mail Room is set to common rarity when a package is available"
+              ><input type="checkbox" bind:checked={dayState.mailRoomUsed} /> Mail
+              Room Package</label
+            >
+            <label data-tooltip="Coat Check rarity mechanism is unknown"
+              ><input type="checkbox" bind:checked={dayState.coatCheckUsed} /> Coat
+              Checked Item</label
             >
           </div>
         </div>
