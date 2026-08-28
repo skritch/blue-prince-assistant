@@ -7,7 +7,7 @@ import type { HouseState } from './house'
 import { type GameState } from './game'
 import { getAdHocRarities, getDynamicRarities } from './rarity'
 
-import { applyFilters, getDeckMinimums, getPDeck, initDecks, mergeMarkedDecks, markDecks, type DraftParams } from './draft'
+import { applyFilters, getDeckMinimums, getPDeck, initDecks, mergeMarkedDecks, selectDecks, type DraftParams } from './draft'
 import { KeyedVec } from './math'
 
 // Basic algorithm to determine the eligible pool
@@ -315,7 +315,7 @@ function draftSlots(
   const filteredPool = applyFilters(pool, game, day, draft, useConditionalFilters)
   const decks = initDecks(filteredPool)
   const deckMinimums = getDeckMinimums(day.day, game.vmode, game.haveRoom46)
-  const { pDeckIJ, pNoneAccepted } = markDecks(decks, deckMinimums)
+  const { pDeckIJ, pNoneMarked: pNoneAccepted } = selectDecks(decks, deckMinimums)
   const effectiveDecks = mergeMarkedDecks(decks, pDeckIJ)
 
   const rank = draft.toLocation.tile.row

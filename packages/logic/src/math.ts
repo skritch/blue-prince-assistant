@@ -22,6 +22,11 @@ export class KeyedVec<K extends string | number = string> {
     return [...this.data.entries()]
   }
 
+  values(): number[] {
+    return [...this.data.values()]
+  }
+
+
   get length(): number {
     return this.data.size
   }

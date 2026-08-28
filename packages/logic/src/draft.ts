@@ -75,7 +75,7 @@ function rareCheckSlot3Chance(gems: number, roomsDrafted: number, rank: number) 
   }
   if (rank >= 7) {
     return 0.9375
-  } else if (rank >= 75) {
+  } else if (rank >= 5) {
     return 0.875
   } else if (rank >= 1) {
     return 0.75
@@ -166,7 +166,7 @@ export function getDeckMinimums(
   const free = [3, 3, 3, 3]
   let gem
   if (vmode || room46 || day >= 16) { gem = [5, 5, 4, 4] }
-  if (day >= 8) { gem = [4, 4, 3, 3] }
+  else if (day >= 8) { gem = [4, 4, 3, 3] }
   else { gem = [4, 3, 3, 3] }
   const mins = [...free, ...gem]
   let minsVec = KeyedVec.empty<number>()
@@ -278,73 +278,101 @@ const LIBRARY_RARITY_FALLBACKS = {
 
 
 // Step of the drafting process where we determine which "decks" have enough
-// cards to draw from. 
-//
-// The draft process chooses an initial deck, then checks that deck's, along with
+// cards to draw from. Based on 
+// https://www.reddit.com/r/BluePrince/comments/1lu20ky/drafting_mechanics_drawing_from_the_room_decks/
+// but that source is confusingly-written and may be mistaken.
+// 
+// The draft process rolls an initial deck i, then checks it along with
 // a series of fallback rarities, until it finds a deck for which
-//   deck.length >= k 
-// to draw from. All non-empty decks are also "marked". Once a deck is accepted, 
-// a random marked deck will be chosen to draw from. 
-// But since some cards have a probability of being in the decks, the decks
-// themselves only have a probability of meeting >= k criteria. 
+//   deck.length >= n
+// to draw from, where n = deckMinimums[i]. 
+// All non-empty decks are also "marked". When deck is accepted, the source
+// indicates that a random marked deck is be chosen to draw from. If no
+// deck is accepted, the source states that drafting fails. 
+// Later, however, it indicates that that draws 1 and 3 can proceed if
+// no deck as accepted, so long as some decks are marked, while only draw 2
+// has to "select" a deck (but doesn't use cond. filters, so is likely to.)
+// The 2nd version is the only way to get the expected behavior of e.g.
+// color filters, so I'm going with that. But I will not attempt to distinguish
+// draw 2 from 1 here, expecting that draw 2 is likely to always accept a deck.
+// Draw 3 is currently not implemented.
 //
-// So we have to simulate this procedure, returning, for each deck i, a vector:
+// One complexity: cards only a probability of being in the decks, so the decks
+// themselves only have a probability of meeting the >= n or >= 1 criteria. 
+// We aim to simulate this procedure, returning for each deck i a vector:
 //   Pr[deck j is drawn from | deck i rolled]
-//   = Pr[deck j drawn from | deck j' accepted] * Pr[deck j accepted | deck i rolled]
+// = Pr[deck j accepted & no deck j'<j accepted | deck i rolled]
+//   + Pr[deck j marked & none accepted | deck i rolled] * Pr[deck j selected | marked]
 //
-// We also return pNoneAccepted, which triggers a redraw, i.e.:
-//  Pr[no deck is accepted | deck i rolled]
+// We also return pNoneMarked, which triggers a redraw, i.e.:
+//  Pr[no deck is marked | deck i rolled]
 
-export function markDecks(
+export function selectDecks(
   decks: DeckList,
   deckMinimums: KeyedVec<number>  // indexed by i
-): { pDeckIJ: KeyedVec<number>[], pNoneAccepted: KeyedVec<number> } {
+): { pDeckIJ: KeyedVec<number>[], pNoneMarked: KeyedVec<number> } {
 
   // Pr[deck j is chosen | deck i was rolled originally]
-  const pDeckIJ: KeyedVec<number>[] = Array(8).fill(KeyedVec.empty<number>()) // index: i
-  let pNoneAccepted = KeyedVec.empty<number>()
+  const pDeckIJ: KeyedVec<number>[] = Array(8).fill(KeyedVec.empty<number>()) // outer index i
+  let pNoneMarked = KeyedVec.empty<number>() // keyed by i
 
   for (let i = 0; i < 8; i++) {
     const rarity = i % 4 + 1 as Rarity
     const freeGem = Math.floor(i / 4) as 0 | 1
     const fallbackOrder = RARITY_FALLBACKS[rarity]
 
-    // fold state
-    let pMarkedSoFar = KeyedVec.empty<number>() // keyed by j
-    pNoneAccepted = pNoneAccepted.set(i, 1)
+    // both keyed by j
+    let pMarkedI = KeyedVec.empty<number>()
+    let pAcceptedI = KeyedVec.empty<number>()
 
     for (const rarity2 of fallbackOrder) {
       const j = (rarity2 - 1) + 4 * freeGem
       const d2 = decks[j]
-      const k = deckMinimums.get(j)  // or i? Does it depend on the rarity we rolled originally?
+      if (d2.length == 0) {
+        continue
+      }
+      const n = deckMinimums.get(j)  // or i? Does it depend on the rarity we rolled originally?
 
-      // Pr(has enough cards) ~= Pr(k or more of N q-coins come up heads)
-      //                      ~= 1 - BinomialCDF(k-1; N, q)
+      // Pr(has enough cards) ~= Pr(n or more of L q-coins come up heads)
+      //                      ~= 1 - BinomialCDF(n; L, q)
       // where q is the average p each card being in the deck.
       const q = d2.mean()
-      const pAcceptedJ = binomialAtLeast(d2.length, q, k)
+      const pAcceptedJ = binomialAtLeast(d2.length, q, n)
+      const pMarkedJ = binomialAtLeast(d2.length, q, 1)
 
       // Pr(j is first deck accepted) 
       // = Pr(no decks before j in fallback order accepted) * Pr(j accepted)
-      const pNoneAcceptedSoFar = pNoneAccepted.get(i)
-      const pFirstAcceptedJ = pNoneAcceptedSoFar * pAcceptedJ
-      pNoneAccepted = pNoneAccepted.set(i, pNoneAcceptedSoFar * (1 - pAcceptedJ))
+      const pNoneAcceptedSoFar = pAcceptedI.values().reduce((acc, cur) => acc * (1 - cur), 1)
+      const pFirstAccepted = pAcceptedJ * pNoneAcceptedSoFar
 
-      // If this deck is the first one "accepted", then each deck marked so far has an
-      // equal chance of being drawn from. 
-      // If this deck is accepted, it is marked with certainty, so set it on a copy of pMarked.
-      let pMarkedTemp = pMarkedSoFar.set(j, 1)
-      // Scale each weight by pFirstAcceptedJ and 1/(number of marked decks)
-      pMarkedTemp = pMarkedTemp.mult(pFirstAcceptedJ / pMarkedTemp.length)
+      // Add j to outcome for i, weighted by pAcceptedJ
+      pDeckIJ[i] = pDeckIJ[i].set(j, pDeckIJ[i].get(j) + pFirstAccepted)
 
-      // Add contribution to outcome for pDecks[i]
-      pDeckIJ[i] = pDeckIJ[i].add(pMarkedTemp)
-
-      const pMarkedJ = binomialAtLeast(d2.length, q, 1)
-      pMarkedSoFar = pMarkedSoFar.set(j, pMarkedJ)
+      pAcceptedI = pAcceptedI.set(j, pAcceptedJ)
+      pMarkedI = pMarkedI.set(j, pMarkedJ)
     }
+
+    const pNoneAcceptedI = pAcceptedI.values().reduce((acc, cur) => acc * (1 - cur), 1)
+    const pNoneMarkedJ = pMarkedI.values().reduce((acc, cur) => acc * (1 - cur), 1)
+
+    // If none are accepted, one marked decks should be chosen at random.
+    // What is Pr(j marked & none accepted)?
+    // = Pr(0 < |j| < n) * [ prod_(j' != j) Pr( j' not accepted ) ]
+    // = (Pr(j marked) - Pr(j accepted)) * [ prod_(j' != j) Pr( j' not accepted ) ]
+    // = (Pr(j marked) - Pr(j accepted)) * Pr(none accepted) / Pr(j not accepted)
+    for (const j of pMarkedI.values()) {
+      const pMarkedNoneAcceptedJ = (
+        (pMarkedI.get(j) - pAcceptedI.get(j)) / (1 - pAcceptedI.get(j))
+        * pNoneAcceptedI
+      )
+      // TODO: weight by 1/E[number of decks marked | j marked & none accepted]
+      pDeckIJ[i] = pDeckIJ[i].set(j, pDeckIJ[i].get(j) + pNoneAcceptedI)
+    }
+
+    pNoneMarked = pNoneMarked.set(i, pNoneMarkedJ)
   }
-  return { pDeckIJ, pNoneAccepted }
+
+  return { pDeckIJ, pNoneMarked }
 }
 
 // Given the list of decks, and Pr[deck j chosen | deck i rolled],
@@ -359,11 +387,18 @@ export function mergeMarkedDecks(
   let mergedDecks: DeckList = Array(8).fill(KeyedVec.empty()) as DeckList
 
   for (let i = 0; i < 8; i++) {
-    pDeckIJ[i].entries().map(([j, pij]) => {
+    pDeckIJ[i].entries().forEach(([j, pij]) => {
       const deckJ = decks[j]
       // So far the probabilities in a deck are "probability of card being in the deck"
       // Now we're finding the probability of a card being drawn. Each card present is equal.
       // Weighting all by 1 / (sum of probabilities of each card being there) is close enough.
+      // TODO: there is a bug here. We originally determined with a deck was 
+      // accepted or marked with some probability based on the ps of its entries.
+      // e.g. a deck with 3 p=0.3 entries is accepted 0.3^3 = 0.027 of the time.
+      // When we come to draw from that deck, we don't need to account for the 0.3s
+      // of each entry—if we got here, they have to be present.
+      // As long as all entries have == p, there's no problem, bc 1/total
+      // normalization will cancel out, but if they're uneven the weights are wrong.
       const deckJdraws = deckJ.mult(1. / deckJ.sum())  // Pr(room r | deck j) 
 
       const deckJweighted = deckJdraws.mult(pij)  // Pr(room r | deck j) * Pr(deck j | deck i rolled)
