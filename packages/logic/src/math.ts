@@ -1,59 +1,61 @@
 
 
-// A sparse named probability vector: maps string keys to numeric weights.
-// Supports the arithmetic needed for combining draft probability distributions.
-export class PVec {
-  readonly data: Readonly<Record<string, number>>
+// A sparse immutable vector, indexed by named keys rather than positions.
+export class KeyedVec<K extends string | number = string> {
+  readonly data: ReadonlyMap<K, number>
 
-  constructor(data: Record<string, number> = {}) {
-    this.data = data
+  constructor(data?: Map<K, number>) {
+    this.data = data ?? new Map()
   }
 
-  get(key: string): number {
-    return this.data[key] ?? 0
+  get(key: K): number {
+    return this.data.get(key) ?? 0
   }
 
-  // Return a new PVec with one key set (or overwritten).
-  set(key: string, value: number): PVec {
-    return new PVec({ ...this.data, [key]: value })
+  set(key: K, value: number): KeyedVec<K> {
+    const next = new Map(this.data)
+    next.set(key, value)
+    return new KeyedVec(next)
   }
 
-  entries(): [string, number][] {
-    return Object.entries(this.data)
+  entries(): [K, number][] {
+    return [...this.data.entries()]
   }
 
   get length(): number {
-    return Object.keys(this.data).length
+    return this.data.size
   }
 
   // Element-wise add — union of keys, summing values for shared keys.
-  add(other: PVec): PVec {
-    const result = { ...this.data }
-    for (const [k, v] of Object.entries(other.data)) {
-      result[k] = (result[k] ?? 0) + v
+  add(other: KeyedVec<K>): KeyedVec<K> {
+    const result = new Map(this.data)
+    for (const [k, v] of other.data) {
+      result.set(k, (result.get(k) ?? 0) + v)
     }
-    return new PVec(result)
+    return new KeyedVec(result)
   }
 
   // Multiply all values by a scalar.
-  mult(s: number): PVec {
-    const result: Record<string, number> = {}
-    for (const [k, v] of Object.entries(this.data)) {
-      result[k] = v * s
+  mult(s: number): KeyedVec<K> {
+    const result = new Map<K, number>()
+    for (const [k, v] of this.data) {
+      result.set(k, v * s)
     }
-    return new PVec(result)
+    return new KeyedVec(result)
   }
 
   mean(): number {
-    return this.sum() / Object.values(this.data).length
+    return this.sum() / this.data.size
   }
 
-  static empty(): PVec {
-    return new PVec()
+  static empty<K extends string | number = string>(): KeyedVec<K> {
+    return new KeyedVec<K>()
   }
 
   sum(): number {
-    return Object.values(this.data).reduce((s, v) => s + v, 0)
+    let s = 0
+    for (const v of this.data.values()) s += v
+    return s
   }
 
 }

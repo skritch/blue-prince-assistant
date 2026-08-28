@@ -7,8 +7,8 @@ import type { HouseState } from './house'
 import { type GameState } from './game'
 import { getAdHocRarities, getDynamicRarities } from './rarity'
 
-import { applyFilters, getPDeck, initDecks, joinMarkedDecks, markDecks, type DraftParams } from './draft'
-import { PVec } from './math'
+import { applyFilters, getDeckMinimums, getPDeck, initDecks, mergeMarkedDecks, markDecks, type DraftParams } from './draft'
+import { KeyedVec } from './math'
 
 // Basic algorithm to determine the eligible pool
 export function generateDraftPool(
@@ -303,24 +303,26 @@ function draftSlots(
   house: HouseState,
   draft: DraftParams,
   useConditionalFilters: boolean = true
-): [PVec, PVec, PVec] {
+): [KeyedVec, KeyedVec, KeyedVec] {
 
   // TODO
   // https://www.reddit.com/r/BluePrince/comments/1liagtk/outer_room_basic_draft_rates_effects_of_rarity/
   if (draft == 'outer') {
-    return [PVec.empty(), PVec.empty(), PVec.empty()]
+    return [KeyedVec.empty(), KeyedVec.empty(), KeyedVec.empty()]
   }
 
   // Apply runback/conditional filters in advance, why not?
   const filteredPool = applyFilters(pool, game, day, draft, useConditionalFilters)
   const decks = initDecks(filteredPool)
-  const { markedDecks, acceptancePs } = markDecks(decks, day.day, game.vmode, game.haveRoom46)
-  const effectiveDecks = joinMarkedDecks(markedDecks)
+  const deckMinimums = getDeckMinimums(day.day, game.vmode, game.haveRoom46)
+  const { pDeckIJ, pNoneAccepted } = markDecks(decks, deckMinimums)
+  const effectiveDecks = mergeMarkedDecks(decks, pDeckIJ)
 
   const rank = draft.toLocation.tile.row
   const slots: (1 | 2 | 3)[] = [1, 2, 3]
 
-  let draw2pools = [PVec.empty(), PVec.empty(), PVec.empty()]
+  // Prepare redraw pool in advance, since all slots use it
+  let draw2pools = [KeyedVec.empty(), KeyedVec.empty(), KeyedVec.empty()]
   if (useConditionalFilters) {
     draw2pools = draftSlots(pool, game, day, house, draft, false)
   }
@@ -328,9 +330,9 @@ function draftSlots(
   // Determine the draft probability for each room and slot
   let slotPools = slots.map((slot) => {
 
-    let slotPool = PVec.empty()
+    let slotPool = KeyedVec.empty()
 
-    const pDecks = getPDeck(
+    const pDeckRoll = getPDeck(
       slot, day.day, draft.gems || 0, rank, house.placedRooms.length - 2, game.vmode
     )
 
@@ -338,11 +340,9 @@ function draftSlots(
     // the 8 decks of the first draw
     let pRedraw = 0
 
-    for (const [deckIdx, deck] of effectiveDecks.entries()) {
-      const pDeck = pDecks[deckIdx]
-      const pAccepted = acceptancePs[deckIdx]
-      pRedraw = pRedraw + pDeck * (1 - pAccepted)
-      slotPool = slotPool.add(deck.mult(pDeck * pAccepted))
+    for (const [i, deck] of effectiveDecks.entries()) {
+      slotPool = slotPool.add(deck.mult(pDeckRoll.get(i)))
+      pRedraw = pRedraw + pDeckRoll.get(i) * pNoneAccepted.get(i)
     }
 
     console.log(`slot ${slot}, filters ${useConditionalFilters} -- pRedraw: ${pRedraw}`)
@@ -364,7 +364,7 @@ function draftSlots(
   // currently they are lost...
   // maybe a bad idea anyway, given that conditional filters are probabilistic?
 
-  return slotPools as [PVec, PVec, PVec]
+  return slotPools as [KeyedVec, KeyedVec, KeyedVec]
 }
 
 // Actual Procedure, approximately:
