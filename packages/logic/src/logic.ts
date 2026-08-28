@@ -7,7 +7,7 @@ import type { HouseState } from './house'
 import { type GameState } from './game'
 import { getAdHocRarities, getDynamicRarities } from './rarity'
 
-import { applyFilters, getPDeck, initDecks, joinMarkedDecks, markDecks, type DeckList, type DraftParams } from './draft'
+import { applyFilters, getPDeck, initDecks, joinMarkedDecks, markDecks, type DraftParams } from './draft'
 import { PVec } from './math'
 
 // Basic algorithm to determine the eligible pool
@@ -360,7 +360,6 @@ function draftSlots(
   return slotPools as [PVec, PVec, PVec]
 }
 
-// WIP more-complete impl.
 // Actual Procedure, approximately:
 //
 // Divide into 8 decks, free|gem x 4 rarities
@@ -375,31 +374,25 @@ function draftSlots(
 //   but discards still discarded?
 // If that fails, repeat with all decks mixed together.
 // Validate: duplicates, 3x dead-ends, gem in slot 1.
-
+//
 // Our procedure to determine approximate probabilities:
 // 
 // Apply filters to the whole pool.
 // Divide into 8 decks.
 // For each slot:
 // - find probability of each deck being chosen (rarity x free | gem).
-// - simulate the whole deck-fallback procedure, which is deterministic:
-//   - if no decks have enough cards, fallback to draw 2
-//     - TODO
+// - simulate the whole deck-choice-with-fallback procedure:
 //   - if not enough cards in deck, next rarity is used in priority order.
-//   - should be able to determine exactly whether the resulting draw is from the first deck,
-//     or 1/(number of viable decks)
+//   - if no decks have enough cards, fallback to draw 2
 //   - If one deck survives, assign:
-//     p(card) = p(deck) * 1/(cards in deck), p(in pool) = p(deck) 
+//     p(card) = p(deck) * 1/(cards in deck) 
 //   - If multiple, assign for each:
-//     p(card) = 1/(viable decks) * p(deck) * 1/(cards in deck), p(in pool) = p(deck) 
-//     (Note we consider all the cards to be "in the pool" here.)
+//     p(card) = 1/(viable decks) * p(deck) * 1/(cards in deck)
 // - for each room in the overall pool, sum the probabilities across 
 //   all 8 rarity x free | gem possiblities.
-// - do we try to do validation? at least for 3 dead-ends?
-// 
-// Draw 2: as above, but no conditional filters.
-// Can occur separately two branches: original was free vs. gem.
-// Add p(draw 2) * (draw 2 probability vector)
+// - add in the result of a redraw * the approximate probability of redrawing, 
+//   summed across all choices of the original deck
+// - ignore validation
 //
 // Returns the pool for each slot, keyed by slug, with "p" set appropriately.
 export function applyDraftLogic(
@@ -411,8 +404,6 @@ export function applyDraftLogic(
   useConditionalFilters: boolean = true) {
 
   const slotPools = draftSlots(pool, game, day, house, draft, useConditionalFilters)
-
-  // Finally, return the pool with the per-slot probabilities attached
   const finalRooms = pool.rooms.map((pr) => {
     return {
       ...pr,

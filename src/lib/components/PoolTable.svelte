@@ -70,9 +70,26 @@
   }
 
   let activeTab: "pool" | "removed" = $state("pool");
+  let sortBy: "rarity" | "room" | "probability" = $state("probability");
 
   let sortedRooms = $derived(
     [...draftPool.rooms].sort((a, b) => {
+      if (sortBy === "probability") {
+        const aSum = (a.pSlot ?? [0, 0, 0]).reduce((sum, p) => sum + p, 0);
+        const bSum = (b.pSlot ?? [0, 0, 0]).reduce((sum, p) => sum + p, 0);
+        if (aSum !== bSum) return bSum - aSum; // descending
+      }
+
+      if (sortBy === "room") {
+        if (a.room.directoryPage !== b.room.directoryPage) {
+          return a.room.directoryPage - b.room.directoryPage;
+        }
+        if (a.room.roomNumber !== b.room.roomNumber) {
+          return a.room.roomNumber - b.room.roomNumber;
+        }
+      }
+
+      // Default to rarity -> alphabetical
       const ra = raritySort(
         draftPool.rarityOverrides[a.room.slug] ?? a.room.baseRarity,
       );
@@ -144,6 +161,12 @@
       </tbody>
     </table>
   {:else}
+  <div class="sort-controls">
+    <label>Sort by:</label>
+    <button class="sort-btn" class:active={sortBy === "rarity"} onclick={() => sortBy = "rarity"}>Rarity</button>
+    <button class="sort-btn" class:active={sortBy === "room"} onclick={() => sortBy = "room"}>Room #</button>
+    <button class="sort-btn" class:active={sortBy === "probability"} onclick={() => sortBy = "probability"}>Probability</button>
+  </div>
   <table>
     <thead>
       <tr>
@@ -228,7 +251,8 @@
             {#each pSlot as slotP, idx}
               {@const pctValue = slotP * 100}
               {@const display = pctValue === 0 ? "" : pctValue.toFixed(1)}
-              <td class="prob" data-tooltip={(slotP * 100).toPrecision(2) + '%'}>{display}</td>
+              {@const tooltipValue = pctValue >= 10 ? pctValue.toPrecision(3) : pctValue.toPrecision(2)}
+              <td class="prob" data-tooltip={tooltipValue + '%'}>{display}</td>
             {/each}
           {:else}
             <td class="prob" colspan="3"></td>
@@ -267,6 +291,42 @@
 
   .tab:hover:not(.active) {
     color: var(--text);
+  }
+
+  .sort-controls {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    margin-bottom: 0.75rem;
+    font-size: 0.75rem;
+  }
+
+  .sort-controls label {
+    color: var(--text-muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .sort-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    border-radius: 3px;
+  }
+
+  .sort-btn.active {
+    color: var(--text);
+    border-color: var(--text);
+    background: var(--border);
+  }
+
+  .sort-btn:hover:not(.active) {
+    color: var(--text);
+    border-color: var(--text);
   }
 
   .reason {
