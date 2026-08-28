@@ -1,8 +1,12 @@
 import type { Direction, RoomColor, GridTile, TileRow, Rarity } from './types'
 
 import rawRarityProbabilities from './data/rarityProbabilities.json'
-import type { PooledRoom } from './pool'
+import type { DraftPool, PooledRoom } from './pool'
 import { binomialAtLeast, PVec } from './math'
+import { applyConditionalFilters, applyRunbackFilter, getConditionalFilters, type FilterResult } from './filters'
+import type { DayState } from './day'
+import type { GameState } from './game'
+import { partition } from './utils'
 
 
 const RARITY_PROBABILITIES = rawRarityProbabilities as unknown as Record<string, Record<'byRank', [number, number, number, number][]>>
@@ -80,7 +84,7 @@ function rareCheckSlot3Chance(gems: number, roomsDrafted: number, rank: number) 
   }
 }
 
-export function getPGemBySlot(
+function getPGemBySlot(
   gems: number,
   slot: 1 | 2 | 3,
   roomsDrafted: number,
@@ -96,25 +100,24 @@ export function getPGemBySlot(
     || (day == 3 && roomsDrafted < 4)
   ) {
     pGems = [0, 0, 0]
+  } else {
+    const slot2chance = rareCheckSlot2Chance(gems, rank)
+    const slot3chance = rareCheckSlot3Chance(gems, roomsDrafted, rank)
+
+    // If slot 2 gets a rare check, slot 3 automatically does
+    // Scale down slot3chance by chance 1 - slot2chance
+    pGems = [0, slot2chance, (1 - slot2chance) * slot3chance]
   }
-
-  const slot2chance = rareCheckSlot2Chance(gems, rank)
-  const slot3chance = rareCheckSlot3Chance(gems, roomsDrafted, rank)
-
-  // If slot 2 gets a rare check, slot 3 automatically does
-  // Scale down slot3chance by chance 1 - slot2chance
-  pGems = [0, slot2chance, (1 - slot2chance) * slot3chance]
-
   return pGems[slot - 1]
 }
 
-export function getRarityProbabilities(
+function getRarityProbabilities(
   day: number,
   slot: 1 | 2 | 3,
   rank: TileRow,
   solarium: boolean = false
 ) {
-  // TODO: add library
+  // TODO: add library, solarium
   const rankRow = rank - 1
   let week: string
   if (day < 8) { week = '1' }
@@ -149,8 +152,25 @@ export const LIBRARY_RARITY_FALLBACKS = {
   4: [3, 2, 1]
 }
 
+
+export function getPDeck(
+  slot: 1 | 2 | 3, 
+  day: number,  gems: number, 
+  row: TileRow, placedRooms: number,
+  vmode: boolean
+) {
+    const pDecks = Array(8).fill(0)
+    const pRarities = getRarityProbabilities(day, slot, row, false)
+    const pGem = getPGemBySlot(gems, slot,  placedRooms, row, day, vmode)
+    for (const [rarityIdx, pRarity] of pRarities.entries()) {
+      pDecks[rarityIdx] = pRarity * (1 - pGem)
+      pDecks[rarityIdx + 4] = pRarity * pGem
+    }
+    return pDecks
+}
+
 // array of 8 counts for accepting cards
-export function getCardsForDraw(
+export function getDeckAcceptanceCts(
   day: number,
   vmode: boolean,
   room46: boolean,
@@ -166,63 +186,146 @@ export function getCardsForDraw(
 export type Deck = PVec
 export type DeckList = [Deck, Deck, Deck, Deck, Deck, Deck, Deck, Deck]
 
+
+// Drafting Steps
+export function applyFilters(
+  pool: DraftPool,
+  game: GameState,
+  day: DayState,
+  draft?: DraftParams,
+  useConditionalFilters: boolean = true
+): DraftPool {
+
+  // TODO: handle outer room differently
+  if (draft === 'outer') {
+    return pool
+  }
+
+  const condFilters = getConditionalFilters(game, day)
+
+  // first apply non-conditional filters
+  let filteredPool = pool.rooms.map((pr) => {
+    const filterResults: FilterResult[] = []
+
+    // Discard Filter -> ignore
+
+    // Runback Filter
+    // TODO: secret passage does not affect runback, but prism does.
+    // Outer rooms do not involve runback, prior draft is used.
+    // Berry picker, secret garden, room 8 make a secret draw and apply it to runback
+    if ((draft !== undefined && draft.previousDraft !== undefined )) {
+      const rarity = pool.rarityOverrides[pr.room.slug] || pr.room.baseRarity
+      filterResults.push(applyRunbackFilter(
+        pr, 
+        rarity, 
+        draft.previousDraft!, 
+        draft.isFirstDraftAtDoor
+      ))
+    }
+
+    // Double Down Filter -> ignore
+    // Library Filter -> TODO. Where's this list?
+    // Ignore Filter -> freezer, rumpus, blue crown -> ignore for now
+
+    if (useConditionalFilters) {
+      filterResults.push(applyConditionalFilters(pr, condFilters))
+    }
+
+    const finalResult = filterResults.reduce((acc, cur) => ({
+      p: acc.p * cur.p,
+      failReason: acc.failReason || cur.failReason 
+    }), {p: 1, failReason: undefined})
+
+    return [pr, finalResult]
+  }) as [PooledRoom, FilterResult][]
+
+  const [keptRooms, removedRooms] = partition(
+    filteredPool, ([, fr]) => (!fr.failReason)
+  )
+
+  return {
+    ...pool,
+    rooms: keptRooms.map(([pr, fr]) => ({...pr, p:fr.p})),
+    removed: [
+      ...pool.removed, 
+      ...removedRooms.map(([pr, fr]) => ({ ...pr, reason: fr.failReason }))
+    ]
+  }
+}
+
+
+// Divide the draft pool into 8 decks based on rarity
+export function initDecks(
+  pool: DraftPool
+): DeckList {  
+  const decks = Array(8).fill(PVec.empty()) as DeckList
+  for (const pr of pool.rooms) {
+    const rarity: Rarity = pool.rarityOverrides[pr.room.slug] || pr.room.baseRarity
+    const freeGem = pr.room.baseGemCost > 0 ? 1 : 0
+    const deckIdx = (rarity - 1) + 4 * freeGem
+    decks[deckIdx] = decks[deckIdx].set(pr.room.slug, pr.p)
+  }
+  return decks
+}
+
+
 // Step of the drafting process where we determine which "decks" have enough
 // cards to draw from. We return an array of 8 "effective" decks, which have
-// already incorporated all rarity fallbacks and assigned probabilities to
+// already applied the rarity fallbacks and assigned probabilities to
 // each card, along with a probability of each accepted deck having *actually*
-// been accepted (given that its cards have been filtered out, making it too
-// small to actually accept.)
-export function countCards(
+// been accepted.
+// The draft process will choose an initial deck, then check that deck and
+// a series of fallback rarities until it finds a deck >= 
+// to draw from. All non-empty decks are also "marked". Once a deck is accepted,
+// a random marked deck will be chosen and drawn from.
+// (This logic is a bit suspect: why draw from the smaller decks at all?)
+// To determine the approximate probability of a deck being chosen,
+// we run this fallback procedure, 
+export function markDecks(
   decks: DeckList,
   day: number,
   vmode: boolean,
   haveRoom46: boolean,
-): { effectiveDecks: DeckList, acceptancePs: number[] } {
+): { markedDecks: Deck[][], acceptancePs: number[] } {
 
-  // Counting Cards step
-  const cardsForDraw = getCardsForDraw(day, vmode, haveRoom46)
+  const ks = getDeckAcceptanceCts(day, vmode, haveRoom46)
 
-  // List of lists of decks we might consider, indexed by rarity x freegem
-  // Each entry will contain either a single deck, to draw from,
-  // A list of decks, from which one should be chosen randomly,
-  // Or an empty array, in which case drawing 100% failed.
-  const acceptedDecks: Deck[][] = Array(8).fill([])
+  // For each of the 8 deck, contains a list of the marked decks
+  // which could be chosen, ending with the "accepted" deck.
+  // If empty, the draw failed.
+  const markedDecks: Deck[][] = Array(8).fill([])
 
-  // Most filters only keep cards with some probability. Even if the filtered
-  // pool has enough cards, there is a good chance it won't, and a draft 2 will occur.
-  // It would be infeasible to simulate every possibility, so our plan is:
-  // - for each deck, along with its fallbacks...
-  // - when we first come to a deck which possibly has enough cards to draw from...
-  // - find the average probability of each of those cards being in the deck...
-  //   (usually around 0.4, excep for the rarity bump filters around 0.3)
-  // - for N cards, and k = cardsForDraw for this deck, p = average p
-  // - P(has enough cards) = P(k or more of N p-coins come up heads)
+  // Most filters only keep cards with some probability. This means we don't 
+  // actually know how big our decks "are" in this simulation. 
+  // It would be infeasible to simulate every possibility. Instead we estimate
+  // the probability of a deck having k cards (where k is the number of cards
+  // to be accepted) by
+  //   P(has enough cards) = P(k or more of N p-coins come up heads)
   //                       = 1 - BinomialCDF(k-1; N, p)
+  // where p is the *average* probability of each card being in the deck.
+  // 
   // This will miss all cases where the first big-enough deck we encounter randomly
-  // *doesn't* have enough cards, but a later deck would have enough.
+  // *doesn't* have enough cards to accept, but a later deck would have enough.
   const acceptancePs: number[] = Array(8).fill(0)
 
-  // Marking / accepting decks steps
   for (let idx = 0; idx < 8; idx++) {
     const rarity = idx % 4 + 1 as Rarity
     const freeGem = Math.floor(idx / 4) as 0 | 1
 
     // Simpler to iterate all 4 rarities starting with this one.
     const withFallbacks = [rarity, ...RARITY_FALLBACKS[rarity]]
-    let markedDecks: Deck[] = []
+    let marked: Deck[] = []
 
     for (const rarity2 of withFallbacks) {
       const idx2 = (rarity2 - 1) + 4 * freeGem
-      const k = cardsForDraw[idx2]
       const d2 = decks[idx2]
+      const k = ks[idx2]
 
-      // TODO: is this logic right?
-      // Do we choose randomly among "marked" decks if there is a deck
-      // passing the first check? Most will be nearly empty... seems weird.
+      // Acceptance
       if (d2.length >= k) {
-        acceptedDecks[idx] = [...markedDecks, d2]
+        markedDecks[idx] = [...marked, d2]
 
-        // Record the approximate P(this actually has enough cards)
+        // Approximate P(has enough cards)
         const avgP = d2.mean()
         const pAccepted = binomialAtLeast(d2.length, avgP, k - 1)
         acceptancePs[idx] = pAccepted
@@ -231,41 +334,51 @@ export function countCards(
         break
       } else if (d2.length > 0) {
         // As long as it has any cards, "mark" it for inclusion
-        markedDecks = [...markedDecks, d2]
+        marked.push(d2)
       }
     }
 
     // If we get here and no deck has been accepted, the draw definitely failed
-    // acceptedDecks[idx] will be [] and acceptancePs[idx] will be 0
+    // markedDecks[idx] will be [] and acceptancePs[idx] will be 0
   }
 
+  return { markedDecks,  acceptancePs}
+}
+
+// Merge the marked decks into a single deck by modifying probabilities.
+export function joinMarkedDecks(
+  markedDecks: Deck[][]
+): DeckList {
+
   // We can go ahead and calculate the effective probability of each card
-  // for each deck. We make no attempt to account for cards which already
-  // have a probability of being absent.
+  // for each deck.
   // TODO: do so?
   // TODO: distinguish "p[in pool]" from "p[chosen]"...?
-  const effectiveDecks = acceptedDecks.map((decklist) => {
+  return markedDecks.map((decklist) => {
     if (decklist.length == 1) {
       const deck = decklist[0]
       const pRoom = 1 / deck.length
       return deck.mult(pRoom)
     }
     if (decklist.length > 1) {
+      // TODO: each marked deck only has a probability of being here...
+      // e.g. if a marked deck has 1 entry with a 30% chance of surviving filtering,
+      // then it might have been marked at all, and shouldn't contribute to the 1/decks
+      // probability.
+      // Hard to think about...
       const pDeck = 1 / decklist.length
       return decklist
         .map((deck) => {
-          const pRoom = 1 / decklist.length
+          const pRoom = 1 / deck.length
           return deck.mult(pRoom * pDeck)
         }
         )
         .reduce((acc, cur) => acc.add(cur), PVec.empty())
     }
     else {
-      return []
+      return PVec.empty()
     }
   }) as DeckList
-
-  return { effectiveDecks, acceptancePs: acceptancePs }
 }
 
 

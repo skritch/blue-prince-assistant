@@ -7,10 +7,7 @@ import type { HouseState } from './house'
 import { type GameState } from './game'
 import { getAdHocRarities, getDynamicRarities } from './rarity'
 
-import { countCards, getPGemBySlot, getRarityProbabilities, type DeckList, type DraftParams } from './draft'
-import { applyConditionalFilters, getConditionalFilters, RUNBACK_P_BY_RARITY } from './filters'
-import { partition } from './utils'
-import type { Rarity } from './types'
+import { applyFilters, getPDeck, initDecks, joinMarkedDecks, markDecks, type DeckList, type DraftParams } from './draft'
 import { PVec } from './math'
 
 // Basic algorithm to determine the eligible pool
@@ -297,92 +294,6 @@ function applyLocation(
 }
 
 
-function applyFilters(
-  pool: DraftPool,
-  game: GameState,
-  day: DayState,
-  draft?: DraftParams,
-  useConditionalFilters: boolean = true
-): DraftPool {
-
-  // TODO: handle outer room differently
-  if (draft === 'outer') {
-    return pool
-  }
-
-
-  // first apply non-conditional filters
-  let filteredPool = pool.rooms.map((pr) => {
-    let p = 1.0
-    let failReason: string | null = null
-
-    // Discard Filter -> ignore
-
-    // Runback Filter
-    // TODO: secret passage does not affect runback, but prism does.
-    // Outer rooms do not involve runback, prior draft is used.
-    // Berry picker, secret garden, room 8 make a secret draw and apply it to runback
-    if ((draft !== undefined && draft.previousDraft !== undefined)) {
-      const isRunback = draft.previousDraft!.includes(pr.room.slug)
-      if (isRunback) {
-        // probabilistic based on rarity to first draft at a door
-        // otherwise always filters
-        if (draft.isFirstDraftAtDoor) {
-          const rarity = pool.rarityOverrides[pr.room.slug] || pr.room.baseRarity
-          if (rarity !== null) {
-            p = 1 - RUNBACK_P_BY_RARITY[rarity]
-          }
-        } else {
-          p = 0
-          failReason = "runback"
-        }
-      }
-    }
-
-    // Double Down Filter -> ignore
-    // Library Filter -> TODO. Where's this list?
-    // Ignore Filter -> freezer, rumpus, blue crown -> ignore for now
-
-    return [{ ...pr, p: pr.p * p }, failReason] as [PooledRoom, string]
-  })
-
-  if (useConditionalFilters) {
-    const condFilters = getConditionalFilters(game, day)
-    // Conditional filters
-    filteredPool = filteredPool
-      .map(([pr, fr]) => {
-        if (fr !== null) {
-          return [pr, fr]
-        }
-
-        let p
-        let failReason: string | null = null
-        let condFilterResult = applyConditionalFilters(condFilters, pr)
-        if ('p' in condFilterResult) {
-          p = pr.p * condFilterResult.p
-        } else {
-          p = 0
-          failReason = condFilterResult.failReason
-        }
-        return (
-          [
-            { ...pr, p: p },
-            failReason
-          ] as [PooledRoom, string])
-      })
-
-  }
-
-  const [newRooms, removedRooms] = partition(
-    filteredPool, ([pr,]) => (pr.p > 0)
-  )
-
-  return {
-    ...pool,
-    rooms: newRooms.map(([pr,]) => pr),
-    removed: [...pool.removed, ...removedRooms.map(([pr, fr]) => { return { ...pr, reason: fr } })]
-  }
-}
 
 // Most of the drafting logic is here, factored out of the main function so it
 // can call itself recursively for redraws.
@@ -403,76 +314,48 @@ function draftSlots(
 
   // Apply runback/conditional filters in advance, why not?
   const filteredPool = applyFilters(pool, game, day, draft, useConditionalFilters)
+  const decks = initDecks(filteredPool)
+  const { markedDecks, acceptancePs } = markDecks(decks, day.day, game.vmode, game.haveRoom46)
+  const effectiveDecks = joinMarkedDecks(markedDecks)
 
-
-  // Split into 8 decks: 4 free by rarity, 4 gem by rarity
-  const decks = Array(8).fill(PVec.empty()) as DeckList
-  for (const pr of filteredPool.rooms) {
-    const rarity: Rarity = filteredPool.rarityOverrides[pr.room.slug] || pr.room.baseRarity
-    const freeGem = pr.room.baseGemCost > 0 ? 1 : 0
-    const deckIdx = (rarity - 1) + 4 * freeGem
-    decks[deckIdx] = decks[deckIdx].set(pr.room.slug, pr.p)
+  // If the first draw fails, it will be repeated without conditional filters.
+  // Precompute the resulting probabilities for all rooms, for each slot.
+  let draw2pools = [PVec.empty(), PVec.empty(), PVec.empty()]
+  if (useConditionalFilters) {
+    draw2pools = draftSlots(pool, game, day, house, draft, false)
   }
 
-  // Counting Cards step
-  const { effectiveDecks, acceptancePs } = countCards(decks, day.day, game.vmode, game.haveRoom46)
-
-  // If the first draw's choice of (free | gem) x rarity, with all fallbacks,
-  // failed to find a deck with enough cards to draw from, the draw has failed.
-  // A new draw will tried, *with a new choice of gems and rarities*, but without
-  // conditional filters.
-  // Therefore we should run this whole algorithm again, without cond. filters,
-  // and then insert its entire result for that slot as the effectiveDeck to be 
-  // drawn from for that gem/rarity combo.
-  // TODO: cards only have a chance of being accepted by filters...
-  const draw2pools = (useConditionalFilters
-    ? draftSlots(pool, game, day, house, draft, false)
-    : [PVec.empty(), PVec.empty(), PVec.empty()]
-  )
-
   const rank = draft.toLocation.tile.row
-  const slots = [1, 2, 3]
+  const slots: (1 | 2 | 3)[] = [1, 2, 3]
 
-  // Determine the pool per-slot, with probabilities of each room
-  const slotPools = slots.map((s) => {
+  // Determine the draft probability for each room and slot
+  const slotPools = slots.map((slot) => {
 
     let slotPool = PVec.empty()
 
-    const pRarities = getRarityProbabilities(
-      day.day, s as 1 | 2 | 3, draft.toLocation.tile.row, false
+    const pDecks = getPDeck(
+      slot, day.day, draft.gems || 0, rank, house.placedRooms.length - 2, game.vmode
     )
-    const pGem = getPGemBySlot(
-      draft.gems || 0,
-      s as 1 | 2 | 3,
-      house.placedRooms.length - 2, rank, day.day, game.vmode
-    )
-    const pDecks = Array(8).fill(0)
-    for (const [rarityIdx, pRarity] of pRarities.entries()) {
-      pDecks[rarityIdx] = pRarity * (1 - pGem)
-      pDecks[rarityIdx + 4] = pRarity * pGem
-    }
-
-    // For each deck, handle the case where it might have been rejected earlier 
-    // during the counting-cards step, causing a second draw. These add the same
-    // rooms, regardless of which deck choice caused the 2nd draw
-    // Keep track of the probability of a second draw here.
+    
+    // Keeps track of the total probability of a second draw across
+    // the 8 decks of the first draw
     let pRedraw = 0
 
     for (const [deckIdx, deck] of effectiveDecks.entries()) {
       const pDeck = pDecks[deckIdx]
       const pAccepted = acceptancePs[deckIdx]
       pRedraw = pRedraw + pDeck * (1 - pAccepted)
-
       slotPool = slotPool.add(deck.mult(pDeck * pAccepted))
     }
 
-    // The result of a redraw for this slot
-    const draw2pool: PVec = draw2pools[s - 1]
-
-    // Add redraw results to probability mass
-    slotPool = slotPool.add(draw2pool.mult(pRedraw))
+    // Add draw 2 results to probability mass
+    slotPool = slotPool.add( draw2pools[slot - 1].mult(pRedraw))
     return slotPool
   })
+
+  // TODO: need to return "removed reasons" from the filtering steps,
+  // currently they are lost...
+  // maybe a bad idea anyway, given that conditional filters are probabilistic?
 
   return slotPools as [PVec, PVec, PVec]
 }

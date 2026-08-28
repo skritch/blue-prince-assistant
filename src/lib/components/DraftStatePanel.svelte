@@ -33,7 +33,7 @@
     !initialDraft ? "none" : initialDraft === "outer" ? "outer" : "house",
   );
   let column: TileColumn = $state(initHouse?.toLocation.tile.column ?? "C");
-  let row = $state<number>(initHouse?.toLocation.tile.row ?? 5);
+  let row = $state<number>(initHouse?.toLocation.tile.row ?? 2);
   let toDirection: Direction = $state(
     initHouse?.toLocation.toDirection ?? "N",
   );

@@ -2,7 +2,7 @@ import type { DayState } from "./day"
 import type { DraftParams, HouseDraftParams } from "./draft"
 import type { GameState } from "./game"
 import { type DraftPool, type PooledRoom } from "./pool"
-import { type RoomColor } from "./types"
+import { type Rarity, type RoomColor } from "./types"
 import { partition } from "./utils"
 
 
@@ -18,6 +18,8 @@ const COLOR_P: Record<RoomColor, number> = {
 const PATIO_FILTER_BASE = ['patio', 'veranda', 'greenhouse', 'morning-room']
 
 type ConditionalFilter = (pr: PooledRoom) => [string, number | null]
+
+export type FilterResult = { p: number, failReason?: string }
 
 export function colorFilter(color: RoomColor): ConditionalFilter {
   return (pr: PooledRoom) => {
@@ -57,7 +59,7 @@ export function getConditionalFilters(
   if (day.greenhouseInHouse) {
     patioFilter = roomFilter(PATIO_FILTER_BASE, 0.5, 'patio')
   } else {
-    roomFilter([...PATIO_FILTER_BASE, 'secret-passage'], 0.05, 'patio')
+    patioFilter = roomFilter([...PATIO_FILTER_BASE, 'secret-passage'], 0.05, 'patio')
   }
 
   const minorBumpFilter = roomFilter([
@@ -92,13 +94,9 @@ export function getConditionalFilters(
 
 
 
-type FilterResult =
-  | { p: number }  // probability of passing this filter
-  | { failReason: string }
-
 export function applyConditionalFilters(
-  filters: ConditionalFilter[],
-  pr: PooledRoom
+  pr: PooledRoom,
+  filters: ConditionalFilter[]
 ): FilterResult {
 
   const results: [string, number | null][] = filters.map(f => f(pr))
@@ -106,6 +104,7 @@ export function applyConditionalFilters(
   const [passable, failed] = partition(results, ([, p]) => (p !== null))
   if (passable.length === 0) {
     return {
+      p: 0,
       failReason: `conditional filters: ${failed.map(([n,]) => n).join(", ")}`
     }
   }
@@ -116,7 +115,7 @@ export function applyConditionalFilters(
 }
 
 
-export const RUNBACK_P_BY_RARITY = {
+const RUNBACK_P_BY_RARITY = {
   1: 0.6,
   2: 0.8,
   3: 0.9,
@@ -124,36 +123,27 @@ export const RUNBACK_P_BY_RARITY = {
 }
 
 
-// Applies Runback and other filters, modifying pr.p and 
-// possibly returning a reason for rejection.
-export function applyOtherFilters(
+export function applyRunbackFilter(
   pr: PooledRoom,
-  pool: DraftPool,
-  draft: HouseDraftParams
+  rarity: Rarity,
+  previousDraft: [string, string, string],
+  isFirstDraftAtDoor: boolean
 ): FilterResult {
-  // Discard Filter -> ignore
-
-  // Runback Filter
-  // TODO: secret passage does not affect runback, but prism does.
-  // Outer rooms do not involve runback, prior draft is used.
-  // Berry picker, secret garden, room 8 make a secret draw and apply it to runback
-  if ((draft !== undefined && draft.previousDraft !== undefined)) {
-    const isRunback = draft.previousDraft!.includes(pr.room.slug)
-    // probabilistic based on rarity, if first draft at a door
-    // otherwise always applies.
-    if (draft.isFirstDraftAtDoor) {
-      const rarity = pool.rarityOverrides[pr.room.slug] || pr.room.baseRarity
-      if (rarity !== null) {
-        return { p: 1 - RUNBACK_P_BY_RARITY[rarity] }
+  const isRunback = previousDraft.includes(pr.room.slug)
+  if (isRunback) {
+    // probabilistic based on rarity to first draft at a door
+    // otherwise always filters
+    if (isFirstDraftAtDoor) {
+      return {
+        p: 1 - RUNBACK_P_BY_RARITY[rarity]
       }
-    } else {
-      return { failReason: "runback" }
+    } else { 
+      return {
+        p: 0,
+        failReason: "runback"
+      }
     }
+  } else {
+    return {p: 1}
   }
-
-  // Double Down Filter -> ignore
-  // Library Filter -> TODO. Where's this list?
-  // Ignore Filter -> freezer, rumpus, blue crown -> ignore for now
-
-  return { p: 1 }
 }
