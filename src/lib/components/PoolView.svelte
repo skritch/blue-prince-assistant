@@ -141,11 +141,16 @@
     const possibleFloorplans = ['conservatory', 'planetarium', 'closet-exhibit', 'tunnel'];
     const foundFloorplans = possibleFloorplans.filter(() => Math.random() > 0.5);
 
+    // Pick a random day < 30
+    const randomDay = randInt(1, 29);
+
     // Update state
     const basePool = initGameState().pool;
     const additionalRooms = foundFloorplans
       .map(slug => ROOMS.find(r => r.slug === slug))
       .filter((r): r is typeof ROOMS[number] => r !== undefined);
+
+    dayState = initDay(randomDay);
 
     gameState = {
       ...initGameState(),
