@@ -272,7 +272,14 @@
 
   input[type="number"].narrow {
     flex: none;
-    width: 3.25rem;
+    width: 2rem;
+    -moz-appearance: textfield;
+  }
+
+  input[type="number"].narrow::-webkit-outer-spin-button,
+  input[type="number"].narrow::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
   }
 
   .color-select {

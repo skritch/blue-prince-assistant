@@ -142,19 +142,19 @@ function getRarityProbabilities(
 
 
 export function getPDeck(
-  slot: 1 | 2 | 3, 
-  day: number,  gems: number, 
+  slot: 1 | 2 | 3,
+  day: number, gems: number,
   row: TileRow, placedRooms: number,
   vmode: boolean
 ) {
-    const pDecks = Array(8).fill(0)
-    const pRarities = getRarityProbabilities(day, slot, row, false)
-    const pGem = getPGemBySlot(gems, slot,  placedRooms, row, day, vmode)
-    for (const [rarityIdx, pRarity] of pRarities.entries()) {
-      pDecks[rarityIdx] = pRarity * (1 - pGem)
-      pDecks[rarityIdx + 4] = pRarity * pGem
-    }
-    return pDecks
+  const pDecks = Array(8).fill(0)
+  const pRarities = getRarityProbabilities(day, slot, row, false)
+  const pGem = getPGemBySlot(gems, slot, placedRooms, row, day, vmode)
+  for (const [rarityIdx, pRarity] of pRarities.entries()) {
+    pDecks[rarityIdx] = pRarity * (1 - pGem)
+    pDecks[rarityIdx + 4] = pRarity * pGem
+  }
+  return pDecks
 }
 
 // array of 8 counts for accepting cards
@@ -201,12 +201,12 @@ export function applyFilters(
     // TODO: secret passage does not affect runback, but prism does.
     // Outer rooms do not involve runback, prior draft is used.
     // Berry picker, secret garden, room 8 make a secret draw and apply it to runback
-    if ((draft !== undefined && draft.previousDraft !== undefined )) {
+    if ((draft !== undefined && draft.previousDraft !== undefined)) {
       const rarity = pool.rarityOverrides[pr.room.slug] || pr.room.baseRarity
       filterResults.push(applyRunbackFilter(
-        pr, 
-        rarity, 
-        draft.previousDraft!, 
+        pr,
+        rarity,
+        draft.previousDraft!,
         draft.isFirstDraftAtDoor
       ))
     }
@@ -221,8 +221,8 @@ export function applyFilters(
 
     const finalResult = filterResults.reduce((acc, cur) => ({
       p: acc.p * cur.p,
-      failReason: acc.failReason || cur.failReason 
-    }), {p: 1, failReason: undefined})
+      failReason: acc.failReason || cur.failReason
+    }), { p: 1, failReason: undefined })
 
     return [pr, finalResult]
   }) as [PooledRoom, FilterResult][]
@@ -233,9 +233,9 @@ export function applyFilters(
 
   return {
     ...pool,
-    rooms: keptRooms.map(([pr, fr]) => ({...pr, p:fr.p})),
+    rooms: keptRooms.map(([pr, fr]) => ({ ...pr, p: fr.p })),
     removed: [
-      ...pool.removed, 
+      ...pool.removed,
       ...removedRooms.map(([pr, fr]) => ({ ...pr, reason: fr.failReason }))
     ]
   }
@@ -245,7 +245,7 @@ export function applyFilters(
 // Divide the draft pool into 8 decks based on rarity
 export function initDecks(
   pool: DraftPool
-): DeckList {  
+): DeckList {
   const decks = Array(8).fill(PVec.empty()) as DeckList
   for (const pr of pool.rooms) {
     const rarity: Rarity = pool.rarityOverrides[pr.room.slug] || pr.room.baseRarity
@@ -329,7 +329,8 @@ export function markDecks(
 
         // Approximate P(has enough cards)
         const avgP = d2.mean()
-        const pAccepted = binomialAtLeast(d2.length, avgP, k - 1)
+        // should this be k-1?
+        const pAccepted = binomialAtLeast(d2.length, avgP, k)
         acceptancePs[idx] = pAccepted
 
         // Stop iterating fallbacks when we get a deck that passing card-counting
@@ -344,7 +345,7 @@ export function markDecks(
     // markedDecks[idx] will be [] and acceptancePs[idx] will be 0
   }
 
-  return { markedDecks,  acceptancePs}
+  return { markedDecks, acceptancePs }
 }
 
 // Merge the marked decks into a single deck by modifying probabilities.

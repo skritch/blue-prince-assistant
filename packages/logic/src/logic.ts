@@ -317,25 +317,23 @@ function draftSlots(
   const { markedDecks, acceptancePs } = markDecks(decks, day.day, game.vmode, game.haveRoom46)
   const effectiveDecks = joinMarkedDecks(markedDecks)
 
-  // If the first draw fails, it will be repeated without conditional filters.
-  // Precompute the resulting probabilities for all rooms, for each slot.
+  const rank = draft.toLocation.tile.row
+  const slots: (1 | 2 | 3)[] = [1, 2, 3]
+
   let draw2pools = [PVec.empty(), PVec.empty(), PVec.empty()]
   if (useConditionalFilters) {
     draw2pools = draftSlots(pool, game, day, house, draft, false)
   }
 
-  const rank = draft.toLocation.tile.row
-  const slots: (1 | 2 | 3)[] = [1, 2, 3]
-
   // Determine the draft probability for each room and slot
-  const slotPools = slots.map((slot) => {
+  let slotPools = slots.map((slot) => {
 
     let slotPool = PVec.empty()
 
     const pDecks = getPDeck(
       slot, day.day, draft.gems || 0, rank, house.placedRooms.length - 2, game.vmode
     )
-    
+
     // Keeps track of the total probability of a second draw across
     // the 8 decks of the first draw
     let pRedraw = 0
@@ -347,8 +345,18 @@ function draftSlots(
       slotPool = slotPool.add(deck.mult(pDeck * pAccepted))
     }
 
-    // Add draw 2 results to probability mass
-    slotPool = slotPool.add( draw2pools[slot - 1].mult(pRedraw))
+    console.log(`slot ${slot}, filters ${useConditionalFilters} -- pRedraw: ${pRedraw}`)
+
+    // If the first draw fails, it will be repeated without conditional filters.
+    // Precompute the resulting probabilities for all rooms, for each slot.
+    if (useConditionalFilters && pRedraw > 0) {
+      const draw2pool = draw2pools[slot - 1]
+
+      // Add draw 2 results to probability mass
+      slotPool = slotPool.add(draw2pool.mult(pRedraw))
+    }
+
+    console.log(`slot ${slot}, filters ${useConditionalFilters} -- slotPool: ${slotPool.sum()}`)
     return slotPool
   })
 

@@ -44,26 +44,18 @@ export class PVec {
     return new PVec(result)
   }
 
-  // Arithmetic mean of all values (useful as the average-p input to binomialAtLeast).
   mean(): number {
-    const values = Object.values(this.data)
-    if (values.length === 0) return 0
-    return values.reduce((s, v) => s + v, 0) / values.length
+    return this.sum() / Object.values(this.data).length
   }
 
   static empty(): PVec {
     return new PVec()
   }
 
-  static sum(vecs: PVec[]): PVec {
-    return vecs.reduce((acc, v) => acc.add(v), PVec.empty())
+  sum(): number {
+    return Object.values(this.data).reduce((s, v) => s + v, 0)
   }
 
-  // Element-wise average across multiple PVecs.
-  static average(vecs: PVec[]): PVec {
-    if (vecs.length === 0) return PVec.empty()
-    return PVec.sum(vecs).mult(1 / vecs.length)
-  }
 }
 
 // P(Binomial(n, p) >= k) — probability that at least k of n independent

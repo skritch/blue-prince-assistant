@@ -9,6 +9,7 @@
     type DayState,
     type HouseState,
     type DraftParams,
+    type Direction,
     type TileColumn,
     type TileRow,
   } from "bp-logic";
@@ -19,14 +20,46 @@
   import DraftStatePanel from "./DraftStatePanel.svelte";
   import PoolTable from "./PoolTable.svelte";
 
+  type Mode = "none" | "outer" | "house";
+
   const loaded = loadState();
 
   let gameState: GameState = $state(loaded?.game ?? { ...initGameState() });
   let dayState: DayState = $state(loaded?.day ?? initDay(1));
   let houseState: HouseState = $state(loaded?.house ?? initHouse());
-  let draftParams: DraftParams | undefined = $state(loaded?.draft);
+
+  const initHouseDraft = loaded?.draft && loaded.draft !== "outer" ? loaded.draft : undefined;
+  let draftMode: Mode = $state(
+    !loaded?.draft ? "none" : loaded.draft === "outer" ? "outer" : "house",
+  );
+  let draftColumn: TileColumn = $state(initHouseDraft?.toLocation.tile.column ?? "C");
+  let draftRow = $state<number>(initHouseDraft?.toLocation.tile.row ?? 2);
+  let draftToDirection: Direction = $state(initHouseDraft?.toLocation.toDirection ?? "N");
+  let draftFromRoomSlug = $state(initHouseDraft?.fromRoomSlug ?? "");
+  let draftGems = $state(initHouseDraft?.gems ?? 0);
+  let draftIsReroll = $state(!(initHouseDraft?.isFirstDraftAtDoor ?? true));
+  let draftPreviousDraft = $state<[string, string, string]>(
+    initHouseDraft?.previousDraft ?? ["", "", ""],
+  );
   let draftKey = $state(0);
-  let draftInitializer: DraftParams | undefined = $state(loaded?.draft);
+
+  let draftParams: DraftParams | undefined = $derived.by(() => {
+    if (draftMode === "none") return undefined;
+    if (draftMode === "outer") return "outer";
+    const hasPreviousDraft = draftPreviousDraft.some((s) => s !== "");
+    return {
+      toLocation: {
+        tile: { column: draftColumn, row: draftRow as TileRow },
+        toDirection: draftToDirection,
+      },
+      fromRoomSlug: draftFromRoomSlug || undefined,
+      gems: draftGems,
+      isFirstDraftAtDoor: !draftIsReroll,
+      previousDraft: hasPreviousDraft
+        ? (draftPreviousDraft as [string, string, string])
+        : undefined,
+    };
+  });
 
   $effect(() => {
     const g = $state.snapshot(gameState) as GameState;
@@ -42,11 +75,17 @@
   }
 
   function resetAll() {
-    draftInitializer = undefined;
     gameState = { ...initGameState() };
     dayState = initDay(1);
     houseState = initHouse();
-    draftParams = undefined;
+    draftMode = "none";
+    draftColumn = "C";
+    draftRow = 2;
+    draftToDirection = "N";
+    draftFromRoomSlug = "";
+    draftGems = 0;
+    draftIsReroll = false;
+    draftPreviousDraft = ["", "", ""];
     draftKey++;
   }
 
@@ -120,18 +159,14 @@
       maxRank,
     };
 
-    draftInitializer = {
-      toLocation: {
-        tile: { column, row },
-        toDirection: direction,
-      },
-      fromRoomSlug: standardForDraft,
-      gems: randInt(0, 3),
-      isFirstDraftAtDoor: true,
-      previousDraft,
-    };
-
-    draftParams = draftInitializer;
+    draftMode = "house";
+    draftColumn = column;
+    draftRow = row;
+    draftToDirection = direction;
+    draftFromRoomSlug = standardForDraft;
+    draftGems = randInt(0, 3);
+    draftIsReroll = false;
+    draftPreviousDraft = previousDraft;
     draftKey++;
   }
 
@@ -144,7 +179,16 @@
     <DayStatePanel bind:dayState />
     <HouseStatePanel bind:houseState />
     {#key draftKey}
-      <DraftStatePanel bind:draftParams initialDraft={draftInitializer} />
+      <DraftStatePanel
+        bind:mode={draftMode}
+        bind:column={draftColumn}
+        bind:row={draftRow}
+        bind:toDirection={draftToDirection}
+        bind:fromRoomSlug={draftFromRoomSlug}
+        bind:gems={draftGems}
+        bind:isReroll={draftIsReroll}
+        bind:previousDraft={draftPreviousDraft}
+      />
     {/key}
     <div class="bottom-btns">
       <button class="action-btn" onclick={permalink}>🔗</button>

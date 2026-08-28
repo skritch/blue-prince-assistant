@@ -1,18 +1,30 @@
 <script lang="ts">
-  import type { DraftParams, Direction, TileColumn, TileRow } from "bp-logic";
+  import type { Direction, TileColumn, TileRow } from "bp-logic";
   import { ROOMS } from "bp-logic";
   import SearchInput from "./SearchInput.svelte";
   import { loadPanelOpen, savePanelOpen } from "../panelState";
 
-  let {
-    draftParams = $bindable(),
-    initialDraft,
-  }: {
-    draftParams: DraftParams | undefined;
-    initialDraft?: DraftParams;
-  } = $props();
-
   type Mode = "none" | "outer" | "house";
+
+  let {
+    mode = $bindable(),
+    column = $bindable(),
+    row = $bindable(),
+    toDirection = $bindable(),
+    fromRoomSlug = $bindable(),
+    gems = $bindable(),
+    isReroll = $bindable(),
+    previousDraft = $bindable(),
+  }: {
+    mode: Mode;
+    column: TileColumn;
+    row: number;
+    toDirection: Direction;
+    fromRoomSlug: string;
+    gems: number;
+    isReroll: boolean;
+    previousDraft: [string, string, string];
+  } = $props();
 
   const COLUMNS: TileColumn[] = ["A", "B", "C", "D", "E"];
   const ROWS: TileRow[] = [1, 2, 3, 4, 5, 6, 7, 8, 9];
@@ -26,49 +38,9 @@
   let open = $state(loadPanelOpen("draft", true));
   $effect(() => savePanelOpen("draft", open));
 
-  const initHouse =
-    initialDraft && initialDraft !== "outer" ? initialDraft : undefined;
-
-  let mode: Mode = $state(
-    !initialDraft ? "none" : initialDraft === "outer" ? "outer" : "house",
-  );
-  let column: TileColumn = $state(initHouse?.toLocation.tile.column ?? "C");
-  let row = $state<number>(initHouse?.toLocation.tile.row ?? 2);
-  let toDirection: Direction = $state(
-    initHouse?.toLocation.toDirection ?? "N",
-  );
-  let fromRoomSlug = $state(initHouse?.fromRoomSlug ?? "");
-  let gems = $state(initHouse?.gems ?? 0);
-  let isReroll = $state(!(initHouse?.isFirstDraftAtDoor ?? true));
-  let previousDraft = $state<[string, string, string]>(
-    initHouse?.previousDraft ?? ["", "", ""]
-  );
-
   const roomOptions = ROOMS.map((r) => ({ id: r.slug, label: r.name })).sort(
     (a, b) => a.label.localeCompare(b.label),
   );
-
-  $effect(() => {
-    if (mode === "none") {
-      draftParams = undefined;
-    } else if (mode === "outer") {
-      draftParams = "outer";
-    } else {
-      const hasPreviousDraft = previousDraft.some((s) => s !== "");
-      draftParams = {
-        toLocation: {
-          tile: { column, row: row as TileRow },
-          toDirection,
-        },
-        fromRoomSlug: fromRoomSlug || undefined,
-        gems,
-        isFirstDraftAtDoor: !isReroll,
-        previousDraft: hasPreviousDraft
-          ? (previousDraft as [string, string, string])
-          : undefined,
-      };
-    }
-  });
 </script>
 
 <details class="panel" bind:open>
@@ -119,17 +91,15 @@
             Is reroll
           </label>
 
-          <div class="drafting-from-section">
-            <div class="section-label">Drafting from:</div>
-            <div class="from-room-input"><SearchInput items={roomOptions} bind:value={fromRoomSlug} placeholder="room" /></div>
-          </div>
-        </div>
-
-        <div class="draft-col">
           <label class="inline-field">
             Gems:
             <input type="number" min="0" bind:value={gems} />
           </label>
+        </div>
+
+        <div class="draft-col">
+          <div class="section-label">Drafting from:</div>
+          <div class="from-room-input"><SearchInput items={roomOptions} bind:value={fromRoomSlug} placeholder="room" /></div>
         </div>
       </div>
     {/if}
