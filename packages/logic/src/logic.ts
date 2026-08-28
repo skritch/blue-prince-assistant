@@ -315,7 +315,7 @@ function draftSlots(
   const filteredPool = applyFilters(pool, game, day, draft, useConditionalFilters)
   const decks = initDecks(filteredPool)
   const deckMinimums = getDeckMinimums(day.day, game.vmode, game.haveRoom46)
-  const { pDeckIJ, pNoneMarked: pNoneAccepted } = selectDecks(decks, deckMinimums)
+  const { pDeckIJ, pNoneMarked } = selectDecks(decks, deckMinimums)
   const effectiveDecks = mergeMarkedDecks(decks, pDeckIJ)
 
   const rank = draft.toLocation.tile.row
@@ -341,8 +341,8 @@ function draftSlots(
     let pRedraw = 0
 
     for (const [i, deck] of effectiveDecks.entries()) {
-      slotPool = slotPool.add(deck.mult(pDeckRoll.get(i)))
-      pRedraw = pRedraw + pDeckRoll.get(i) * pNoneAccepted.get(i)
+      slotPool = slotPool.add(deck.scale(pDeckRoll.get(i)))
+      pRedraw = pRedraw + pDeckRoll.get(i) * pNoneMarked.get(i)
     }
 
     console.log(`slot ${slot}, filters ${useConditionalFilters} -- pRedraw: ${pRedraw}`)
@@ -353,7 +353,7 @@ function draftSlots(
       const draw2pool = draw2pools[slot - 1]
 
       // Add draw 2 results to probability mass
-      slotPool = slotPool.add(draw2pool.mult(pRedraw))
+      slotPool = slotPool.add(draw2pool.scale(pRedraw))
     }
 
     console.log(`slot ${slot}, filters ${useConditionalFilters} -- slotPool: ${slotPool.sum()}`)

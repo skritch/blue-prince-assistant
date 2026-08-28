@@ -322,8 +322,8 @@ export function selectDecks(
     const fallbackOrder = RARITY_FALLBACKS[rarity]
 
     // both keyed by j
-    let pMarkedI = KeyedVec.empty<number>()
-    let pAcceptedI = KeyedVec.empty<number>()
+    let pMarked = KeyedVec.empty<number>()
+    let pAccepted = KeyedVec.empty<number>()
 
     for (const rarity2 of fallbackOrder) {
       const j = (rarity2 - 1) + 4 * freeGem
@@ -342,34 +342,56 @@ export function selectDecks(
 
       // Pr(j is first deck accepted) 
       // = Pr(no decks before j in fallback order accepted) * Pr(j accepted)
-      const pNoneAcceptedSoFar = pAcceptedI.values().reduce((acc, cur) => acc * (1 - cur), 1)
+      const pNoneAcceptedSoFar = pAccepted.values().reduce((acc, cur) => acc * (1 - cur), 1)
       const pFirstAccepted = pAcceptedJ * pNoneAcceptedSoFar
 
       // Add j to outcome for i, weighted by pAcceptedJ
       pDeckIJ[i] = pDeckIJ[i].set(j, pDeckIJ[i].get(j) + pFirstAccepted)
 
-      pAcceptedI = pAcceptedI.set(j, pAcceptedJ)
-      pMarkedI = pMarkedI.set(j, pMarkedJ)
+      pAccepted = pAccepted.set(j, pAcceptedJ)
+      pMarked = pMarked.set(j, pMarkedJ)
     }
 
-    const pNoneAcceptedI = pAcceptedI.values().reduce((acc, cur) => acc * (1 - cur), 1)
-    const pNoneMarkedJ = pMarkedI.values().reduce((acc, cur) => acc * (1 - cur), 1)
+    const pNoneAcceptedI = pAccepted.values().reduce((acc, cur) => acc * (1 - cur), 1)
+    const pNoneMarkedI = pMarked.values().reduce((acc, cur) => acc * (1 - cur), 1)
+    pNoneMarked = pNoneMarked.set(i, pNoneMarkedI)
+
+    if (pNoneAcceptedI == 0 || pNoneMarkedI == 1) {
+      continue
+    }
 
     // If none are accepted, one marked decks should be chosen at random.
-    // What is Pr(j marked & none accepted)?
-    // = Pr(0 < |j| < n) * [ prod_(j' != j) Pr( j' not accepted ) ]
-    // = (Pr(j marked) - Pr(j accepted)) * [ prod_(j' != j) Pr( j' not accepted ) ]
-    // = (Pr(j marked) - Pr(j accepted)) * Pr(none accepted) / Pr(j not accepted)
-    for (const j of pMarkedI.values()) {
-      const pMarkedNoneAcceptedJ = (
-        (pMarkedI.get(j) - pAcceptedI.get(j)) / (1 - pAcceptedI.get(j))
-        * pNoneAcceptedI
+    // What is Pr(j marked | none accepted)?
+    // = Pr(j marked & none accepted) / P(none accepted)
+    // = [ Pr(j marked & j not accepted) * P(all j' != j not accepted) / P(none accepted)
+    // = (Pr(0 < |j| <= n) / Pr(j not accepted) 
+    // = (Pr(j marked) - Pr(j accepted)) / (1 - Pr(j accepted))
+    const pMarkedGivenNoneAccepted = (pMarked
+      .add(pAccepted.scale(-1)))
+      .mult(pAccepted.map((p => 1 / (1 - p)))
       )
-      // TODO: weight by 1/E[number of decks marked | j marked & none accepted]
-      pDeckIJ[i] = pDeckIJ[i].set(j, pDeckIJ[i].get(j) + pNoneAcceptedI)
+
+
+    for (const j of pMarked.keys()) {
+      // This is the probability this deck is marked
+      const pj = pMarkedGivenNoneAccepted.get(j)
+      const pks = pMarkedGivenNoneAccepted.unset(j)
+
+      // Need to weight by 1/(number of decks marked) in expectation, i.e.
+      // E( 1 / |marked decks| | j was marked)
+      // E( 1 / (1 + |marked decks k != j |)
+      //  = 1 * Pr(0 marked) 1/2 * Pr(1 marked) + 1/3 * Pr(2 marked) + 1/4 * Pr(3 marked)
+      //  = 1 - 1/2 * (sum of p_k) + (1/3) (sum p_k p_k', k > k') - (1/4) (product of p_k)
+
+      const e1 = pks.sum()
+      // pairwise sum = [(sum p_j)^2 - sum(p_j^2)] / 2
+      const e2 = (e1 * e1 - pks.map(pk => pk * pk).sum()) / 2
+      const e3 = pks.values().reduce((acc, pk) => pk != 0 ? acc * pk : acc, 1)
+      const pDrawJ = 1 - e1 / 2 + e2 / 3 - e3 / 4
+      const markWeight = pNoneAcceptedI * pj * pDrawJ
+      pDeckIJ[i] = pDeckIJ[i].set(j, pDeckIJ[i].get(j) + markWeight)
     }
 
-    pNoneMarked = pNoneMarked.set(i, pNoneMarkedJ)
   }
 
   return { pDeckIJ, pNoneMarked }
@@ -392,16 +414,17 @@ export function mergeMarkedDecks(
       // So far the probabilities in a deck are "probability of card being in the deck"
       // Now we're finding the probability of a card being drawn. Each card present is equal.
       // Weighting all by 1 / (sum of probabilities of each card being there) is close enough.
-      // TODO: there is a bug here. We originally determined with a deck was 
+      //
+      // TODO: there is a (minor?) bug here. We originally determined with a deck was 
       // accepted or marked with some probability based on the ps of its entries.
       // e.g. a deck with 3 p=0.3 entries is accepted 0.3^3 = 0.027 of the time.
       // When we come to draw from that deck, we don't need to account for the 0.3s
       // of each entry—if we got here, they have to be present.
       // As long as all entries have == p, there's no problem, bc 1/total
       // normalization will cancel out, but if they're uneven the weights are wrong.
-      const deckJdraws = deckJ.mult(1. / deckJ.sum())  // Pr(room r | deck j) 
+      const deckJdraws = deckJ.scale(1. / deckJ.sum())  // Pr(room r | deck j) 
 
-      const deckJweighted = deckJdraws.mult(pij)  // Pr(room r | deck j) * Pr(deck j | deck i rolled)
+      const deckJweighted = deckJdraws.scale(pij)  // Pr(room r | deck j) * Pr(deck j | deck i rolled)
 
       // Add probability mass to deck i, we'll find Pr(deck i rolled) later
       mergedDecks[i] = mergedDecks[i].add(deckJweighted)

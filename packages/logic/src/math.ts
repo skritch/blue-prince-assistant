@@ -18,8 +18,18 @@ export class KeyedVec<K extends string | number = string> {
     return new KeyedVec(next)
   }
 
+  unset(key: K): KeyedVec<K> {
+    const next = new Map(this.data)
+    next.delete(key)
+    return new KeyedVec(next)
+  }
+
   entries(): [K, number][] {
     return [...this.data.entries()]
+  }
+
+  keys(): K[] {
+    return [...this.data.keys()]
   }
 
   values(): number[] {
@@ -31,7 +41,7 @@ export class KeyedVec<K extends string | number = string> {
     return this.data.size
   }
 
-  // Element-wise add — union of keys, summing values for shared keys.
+  // Element-wise add, with union of keys
   add(other: KeyedVec<K>): KeyedVec<K> {
     const result = new Map(this.data)
     for (const [k, v] of other.data) {
@@ -40,14 +50,32 @@ export class KeyedVec<K extends string | number = string> {
     return new KeyedVec(result)
   }
 
+  // Element-wise multiply, with union of keys
+  mult(other: KeyedVec<K>): KeyedVec<K> {
+    const result = new Map(this.data)
+    for (const [k, v] of other.data) {
+      result.set(k, (result.get(k) ?? 1) * v)
+    }
+    return new KeyedVec(result)
+  }
+
   // Multiply all values by a scalar.
-  mult(s: number): KeyedVec<K> {
+  scale(s: number): KeyedVec<K> {
     const result = new Map<K, number>()
     for (const [k, v] of this.data) {
       result.set(k, v * s)
     }
     return new KeyedVec(result)
   }
+
+  map(f: (value: number, key: K) => number): KeyedVec<K> {
+    const result = new Map<K, number>()
+    for (const [k, v] of this.data) {
+      result.set(k, f(v, k))
+    }
+    return new KeyedVec(result)
+  }
+
 
   mean(): number {
     return this.sum() / this.data.size
