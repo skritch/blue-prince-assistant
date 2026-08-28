@@ -28,13 +28,18 @@
   let dayState: DayState = $state(loaded?.day ?? initDay(1));
   let houseState: HouseState = $state(loaded?.house ?? initHouse());
 
-  const initHouseDraft = loaded?.draft && loaded.draft !== "outer" ? loaded.draft : undefined;
+  const initHouseDraft =
+    loaded?.draft && loaded.draft !== "outer" ? loaded.draft : undefined;
   let draftMode: Mode = $state(
     !loaded?.draft ? "none" : loaded.draft === "outer" ? "outer" : "house",
   );
-  let draftColumn: TileColumn = $state(initHouseDraft?.toLocation.tile.column ?? "C");
+  let draftColumn: TileColumn = $state(
+    initHouseDraft?.toLocation.tile.column ?? "C",
+  );
   let draftRow = $state<number>(initHouseDraft?.toLocation.tile.row ?? 2);
-  let draftToDirection: Direction = $state(initHouseDraft?.toLocation.toDirection ?? "N");
+  let draftToDirection: Direction = $state(
+    initHouseDraft?.toLocation.toDirection ?? "N",
+  );
   let draftFromRoomSlug = $state(initHouseDraft?.fromRoomSlug ?? "");
   let draftGems = $state(initHouseDraft?.gems ?? 0);
   let draftIsReroll = $state(!(initHouseDraft?.isFirstDraftAtDoor ?? true));
@@ -91,13 +96,21 @@
 
   function randomPreset() {
     // Helper to pick random element from array
-    const pick = <T,>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)];
-    const randInt = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min;
+    const pick = <T,>(arr: T[]): T =>
+      arr[Math.floor(Math.random() * arr.length)];
+    const randInt = (min: number, max: number) =>
+      Math.floor(Math.random() * (max - min + 1)) + min;
 
     // Get rooms by rarity
-    const commonRooms = ROOMS.filter(r => r.baseRarity === 1 && !['entrance-hall', 'antechamber'].includes(r.slug));
-    const standardRooms = ROOMS.filter(r => r.baseRarity === 2);
-    const standardNonDeadEnd = standardRooms.filter(r => !r.tags.includes('dead-end'));
+    const commonRooms = ROOMS.filter(
+      (r) =>
+        r.baseRarity === 1 &&
+        !["entrance-hall", "antechamber"].includes(r.slug),
+    );
+    const standardRooms = ROOMS.filter((r) => r.baseRarity === 2);
+    const standardNonDeadEnd = standardRooms.filter(
+      (r) => !r.tags.includes("dead-end"),
+    );
 
     // Pick the standard room for drafting first (non-dead-end)
     const standardForDraft = pick(standardNonDeadEnd).slug;
@@ -124,13 +137,15 @@
     const maxRank = randInt(1, 4) as 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
 
     // Set draft location
-    const columns: TileColumn[] = ['A', 'B', 'C', 'D', 'E'];
-    const direction = pick(['N', 'E', 'W'] as const);
+    const columns: TileColumn[] = ["A", "B", "C", "D", "E"];
+    const direction = pick(["N", "E", "W"] as const);
     const column = pick(columns);
     const row = maxRank as TileRow;
 
     // Set previous draft: standardForDraft + 2 undrafted common rooms
-    const undraftedCommon = commonRooms.filter(r => !selectedCommonSet.has(r.slug));
+    const undraftedCommon = commonRooms.filter(
+      (r) => !selectedCommonSet.has(r.slug),
+    );
     const previousDraft: [string, string, string] = [
       standardForDraft,
       pick(undraftedCommon).slug,
@@ -138,8 +153,15 @@
     ];
 
     // Maybe add found floorplans (50% chance for each)
-    const possibleFloorplans = ['conservatory', 'planetarium', 'closet-exhibit', 'tunnel'];
-    const foundFloorplans = possibleFloorplans.filter(() => Math.random() > 0.5);
+    const possibleFloorplans = [
+      "conservatory",
+      "planetarium",
+      "closet-exhibit",
+      "tunnel",
+    ];
+    const foundFloorplans = possibleFloorplans.filter(
+      () => Math.random() > 0.5,
+    );
 
     // Pick a random day < 30
     const randomDay = randInt(1, 29);
@@ -147,20 +169,28 @@
     // Update state
     const basePool = initGameState().pool;
     const additionalRooms = foundFloorplans
-      .map(slug => ROOMS.find(r => r.slug === slug))
-      .filter((r): r is typeof ROOMS[number] => r !== undefined);
+      .map((slug) => ROOMS.find((r) => r.slug === slug))
+      .filter((r): r is (typeof ROOMS)[number] => r !== undefined);
 
     dayState = initDay(randomDay);
 
     gameState = {
       ...initGameState(),
       haveWestGate: true,
-      pool: additionalRooms.length > 0 ? [...basePool, ...additionalRooms] : basePool,
+      pool:
+        additionalRooms.length > 0
+          ? [...basePool, ...additionalRooms]
+          : basePool,
     };
 
     houseState = {
       ...initHouse(),
-      placedRooms: ['entrance-hall', 'antechamber', ...selectedCommon, ...selectedStandard],
+      placedRooms: [
+        "entrance-hall",
+        "antechamber",
+        ...selectedCommon,
+        ...selectedStandard,
+      ],
       maxRank,
     };
 
@@ -175,7 +205,9 @@
     draftKey++;
   }
 
-  let draftPool = $derived(computePool(gameState, dayState, houseState, draftParams));
+  let draftPool = $derived(
+    computePool(gameState, dayState, houseState, draftParams),
+  );
 </script>
 
 <div class="layout">
@@ -198,12 +230,16 @@
     <div class="bottom-btns">
       <button class="action-btn" onclick={permalink}>🔗</button>
       <div class="spacer"></div>
-      <button class="action-btn" onclick={randomPreset}>Random preset</button>
+      <button class="action-btn" onclick={randomPreset}>Random</button>
       <button class="action-btn" onclick={resetAll}>Reset all</button>
     </div>
   </div>
   <div class="results">
-    <PoolTable {draftPool} gameRarityOverrides={gameState.rarityOverrides} bind:houseState />
+    <PoolTable
+      {draftPool}
+      gameRarityOverrides={gameState.rarityOverrides}
+      bind:houseState
+    />
   </div>
 </div>
 

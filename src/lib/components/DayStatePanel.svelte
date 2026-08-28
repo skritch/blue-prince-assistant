@@ -53,26 +53,9 @@
                 bind:checked={dayState.pawnChessKnight}
               />Pawn Chess → Knight</label
             >
-            <label data-tooltip="Adds Pump Room, Locker Room, and Sauna"
-              ><input type="checkbox" bind:checked={dayState.poolInHouse} /> Pool</label
-            >
             <label data-tooltip="Adds Morning Room"
               ><input type="checkbox" bind:checked={dayState.baconAndEggs} /> Bacon
               &amp; Eggs</label
-            >
-            <label
-              data-tooltip="Adds 8 Classrooms. Library, Dormitory, and Classroom appear more often"
-              ><input
-                type="checkbox"
-                bind:checked={dayState.schoolhouseInHouse}
-              /> Schoolhouse</label
-            >
-            <label
-              data-tooltip="Re-adds many rooms after they are drafted, or prevents their removal the first time they are drafted. Does not add two copies at once."
-              ><input
-                type="checkbox"
-                bind:checked={dayState.chamberOfMirrorsInHouse}
-              /> Chamber of Mirrors</label
             >
             <label
               class="select-row"
@@ -137,15 +120,6 @@
             <span class="help-icon" data-tooltip={NOT_SYNCED}>?</span>
           </div>
           <div class="checks">
-            <label data-tooltip="Red rooms appear more often"
-              ><input type="checkbox" bind:checked={dayState.furnaceInHouse} /> Furnace</label
-            >
-            <label data-tooltip="Green rooms appear more often"
-              ><input
-                type="checkbox"
-                bind:checked={dayState.greenhouseInHouse}
-              /> Greenhouse</label
-            >
             <label data-tooltip="Rooms with four doors appear more often"
               ><input
                 type="checkbox"

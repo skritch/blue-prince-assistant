@@ -42,7 +42,7 @@ function getBasePool(
 ): DraftPool {
   if (game.haveRoom46) { pool = addToPool(pool, ROOM_46_REWARDS, 'room46') }
   if (game.haveTrophy && !game.haveRoom46) { pool = addToPool(pool, ['trophy-room'], 'trophy') }
-  if (day.poolInHouse) { pool = addToPool(pool, POOL_ADDITIONS, 'pool-in-house') }
+  if (house.poolInHouse) { pool = addToPool(pool, POOL_ADDITIONS, 'pool-in-house') }
   if (day.baconAndEggs) { pool = addToPool(pool, ['morning-room'], 'bacon-and-eggs') }
   if (day.knightChess) { pool = addToPool(pool, ['armory'], 'knight-chess') }
   if (day.pawnChessKnight) { pool = addToPool(pool, ['armory'], 'pawn-chess') }
@@ -70,7 +70,7 @@ function getBasePool(
   // Schoolhouse classrooms
   // https://www.reddit.com/r/BluePrince/comments/1lrxff0/the_mechanics_of_drafting_multiple_classrooms/
   // TODO: fairly complicated, for now we just add 8 schoolhouses
-  if (day.schoolhouseInHouse) {
+  if (house.schoolhouseInHouse) {
     pool = addToPool(pool, Array(8).fill('classroom'), 'schoolhouse')
   }
 
@@ -81,7 +81,7 @@ function getBasePool(
   // one of the copies will then be removed when we remove the current drafts,
   // https://www.reddit.com/r/BluePrince/comments/1mkgzuj/chamber_of_mirrors_passive_and_permanent_effects/
 
-  if (day.chamberOfMirrorsInHouse) {
+  if (house.chamberOfMirrorsInHouse) {
     const houseCounts: Record<string, number> = {}
     for (const slug of house.placedRooms) {
       houseCounts[slug] = (houseCounts[slug] ?? 0) + 1
@@ -127,7 +127,7 @@ function applyDraftingBlocks(
 
   if (!game.vmode) {
     // What mechanic actually removes study? Is it a block?
-    if (day.day < 3) { pool = blockDraft(pool, 'study', "removed day 1/2, unless in v-mode") }
+    if (day.day < 3) { pool = blockDraft(pool, 'study', "blocked day 1/2, unless in v-mode. Maybe?") }
   }
 
   if (draft !== undefined && draft !== 'outer') {
@@ -269,11 +269,11 @@ function applyLocation(
     const ineligible = pool.rooms
       .filter(({ room }) => !eligible.has(room.slug))
       .map(({ room }) => room.slug)
-    pool = removeFromPool(pool, ineligible)
+    // Obviously ignoring monk
+    pool = removeFromPool(pool, ineligible, "house room")
   } else {
 
-    // Remove outer rooms first without giving a reason
-    pool = removeFromPool(pool, OUTER_ROOMS)
+    pool = removeFromPool(pool, OUTER_ROOMS, "outer room")
 
     const eligible = new Set(
       getRoomsAt(draft.toLocation.tile, draft.toLocation.toDirection)
@@ -312,7 +312,7 @@ function draftSlots(
   }
 
   // Apply runback/conditional filters in advance, why not?
-  const filteredPool = applyFilters(pool, game, day, draft, useConditionalFilters)
+  const filteredPool = applyFilters(pool, game, day, house, draft, useConditionalFilters)
   const decks = initDecks(filteredPool)
   const deckMinimums = getDeckMinimums(day.day, game.vmode, game.haveRoom46)
   const { pDeckIJ, pNoneMarked } = selectDecks(decks, deckMinimums)
@@ -345,8 +345,6 @@ function draftSlots(
       pRedraw = pRedraw + pDeckRoll.get(i) * pNoneMarked.get(i)
     }
 
-    console.log(`slot ${slot}, filters ${useConditionalFilters} -- pRedraw: ${pRedraw}`)
-
     // If the first draw fails, it will be repeated without conditional filters.
     // Precompute the resulting probabilities for all rooms, for each slot.
     if (useConditionalFilters && pRedraw > 0) {
@@ -356,7 +354,6 @@ function draftSlots(
       slotPool = slotPool.add(draw2pool.scale(pRedraw))
     }
 
-    console.log(`slot ${slot}, filters ${useConditionalFilters} -- slotPool: ${slotPool.sum()}`)
     return slotPool
   })
 

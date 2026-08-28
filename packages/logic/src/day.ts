@@ -10,21 +10,17 @@ export interface DayState {
   day: number
 
   // --- Dynamic pool modifiers ---
-  poolInHouse: boolean             // adds Locker Room, Sauna, Pump Room
   knightChess: boolean             // Adds Armory
   pawnChessKnight: boolean         // Also adds Armory, but slightly different
   baconAndEggs: boolean            // adds Morning Room
-  schoolhouseInHouse: boolean      // Alters Library rarity and adds classrooms
-  chamberOfMirrorsInHouse: boolean // adds same-day duplicates of already-placed rooms
   aquariumExperimentActivations: number | null    // (Laboratory) adds extra Aquariums to pool
 
   // --- Rarity biases ---
-  furnaceInHouse: boolean          // Red rooms more likely
-  greenhouseInHouse: boolean       // Green rooms more likely
   southernCrossActive: boolean     // Boosts certain rooms
   draxusActive: boolean            // Dead ends more common
   chessColor: RoomColor | null     // Chess piece color boost (null = inactive)
   scepterColor: RoomColor | null   // Royal Scepter color boost (null = inactive)
+
 
   // --- Items ---
   haveBatteryPack: boolean
@@ -43,15 +39,10 @@ export interface DayState {
 export function initDay(day: number): DayState {
   return {
     day,
-    poolInHouse: false,
     knightChess: false,
     pawnChessKnight: false,
     baconAndEggs: false,
-    schoolhouseInHouse: false,
-    chamberOfMirrorsInHouse: false,
     aquariumExperimentActivations: null,
-    furnaceInHouse: false,
-    greenhouseInHouse: false,
     southernCrossActive: false,
     draxusActive: false,
     chessColor: null,

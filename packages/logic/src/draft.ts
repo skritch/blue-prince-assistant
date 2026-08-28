@@ -6,6 +6,7 @@ import { binomialAtLeast, KeyedVec } from './math'
 import { applyConditionalFilters, applyRunbackFilter, getConditionalFilters, type FilterResult } from './filters'
 import type { DayState } from './day'
 import type { GameState } from './game'
+import type { HouseState } from './house'
 import { partition } from './utils'
 
 
@@ -136,7 +137,7 @@ function getRarityProbabilities(
   if (slot == 1) {
     return RARITY_PROBABILITIES[`week${week}_slot1`]['byRank'][rankRow]
   }
-  return RARITY_PROBABILITIES[`week${week}_slot23`]['byRank'][rankRow]
+  return RARITY_PROBABILITIES[`week${week}_slots23`]['byRank'][rankRow]
 }
 
 
@@ -186,6 +187,7 @@ export function applyFilters(
   pool: DraftPool,
   game: GameState,
   day: DayState,
+  house: HouseState,
   draft?: DraftParams,
   useConditionalFilters: boolean = true
 ): DraftPool {
@@ -195,7 +197,7 @@ export function applyFilters(
     return pool
   }
 
-  const condFilters = getConditionalFilters(game, day)
+  const condFilters = getConditionalFilters(game, day, house)
 
   // first apply non-conditional filters
   let filteredPool = pool.rooms.map((pr) => {

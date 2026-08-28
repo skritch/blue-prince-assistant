@@ -1,6 +1,7 @@
 import type { DayState } from "./day"
 import type { DraftParams, HouseDraftParams } from "./draft"
 import type { GameState } from "./game"
+import type { HouseState } from "./house"
 import { type DraftPool, type PooledRoom } from "./pool"
 import { type Rarity, type RoomColor } from "./types"
 import { partition } from "./utils"
@@ -45,18 +46,19 @@ function tagFilter(tag: string, p: number, name?: string): ConditionalFilter {
 export function getConditionalFilters(
   game: GameState,
   day: DayState,
+  house: HouseState,
 ) {
   // https://www.reddit.com/r/BluePrince/comments/1m4eer1/drafting_mechanics_conditional_filters_making/
 
   const colors = [... new Set([
     day.chessColor,
     day.scepterColor,
-    day.greenhouseInHouse && 'green' as RoomColor,
-    day.furnaceInHouse && 'red' as RoomColor
+    house.greenhouseInHouse && 'green' as RoomColor,
+    house.furnaceInHouse && 'red' as RoomColor
   ].filter((s) => (s !== null) && (s !== false)))]
 
   let patioFilter
-  if (day.greenhouseInHouse) {
+  if (house.greenhouseInHouse) {
     patioFilter = roomFilter(PATIO_FILTER_BASE, 0.5, 'patio')
   } else {
     patioFilter = roomFilter([...PATIO_FILTER_BASE, 'secret-passage'], 0.05, 'patio')
@@ -65,7 +67,7 @@ export function getConditionalFilters(
   const minorBumpFilter = roomFilter([
     'classroom',
     (day.day > 4 || game.vmode) && 'garage',
-    day.greenhouseInHouse && 'secret-passage',
+    house.greenhouseInHouse && 'secret-passage',
     (day.aquariumExperimentActivations || 0) > 0 && 'aquarium'
   ].filter((s) => (s !== false)), 0.03, 'minor bump')
 
@@ -77,7 +79,7 @@ export function getConditionalFilters(
   const filters: ConditionalFilter[] = [
     ...colors.map(c => colorFilter(c)),
     patioFilter,
-    day.schoolhouseInHouse && roomFilter(['classroom', 'dormitory', 'library'], 0.3, 'schoolhouse'),
+    house.schoolhouseInHouse && roomFilter(['classroom', 'dormitory', 'library'], 0.3, 'schoolhouse'),
     day.southernCrossActive && roomFilter([
       'rotunda', 'passageway', 'great-hall', 'cloister', 'archives', 'weight-room', 'vestibule'
     ], 0.4, 'southern cross'),
