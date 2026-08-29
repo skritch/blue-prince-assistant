@@ -5,8 +5,10 @@
 Visualizes the draft pool in [Blue Prince](https://www.blueprincegame.com/).
 
 Effort has been made to reflect many of the idiosyncrasies of the game, mostly based on documentation by Reddit user [TFMurphy](https://www.reddit.com/user/TFMurphy/submitted/). 
+Many obscure rules are noted in the UI as mousover tooltips, so this might provide a good way to learn the mechanics.
 
-Many rules noted in the UI as mousover tooltips.
+The results will not be exactly correct, as I do not replicate the logic of the game engine. Instead I track probabilities through a few stages of the draft process.
+
 
 Goal is to implement:
 - [x] Track the current draft pool based on the state of the game, day, and house.
@@ -20,9 +22,6 @@ Goal is to implement:
 - [x] Show the pool for each slot, depending on current gem counts
 - [ ] Silver/prism keys and secret passages
 
-At this point the tool will basically be complete.
-
-The results will not be exactly correct, as I do not intend to fully replicate the logic of the actual game engine. It would be impossible to do so without knowing the exact order in which the house was drafted and about previous days' drafts.
 
 Potential future features:
 - Calculate probability of drawing e.g. right turn, gemless straight, etc.?
@@ -31,4 +30,4 @@ Potential future features:
 
 ----
 
-If you like this, consider [Buying Me a Coffee](https://buymeacoffee.com/skritch)!
+If you like this tool, consider [Buying Me a Coffee](https://buymeacoffee.com/skritch)!
