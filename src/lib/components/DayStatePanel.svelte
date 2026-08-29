@@ -58,6 +58,10 @@
               ><input type="checkbox" bind:checked={dayState.haveChronograph} />
               Chronograph</label
             >
+            <label data-tooltip="Increases chance of drawing a Bookshop from the Library"
+              ><input type="checkbox" bind:checked={dayState.haveHallPass} />
+              Hall Pass</label
+            >
             <label class="select-row">
               <select class="color-select" bind:value={dayState.scepterColor}>
                 <option value={null}>—</option>
@@ -120,6 +124,10 @@
             <label data-tooltip="Coat Check rarity mechanism is unknown"
               ><input type="checkbox" bind:checked={dayState.coatCheckUsed} /> Coat
               Checked Item</label
+            >
+            <label data-tooltip="Boiler Room has been activated today"
+              ><input type="checkbox" bind:checked={dayState.boilerActivated} /> Boiler
+              Activated</label
             >
           </div>
         </div>

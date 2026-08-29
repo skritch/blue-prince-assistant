@@ -2,6 +2,8 @@ import type { Rarity, Room, RoomColor, Upgrade } from './types'
 import rawRooms from './data/rooms.json'
 import rawMirrorRooms from './data/mirrorRooms.json'
 import { default as UPGRADES } from './data/upgrades.json'
+import rawLibraryIgnored from './data/libraryIgnored.json'
+import { toSlug } from './utils'
 export { default as MIRROR_FLOORPLANS } from './data/mirrorFloorplans.json'
 
 export { UPGRADES }
@@ -19,6 +21,14 @@ export const POOL_ADDITIONS = ['sauna', 'locker-room', 'pump-room']
 export const ADHOC_ADDITIONS = ['morning-room', 'armory']
 export const UNDRAFTABLE = ['secret-garden', 'room-8', 'room-46', 'antechamber', 'entrance-hall']
 
+export const POWERED_ROOMS = new Set([
+  "garage", "boiler-room", "pump-room",
+  "laboratory", "laundry-room", "furnace"
+])
+export const POWER_CONNECTOR_ROOMS = new Set([
+  "locker-room", "security", "passageway",
+  "archives", "darkroom", "weight room"]
+)
 
 export const ROOMS: Room[] = rawRooms.map((r) => ({
   ...r,
@@ -32,18 +42,25 @@ export const ROOM_BY_SLUG: Record<string, Room> = Object.fromEntries(
 const mirrorRooms = rawMirrorRooms as { slug: string, mirrored?: "never" | "modified" }[]
 export const MIRROR_ROOMS: Record<string, { mirrored?: "never" | "modified" }> = Object.fromEntries(mirrorRooms.map(({ slug, ...rest }) => [slug, rest]))
 
+export const LIBRARY_IGNORED = {
+  always: new Set(rawLibraryIgnored.always.map(toSlug)),
+  belowTwoGems: new Set(rawLibraryIgnored.belowTwoGems.map(toSlug)),
+  twoOrMoreGems: new Set(rawLibraryIgnored.twoOrMoreGems.map(toSlug)),
+}
+
 export const OUTER_ROOMS = ROOMS
   .filter(r => r.directoryPage === 9)
   .map(r => r.slug)
+
+export const DEAD_ENDS = new Set(ROOMS
+  .filter((r) => r.tags.includes('dead-end'))
+  .map((r) => r.slug)
+)
 
 export function roomsForPage(page: number): Room[] {
   return ROOMS.filter((r) => r.directoryPage === page)
 }
 
-
-function toSlug(str: string): string {
-  return str.toLowerCase().replace(/['']/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')
-}
 
 type RawUpgrade = { name?: string; description?: string; color?: string | string[], tags?: string[] }
 
@@ -63,3 +80,4 @@ for (const [baseSlug, entry] of Object.entries(UPGRADES as Record<string, { upgr
   }
   if (Object.keys(bySlug).length > 0) UPGRADE_LOOKUP[baseSlug] = bySlug
 }
+

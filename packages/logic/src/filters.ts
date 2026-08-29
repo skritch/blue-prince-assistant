@@ -3,6 +3,7 @@ import type { DraftParams, HouseDraftParams } from "./draft"
 import type { GameState } from "./game"
 import type { HouseState } from "./house"
 import { type DraftPool, type PooledRoom } from "./pool"
+import { LIBRARY_IGNORED } from "./rooms"
 import { type Rarity, type RoomColor } from "./types"
 import { partition } from "./utils"
 
@@ -139,13 +140,32 @@ export function applyRunbackFilter(
       return {
         p: 1 - RUNBACK_P_BY_RARITY[rarity]
       }
-    } else { 
+    } else {
       return {
         p: 0,
         failReason: "runback"
       }
     }
   } else {
-    return {p: 1}
+    return { p: 1 }
+  }
+}
+
+
+export function applyLibraryFilter(
+  pr: PooledRoom,
+  gems: number
+) {
+  if (
+    LIBRARY_IGNORED['always'].has(pr.room.slug)
+    || (gems < 2 && LIBRARY_IGNORED['belowTwoGems'].has(pr.room.slug))
+    || (gems >= 2 && LIBRARY_IGNORED['twoOrMoreGems'].has(pr.room.slug))
+  ) {
+    return {
+      p: 0,
+      failReason: "library"
+    }
+  } else {
+    return { p: 1 }
   }
 }

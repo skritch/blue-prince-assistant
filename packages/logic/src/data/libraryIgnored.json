@@ -1,0 +1,17 @@
+{
+  "always": [
+    "Closet", "Storeroom", "Bedroom", "Boudoir",
+    "Guest Bedroom", "Nursery", "Hallway", "Corridor",
+    "Courtyard", "Lavatory", "Maid's Chamber", "Gymnasium",
+    "Darkroom", "Furnace"
+  ],
+  "belowTwoGems": [
+    "Attic", "Music Room", "Trophy Room", "Ballroom",
+    "Vault", "Drafting Studio", "Master Bedroom", "Passageway",
+    "Foyer", "Cloister", "Showroom", "Casino",
+    "Throne Room"
+  ],
+  "twoOrMoreGems": [
+    "Tunnel"
+  ]
+}

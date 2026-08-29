@@ -3,7 +3,7 @@ import type { Direction, RoomColor, GridTile, TileRow, Rarity } from './types'
 import rawRarityProbabilities from './data/rarityProbabilities.json'
 import type { DraftPool, PooledRoom } from './pool'
 import { binomialAtLeast, KeyedVec } from './math'
-import { applyConditionalFilters, applyRunbackFilter, getConditionalFilters, type FilterResult } from './filters'
+import { applyConditionalFilters, applyLibraryFilter, applyRunbackFilter, getConditionalFilters, type FilterResult } from './filters'
 import type { DayState } from './day'
 import type { GameState } from './game'
 import type { HouseState } from './house'
@@ -11,9 +11,11 @@ import { partition } from './utils'
 import { OUTER_ROOMS } from './rooms'
 
 
-const RARITY_PROBABILITIES = rawRarityProbabilities as unknown as Record<string, Record<'byRank', [number, number, number, number][]>>
+const RARITY_PROBABILITIES = rawRarityProbabilities as unknown as
+  Record<string, { byRank: [number, number, number, number][] }> & { library: [number, number, number, number] }
 
 export interface HouseDraftParams {
+  kind: 'house'
   toLocation: {
     tile: GridTile,
     toDirection: Direction,
@@ -26,7 +28,6 @@ export interface HouseDraftParams {
   isFirstDraftAtDoor: boolean
   keyUsed?: 'silver' | 'secret-garden' | 'room-8' | ['prism', RoomColor]
   secretPassageColor?: Exclude<RoomColor, 'black' | 'blue'> | null
-  boilerActivated?: boolean
 }
 
 export interface OuterDraftParams {
@@ -96,10 +97,13 @@ function getPGemBySlot(
   roomsDrafted: number,
   rank: TileRow,
   day: number,
-  vMode: boolean
+  vMode: boolean,
+  inLibrary: boolean
 ): number {
   let pGems: [number, number, number]
-  if (
+  if (inLibrary) {
+    pGems = [0, gems == 0 ? 0 : 1, 1]
+  } else if (
     (vMode && roomsDrafted < 3)
     || (day == 1 && roomsDrafted < 6)
     || (day == 2 && roomsDrafted < 5)
@@ -121,9 +125,12 @@ function getRarityProbabilities(
   day: number,
   slot: 1 | 2 | 3,
   rank: TileRow,
-  solarium: boolean = false
+  solarium: boolean,
+  inLibrary: boolean
 ) {
-  // TODO: add library, solarium
+  if (inLibrary) {
+    return RARITY_PROBABILITIES['library']
+  }
   const rankRow = rank - 1
   let week: string
   if (day < 8) { week = '1' }
@@ -145,17 +152,16 @@ function getRarityProbabilities(
   return RARITY_PROBABILITIES[`week${week}_slots23`]['byRank'][rankRow]
 }
 
-
-
 export function getPDeck(
   slot: 1 | 2 | 3,
   day: number, gems: number,
   row: TileRow, placedRooms: number,
-  vmode: boolean, solarium: boolean
+  vmode: boolean,
+  solarium: boolean, inLibrary: boolean
 ): KeyedVec<number> {
   let pDecks = KeyedVec.empty<number>()
-  const pRarities = getRarityProbabilities(day, slot, row, solarium)
-  const pGem = getPGemBySlot(gems, slot, placedRooms, row, day, vmode)
+  const pRarities = getRarityProbabilities(day, slot, row, solarium, inLibrary)
+  const pGem = getPGemBySlot(gems, slot, placedRooms, row, day, vmode, inLibrary)
   for (const [rarityIdx, pRarity] of pRarities.entries()) {
     pDecks = pDecks.set(rarityIdx, pRarity * (1 - pGem))
     pDecks = pDecks.set(rarityIdx + 4, pRarity * pGem)
@@ -198,7 +204,7 @@ export function applyFilters(
 ): DraftPool {
 
   // Outer draft uses position-override mechanics instead of conditional filters
-  if (!draft || 'kind' in draft) {
+  if (!draft || draft.kind == 'outer') {
     return pool
   }
 
@@ -208,7 +214,7 @@ export function applyFilters(
   let filteredPool = pool.rooms.map((pr) => {
     const filterResults: FilterResult[] = []
 
-    // Discard Filter -> ignore
+    // Discard Filter -> omitted
 
     // Runback Filter
     // TODO: secret passage does not affect runback, but prism does.
@@ -224,9 +230,14 @@ export function applyFilters(
       ))
     }
 
-    // Double Down Filter -> ignore
-    // Library Filter -> TODO. Where's this list?
-    // Ignore Filter -> freezer, rumpus, blue crown -> ignore for now
+    // Double Down Filter -> omitted
+
+    // Library Filter
+    if (draft.fromRoomSlug == 'library') {
+      filterResults.push(applyLibraryFilter(pr, draft.gems || 0))
+    }
+
+    // Ignore Filter -> freezer, rumpus, blue crown -> omitted
 
     if (useConditionalFilters) {
       filterResults.push(applyConditionalFilters(pr, condFilters))
@@ -316,7 +327,8 @@ const LIBRARY_RARITY_FALLBACKS = {
 
 export function selectDecks(
   decks: DeckList,
-  deckMinimums: KeyedVec<number>  // indexed by i
+  deckMinimums: KeyedVec<number>,  // indexed by i
+  inLibrary: boolean = false
 ): { pDeckIJ: KeyedVec<number>[], pNoneMarked: KeyedVec<number> } {
 
   // Pr[deck j is chosen | deck i was rolled originally]
@@ -326,7 +338,7 @@ export function selectDecks(
   for (let i = 0; i < 8; i++) {
     const rarity = i % 4 + 1 as Rarity
     const freeGem = Math.floor(i / 4) as 0 | 1
-    const fallbackOrder = RARITY_FALLBACKS[rarity]
+    const fallbackOrder = inLibrary ? LIBRARY_RARITY_FALLBACKS[rarity] : RARITY_FALLBACKS[rarity]
 
     // both keyed by j
     let pMarked = KeyedVec.empty<number>()

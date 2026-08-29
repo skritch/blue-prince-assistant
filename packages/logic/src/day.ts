@@ -16,6 +16,7 @@ export interface DayState {
   haveGearWrench: boolean
   haveElectromagnet: boolean
   haveChronograph: boolean
+  haveHallPass: boolean
   scepterColor: RoomColor | null   // Royal Scepter color boost (null = inactive)
 
   // Chess
@@ -31,7 +32,8 @@ export interface DayState {
   coatCheckUsed: boolean           // Coat Check item available(affects rarity)
 
   // --- Minor---
-  coatCheckDraftedToday: number    // Times Coat Check room has been drafted today 
+  boilerActivated: boolean         // Boiler Room has been activated this day
+  coatCheckDraftedToday: number    // Times Coat Check room has been drafted today
   aquariumExperimentActivations: number | null    // (Laboratory) adds extra Aquariums to pool
   pawnChessKnight: boolean         // Also adds Armory, but slightly different
 
@@ -51,6 +53,8 @@ export function initDay(day: number): DayState {
     haveGearWrench: false,
     haveElectromagnet: false,
     haveChronograph: false,
+    haveHallPass: false,
+    boilerActivated: false,
     mailRoomUsed: false,
     coatCheckUsed: false,
     coatCheckDraftedToday: 0,

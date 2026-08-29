@@ -209,6 +209,11 @@
           data-tooltip="After 3+ outer room drafts, the Tomb is no longer biased to the back of the outer room list"
           ><input type="checkbox" bind:checked={gameState.haveFoundationElevator} /> Foundation Elevator</label
         >
+        <label
+          data-tooltip="Chance of drawing Bookshop from Library decreases with each book bought. Realm &amp; Rune does not count."
+          class="inline-field"
+        >Books Bought: <input type="number" min="0" bind:value={gameState.booksPurchased} /></label
+        >
       </div>
     </div>
 
