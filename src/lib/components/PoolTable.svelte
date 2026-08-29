@@ -150,14 +150,11 @@
           <th>Room</th>
           <th>Rarity</th>
           <th>Reason</th>
-          <th class="prob-col"><span class="prob-col-label" data-tooltip="~probability this room survives conditional filtering">P[in pool]</span></th>
         </tr>
       </thead>
       <tbody>
-        {#each sortedRemoved as { room, reason, p }, i (room.slug + (reason ?? "") + i)}
+        {#each sortedRemoved as { room, reason }, i (room.slug + (reason ?? "") + i)}
           {@const effectiveRarity = room.baseRarity}
-          {@const pDisplay = p.toFixed(2)}
-          {@const pFull = p.toPrecision(2)}
           <tr>
             <td class="colors">
               {#each room.color as c}
@@ -167,7 +164,6 @@
             <td class="name">{room.name}</td>
             <td class="rarity rarity-{effectiveRarity}">{effectiveRarity ? rarityName(effectiveRarity) : ""}</td>
             <td class="reason">{reason ?? ""}</td>
-            <td class="prob" data-tooltip={pFull}>{p < 1 ? pDisplay : ""}</td>
           </tr>
         {/each}
       </tbody>

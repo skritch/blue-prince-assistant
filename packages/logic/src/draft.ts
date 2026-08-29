@@ -252,7 +252,7 @@ export function applyFilters(
   }) as [PooledRoom, FilterResult][]
 
   const [keptRooms, removedRooms] = partition(
-    filteredPool, ([, fr]) => (!fr.failReason)
+    filteredPool, ([, fr]) => (fr.failReason === undefined)
   )
 
   return {

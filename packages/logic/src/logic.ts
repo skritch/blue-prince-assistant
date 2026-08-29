@@ -2,7 +2,7 @@
 import { DEAD_ENDS, MIRROR_ROOMS, OUTER_ROOMS, POOL_ADDITIONS, POWER_CONNECTOR_ROOMS, POWERED_ROOMS, ROOM_46_REWARDS } from './rooms'
 import { classifyExitTo, getRoomsAt } from './roomLocations'
 import type { DayState } from './day'
-import { addToPool, annotateRoom, blockDraft, fromGameState, removeFromPool, type DraftPool, type PooledRoom } from './pool'
+import { addToPool, annotateRoom, blockDraft, fromGameState, removeFromPool, type DraftPool, type PooledRoom, type RemovedRoom } from './pool'
 import type { HouseState } from './house'
 import { type GameState } from './game'
 import { getAdHocRarities, getDynamicRarities } from './rarity'
@@ -324,7 +324,10 @@ function draftHouse(
   house: HouseState,
   draft: HouseDraftParams,
   useConditionalFilters: boolean = true
-): [KeyedVec, KeyedVec, KeyedVec] {
+): {
+  slotPools: [KeyedVec, KeyedVec, KeyedVec],
+  removed: RemovedRoom[]
+} {
 
   const inLibrary = draft.fromRoomSlug == 'library'
 
@@ -341,7 +344,8 @@ function draftHouse(
   // Prepare redraw pool in advance, since all slots use it
   let draw2pools = [KeyedVec.empty(), KeyedVec.empty(), KeyedVec.empty()]
   if (useConditionalFilters) {
-    draw2pools = draftHouse(pool, game, day, house, draft, false)
+    const draw2 = draftHouse(pool, game, day, house, draft, false)
+    draw2pools = draw2.slotPools
   }
 
   // Determine the draft probability for each room and slot
@@ -372,16 +376,22 @@ function draftHouse(
       slotPool = slotPool.add(draw2pool.scale(pRedraw))
     }
 
+
     return slotPool
   }) as [KeyedVec, KeyedVec, KeyedVec]
 
-  // TODO: need to return "removed reasons" from the filtering steps,
-  // currently they are lost...
-  // maybe a bad idea anyway, given that conditional filters are probabilistic?
+  // Any rooms removed with certainty by filters, which were not re-added by draw 2,
+  // can be moved to the removed rooms output with a reason.
+  const removed = filteredPool.removed.filter((rr) => {
+    const slug = rr.room.slug
+    return slotPools[0].get(slug) == 0
+      && slotPools[1].get(slug) == 0
+      && slotPools[2].get(slug) == 0
+  })
 
-  slotPools = applyWeightedRooms(slotPools, pool, game, day, house, draft)
+  slotPools = applyWeightedRooms(slotPools, filteredPool, game, day, house, draft)
 
-  return slotPools
+  return { slotPools, removed }
 }
 
 
@@ -684,27 +694,25 @@ export function runDraft(
   draft: DraftParams) {
 
   let slotPools: [KeyedVec, KeyedVec, KeyedVec]
+  let removedRooms: RemovedRoom[] = []
   if (draft.kind == 'outer') {
     slotPools = draftOuter(game, day, house, draft)
   } else {
-    slotPools = draftHouse(pool, game, day, house, draft, true)
+    const draftResult = draftHouse(pool, game, day, house, draft, true)
+    slotPools = draftResult.slotPools
+    removedRooms = draftResult.removed
   }
 
-  const finalRooms = pool.rooms.map((pr) => {
-    return {
-      ...pr,
-      pSlot: slotPools.map((sp) => sp.get(pr.room.slug) || 0)
-    } as PooledRoom
-  })
-  return { ...pool, rooms: finalRooms }
+  const removedSlugs = new Set(removedRooms.map((rr) => rr.room.slug))
 
-
-  // weighted rooms
-  // https://www.reddit.com/r/BluePrince/comments/1lzdvv9/drafting_mechanics_weighted_rooms_the_library_and/
-
-
-  // fromRoom
-  // handle tunnel, duct drafts, library -> rare | bookshop
-  // https://www.reddit.com/r/BluePrince/comments/1lzdvv9/drafting_mechanics_weighted_rooms_the_library_and/
+  const finalRooms = pool.rooms
+    .filter((pr) => !removedSlugs.has(pr.room.slug))
+    .map((pr) => {
+      return {
+        ...pr,
+        pSlot: slotPools.map((sp) => sp.get(pr.room.slug) || 0)
+      } as PooledRoom
+    })
+  return { ...pool, rooms: finalRooms, removed: removedRooms }
 }
 

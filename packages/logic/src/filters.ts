@@ -108,7 +108,7 @@ export function applyConditionalFilters(
   if (passable.length === 0) {
     return {
       p: 0,
-      failReason: `conditional filters: ${failed.map(([n,]) => n).join(", ")}`
+      failReason: `did not pass any conditional filters: ${failed.map(([n,]) => n).join(", ")}`
     }
   }
   const failChance = passable.reduce((acc, [_, p]) => acc * (1 - p!), 1)
@@ -143,7 +143,7 @@ export function applyRunbackFilter(
     } else {
       return {
         p: 0,
-        failReason: "runback"
+        failReason: "seen in previous draft"
       }
     }
   } else {

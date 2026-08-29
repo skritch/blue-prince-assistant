@@ -20,6 +20,7 @@ const GAME_FLAGS = [
   'foundEpsenTomb',
   'vmode',
   'curseOrDare',
+  'haveFoundationElevator',
 ] as const
 
 type GameFlag = (typeof GAME_FLAGS)[number]
@@ -36,6 +37,7 @@ interface Serialized {
     rarityOverrides: Record<string, Rarity>
     comAdditions: string[]
     upgrades: Record<string, string>
+    booksPurchased: number
   }
   day: DayState
   house: HouseState
@@ -73,6 +75,7 @@ function encodeState(
       rarityOverrides: game.rarityOverrides,
       comAdditions: game.chamberOfMirrorsAdditions,
       upgrades: game.upgrades,
+      booksPurchased: game.booksPurchased,
     },
     day,
     house,
@@ -106,6 +109,7 @@ function decodeState(encoded: string): LoadedState | null {
       rarityOverrides: data.game.rarityOverrides ?? {},
       chamberOfMirrorsAdditions: data.game.comAdditions ?? [],
       upgrades: data.game.upgrades ?? {},
+      booksPurchased: data.game.booksPurchased ?? 0,
     }
 
     return { game, day: data.day, house: data.house, draft: data.draft }

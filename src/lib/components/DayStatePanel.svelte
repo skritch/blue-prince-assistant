@@ -16,8 +16,6 @@
     "red",
     "black",
   ];
-
-
 </script>
 
 <details class="panel" bind:open>
@@ -58,7 +56,8 @@
               ><input type="checkbox" bind:checked={dayState.haveChronograph} />
               Chronograph</label
             >
-            <label data-tooltip="Increases chance of drawing a Bookshop from the Library"
+            <label
+              data-tooltip="Increases chance of drawing a Bookshop from the Library"
               ><input type="checkbox" bind:checked={dayState.haveHallPass} />
               Hall Pass</label
             >
@@ -75,16 +74,14 @@
         </div>
       </div>
 
-      <!-- RIGHT COLUMN: Chess, Constellations, Item Rooms -->
+      <!-- RIGHT COLUMN: Chess, Constellations, Specific Rooms -->
       <div class="day-col">
         <div class="section">
           <div class="section-label">Chess</div>
           <div class="checks">
             <label data-tooltip="Adds Armory"
-              ><input
-                type="checkbox"
-                bind:checked={dayState.knightChess}
-              /> Knight Chess</label
+              ><input type="checkbox" bind:checked={dayState.knightChess} /> Knight
+              Chess</label
             >
             <label class="select-row">
               <select class="color-select" bind:value={dayState.chessColor}>
@@ -114,7 +111,7 @@
         </div>
 
         <div class="section">
-          <div class="section-label">Item Rooms</div>
+          <div class="section-label">Specific Rooms</div>
           <div class="checks">
             <label
               data-tooltip="Mail Room is set to common rarity when a package is available"
@@ -125,9 +122,10 @@
               ><input type="checkbox" bind:checked={dayState.coatCheckUsed} /> Coat
               Checked Item</label
             >
-            <label data-tooltip="Boiler Room has been activated today"
-              ><input type="checkbox" bind:checked={dayState.boilerActivated} /> Boiler
-              Activated</label
+            <label
+              data-tooltip="Activating the Boiler Room increases the chances of &quot;duct drafting&quot; powered &amp; connector rooms from each other."
+              ><input type="checkbox" bind:checked={dayState.boilerActivated} />
+              Boiler Activated</label
             >
           </div>
         </div>
@@ -167,20 +165,6 @@
     gap: 0.3rem;
   }
 
-  .help-icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 1.1em;
-    height: 1.1em;
-    border-radius: 50%;
-    border: 1px solid var(--text-muted);
-    font-size: 0.7rem;
-    color: var(--text-muted);
-    cursor: default;
-    flex-shrink: 0;
-  }
-
   .checks {
     display: flex;
     flex-direction: column;
@@ -199,18 +183,6 @@
     align-items: center;
     gap: 0.4rem;
     font-size: 0.875rem;
-  }
-
-  input[type="number"].narrow {
-    flex: none;
-    width: 2rem;
-    -moz-appearance: textfield;
-  }
-
-  input[type="number"].narrow::-webkit-outer-spin-button,
-  input[type="number"].narrow::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
   }
 
   .color-select {
