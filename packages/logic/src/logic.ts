@@ -348,10 +348,9 @@ function draftHouse(
     draw2pools = draw2.slotPools
   }
 
-  // Determine the draft probability for each room and slot
+  // Build the pool for each slot
   let slotPools = slots.map((slot) => {
-
-    let slotPool = KeyedVec.empty()
+    let sp = KeyedVec.empty()
 
     const pDeckRoll = getPDeck(
       slot, day.day,
@@ -363,7 +362,7 @@ function draftHouse(
     let pRedraw = 0
 
     for (const [i, deck] of effectiveDecks.entries()) {
-      slotPool = slotPool.add(deck.scale(pDeckRoll.get(i)))
+      sp = sp.add(deck.scale(pDeckRoll.get(i)))
       pRedraw = pRedraw + pDeckRoll.get(i) * pNoneMarked.get(i)
     }
 
@@ -373,11 +372,11 @@ function draftHouse(
       const draw2pool = draw2pools[slot - 1]
 
       // Add draw 2 results to probability mass
-      slotPool = slotPool.add(draw2pool.scale(pRedraw))
+      sp = sp.add(draw2pool.scale(pRedraw))
     }
 
 
-    return slotPool
+    return sp
   }) as [KeyedVec, KeyedVec, KeyedVec]
 
   // Any rooms removed with certainty by filters, which were not re-added by draw 2,
@@ -703,16 +702,23 @@ export function runDraft(
     removedRooms = draftResult.removed
   }
 
-  const removedSlugs = new Set(removedRooms.map((rr) => rr.room.slug))
+  // Discarding these removed rooms for now b/c they're not very informative.
+  // E.g. furnace is reported as rejected from draw 1 due to not meeting cond. filters, 
+  // but is really being omitted from draw 2 due to being in a deck of 1. 
+  // const removedSlugs = new Set(removedRooms.map((rr) => rr.room.slug))
 
   const finalRooms = pool.rooms
-    .filter((pr) => !removedSlugs.has(pr.room.slug))
+    // .filter((pr) => !removedSlugs.has(pr.room.slug))
     .map((pr) => {
       return {
         ...pr,
         pSlot: slotPools.map((sp) => sp.get(pr.room.slug) || 0)
       } as PooledRoom
     })
-  return { ...pool, rooms: finalRooms, removed: removedRooms }
+  return {
+    ...pool,
+    rooms: finalRooms,
+    // removed: removedRooms
+  }
 }
 
