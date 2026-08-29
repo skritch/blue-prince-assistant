@@ -265,7 +265,6 @@
   .layout {
     display: flex;
     flex-direction: row;
-    align-items: flex-start;
     gap: 1.5rem;
   }
 
@@ -274,9 +273,6 @@
     flex-direction: column;
     gap: 0.5rem;
     flex: 0 0 390px;
-    position: sticky;
-    top: 1rem;
-    align-self: flex-start;
   }
 
   .bottom-btns {
