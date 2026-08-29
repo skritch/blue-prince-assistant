@@ -21,7 +21,7 @@ export function generateDraftPool(
 
   var pool: DraftPool = fromGameState(game)
 
-  pool = getBasePool(pool, game, day, house)
+  pool = buildbasePool(pool, game, day, house)
   pool = removeDraftedRooms(pool, house)
   if (draft !== undefined) {
     pool = constrainForLocation(pool, draft)
@@ -35,13 +35,17 @@ export function generateDraftPool(
 }
 
 // Build the drafting pool, based on game conditions and unlocks
-function getBasePool(
+function buildbasePool(
   pool: DraftPool,
   game: GameState,
   day: DayState,
   house: HouseState
 ): DraftPool {
-  if (game.haveRoom46) { pool = addToPool(pool, ROOM_46_REWARDS, 'room46') }
+  if (game.haveRoom46) {
+    pool = addToPool(pool, ROOM_46_REWARDS, 'room46')
+  } else if (day.day >= 46) {
+    pool = addToPool(pool, ['gallery'], 'day-46')
+  }
   if (game.haveTrophy && !game.haveRoom46) { pool = addToPool(pool, ['trophy-room'], 'trophy') }
   if (house.poolInHouse) { pool = addToPool(pool, POOL_ADDITIONS, 'pool-in-house') }
   if (day.baconAndEggs) { pool = addToPool(pool, ['morning-room'], 'bacon-and-eggs') }
@@ -130,10 +134,9 @@ function applyDraftingBlocks(
     pool = blockDraft(pool, 'her-ladyships-chamber', "blocked until Room 46, Epsen tomb, or day 12, but unblocked in v-mode before day 8")
   }
 
-  // What mechanic actually removes study? Is it a block?
-  // TODO: I've definitely seen a study day 1, though V-mode should not kick in until day 2.
+  // What mechanic actually removes study? Is it a block or "not added to pool"?
   if (day.day < 3 && !game.vmode) {
-    pool = blockDraft(pool, 'study', "blocked day 1/2, unless in v-mode.")
+    pool = blockDraft(pool, 'study', "blocked day 1/2 unless in v-mode.")
   }
 
 
@@ -187,6 +190,8 @@ function applyDraftingBlocks(
   }
 
   pool = annotateRoom(pool, { blockPct: 30, blockNote: "30% chance blocked after drafting 8 times" }, 'drafting-studio')
+
+  // TODO: chapel blocked for 4:20 realtime day 1?
 
   return pool
 }

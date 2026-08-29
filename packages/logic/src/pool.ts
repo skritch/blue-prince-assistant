@@ -14,6 +14,7 @@ export type RoomSource =
   | 'laboratory'
   | 'com-permanent'
   | 'com-passive'
+  | 'day-46'
 
 
 type ChanceInPool = { pct: number }
@@ -32,7 +33,7 @@ export interface PooledRoom {
   upgrade?: Upgrade,
   // probability of actually drafting
   // not really possible to calculate, but we use this as an intermediate value
-  p: number 
+  p: number
   pInPool?: number
   pSlot?: [number, number, number]
 }
@@ -64,7 +65,7 @@ export function fromGameState(game: GameState): DraftPool {
     rooms: game.pool.map((room) => {
       const upgradeSlug = game.upgrades[room.slug]
       const upgrade = upgradeSlug ? UPGRADE_LOOKUP[room.slug]?.[upgradeSlug] : undefined
-      return { room, upgrade, p: 1.0}
+      return { room, upgrade, p: 1.0 }
     }),
     rarityOverrides: {},
     annotations: {},

@@ -47,6 +47,7 @@
 
   const SOURCE_LABELS: Record<string, string> = {
     room46: "room 46",
+    "day-46": "day 46",
     "pool-in-house": "pool",
     "bacon-and-eggs": "bacon & eggs",
     "knight-chess": "mantle of the knight",
@@ -101,18 +102,20 @@
   );
 
   let sortedRemoved = $derived(
-    [...draftPool.removed].filter((r) => r.reason).sort((a, b) => {
-      const ra = a.reason ?? "";
-      const rb = b.reason ?? "";
-      if (ra !== rb) {
-        if (!ra) return 1;
-        if (!rb) return -1;
-        return ra.localeCompare(rb);
-      }
-      const ra2 = raritySort(a.room.baseRarity);
-      const rb2 = raritySort(b.room.baseRarity);
-      return ra2 !== rb2 ? ra2 - rb2 : a.room.name.localeCompare(b.room.name);
-    }),
+    [...draftPool.removed]
+      .filter((r) => r.reason)
+      .sort((a, b) => {
+        const ra = a.reason ?? "";
+        const rb = b.reason ?? "";
+        if (ra !== rb) {
+          if (!ra) return 1;
+          if (!rb) return -1;
+          return ra.localeCompare(rb);
+        }
+        const ra2 = raritySort(a.room.baseRarity);
+        const rb2 = raritySort(b.room.baseRarity);
+        return ra2 !== rb2 ? ra2 - rb2 : a.room.name.localeCompare(b.room.name);
+      }),
   );
 
   let slotTotals = $derived(() => {
@@ -134,12 +137,14 @@
       class="tab"
       class:active={activeTab === "pool"}
       onclick={() => (activeTab = "pool")}
-    >Pool ({draftPool.rooms.length})</button>
+      >Pool ({draftPool.rooms.length})</button
+    >
     <button
       class="tab"
       class:active={activeTab === "removed"}
       onclick={() => (activeTab = "removed")}
-    >Removed ({sortedRemoved.length})</button>
+      >Removed ({sortedRemoved.length})</button
+    >
   </div>
 
   {#if activeTab === "removed"}
@@ -162,123 +167,148 @@
               {/each}
             </td>
             <td class="name">{room.name}</td>
-            <td class="rarity rarity-{effectiveRarity}">{effectiveRarity ? rarityName(effectiveRarity) : ""}</td>
+            <td class="rarity rarity-{effectiveRarity}"
+              >{effectiveRarity ? rarityName(effectiveRarity) : ""}</td
+            >
             <td class="reason">{reason ?? ""}</td>
           </tr>
         {/each}
       </tbody>
     </table>
   {:else}
-  <div class="sort-controls">
-    <label>Sort by:</label>
-    <button class="sort-btn" class:active={sortBy === "rarity"} onclick={() => sortBy = "rarity"}>Rarity</button>
-    <button class="sort-btn" class:active={sortBy === "room"} onclick={() => sortBy = "room"}>Room #</button>
-    <button class="sort-btn" class:active={sortBy === "probability"} onclick={() => sortBy = "probability"}>Probability</button>
-  </div>
-  <table>
-    <thead>
-      <tr>
-        <th></th>
-        <th></th>
-        <th>Room</th>
-        <th>Rarity</th>
-        <th>Doors</th>
-        <th class="gems-col">Gems</th>
-        <th>Source</th>
-        <th class="prob-col" colspan="3" style="text-align: center;"><span class="prob-col-label" data-tooltip="approximate chance this room appears in each slot">%[slot]</span></th>
-      </tr>
-    </thead>
-    <tbody>
-      {#each sortedRooms as { room, source, upgrade, p, pSlot }, i (room.slug + (source ?? "") + i)}
-        {@const effectiveRarity =
-          draftPool.rarityOverrides[room.slug] ?? room.baseRarity}
-        {@const annotations = draftPool.annotations[room.slug]}
-        {@const rarityExplicit = room.slug in gameRarityOverrides}
-        {@const rarityDynamic =
-          room.slug in draftPool.rarityOverrides && !rarityExplicit}
-        {@const description = upgrade
-          ? [
-              `(${upgrade.name ?? room.name} upgrade)`,
-              upgrade.description ?? room.description,
-            ]
-              .filter(Boolean)
-              .join(" ")
-          : (room.description ?? undefined)}
-        {@const TAG_LABELS: Record<string, string> = {
+    <div class="sort-controls">
+      <label>Sort by:</label>
+      <button
+        class="sort-btn"
+        class:active={sortBy === "rarity"}
+        onclick={() => (sortBy = "rarity")}>Rarity</button
+      >
+      <button
+        class="sort-btn"
+        class:active={sortBy === "room"}
+        onclick={() => (sortBy = "room")}>Room #</button
+      >
+      <button
+        class="sort-btn"
+        class:active={sortBy === "probability"}
+        onclick={() => (sortBy = "probability")}>Probability</button
+      >
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th></th>
+          <th></th>
+          <th>Room</th>
+          <th>Rarity</th>
+          <th>Doors</th>
+          <th class="gems-col">Gems</th>
+          <th>Source</th>
+          <th class="prob-col" colspan="3" style="text-align: center;"
+            ><span
+              class="prob-col-label"
+              data-tooltip="approximate chance this room appears in each slot"
+              >%[slot]</span
+            ></th
+          >
+        </tr>
+      </thead>
+      <tbody>
+        {#each sortedRooms as { room, source, upgrade, p, pSlot }, i (room.slug + (source ?? "") + i)}
+          {@const effectiveRarity =
+            draftPool.rarityOverrides[room.slug] ?? room.baseRarity}
+          {@const annotations = draftPool.annotations[room.slug]}
+          {@const rarityExplicit = room.slug in gameRarityOverrides}
+          {@const rarityDynamic =
+            room.slug in draftPool.rarityOverrides && !rarityExplicit}
+          {@const description = upgrade
+            ? [
+                `(${upgrade.name ?? room.name} upgrade)`,
+                upgrade.description ?? room.description,
+              ]
+                .filter(Boolean)
+                .join(" ")
+            : (room.description ?? undefined)}
+          {@const TAG_LABELS: Record<string, string> = {
           'dead-end': 'dead end', mechanical: 'mechanical',
           tomorrow: 'tomorrow', drafting: 'drafting', outer: 'outer room',
         }}
-        {@const tagLine = room.tags.map(t => TAG_LABELS[t] ?? t).join(', ')}
-        {@const tooltip = [tagLine, description].filter(Boolean).join('\n') || undefined}
-        {@const placedCount = houseState.placedRooms.filter(
-          (s) => s === room.slug,
-        ).length}
-        <tr>
-          <td class="place-btns">
-            {#if placedCount > 0}
-              <span class="placed-count">{placedCount}</span>
+          {@const tagLine = room.tags.map((t) => TAG_LABELS[t] ?? t).join(", ")}
+          {@const tooltip =
+            [tagLine, description].filter(Boolean).join("\n") || undefined}
+          {@const placedCount = houseState.placedRooms.filter(
+            (s) => s === room.slug,
+          ).length}
+          <tr>
+            <td class="place-btns">
+              {#if placedCount > 0}
+                <span class="placed-count">{placedCount}</span>
+                <button
+                  class="place-btn minus"
+                  onclick={() => removeRoomFromHouse(room.slug)}>−</button
+                >
+              {/if}
               <button
-                class="place-btn minus"
-                onclick={() => removeRoomFromHouse(room.slug)}>−</button
+                class="place-btn plus"
+                data-tooltip="add to house"
+                onclick={() => addRoomToHouse(room.slug)}>+</button
               >
-            {/if}
-            <button
-              class="place-btn plus"
-              data-tooltip="add to house"
-              onclick={() => addRoomToHouse(room.slug)}>+</button
+            </td>
+            <td class="colors">
+              {#each upgrade?.color ?? room.color as c}
+                <span class="color-dot color-{c}"></span>
+              {/each}
+            </td>
+            <td class="name" data-tooltip={tooltip}
+              >{upgrade?.name ?? room.name}</td
             >
-          </td>
-          <td class="colors">
-            {#each upgrade?.color ?? room.color as c}
-              <span class="color-dot color-{c}"></span>
-            {/each}
-          </td>
-          <td class="name" data-tooltip={tooltip}
-            >{upgrade?.name ?? room.name}</td
-          >
-          <td class="rarity rarity-{effectiveRarity}">
-            {rarityName(effectiveRarity)}{#if rarityExplicit}<span
-                class="rarity-base"
-                data-tooltip="player-set rarity">**</span
-              >{:else if rarityDynamic}<span
-                class="rarity-base"
-                data-tooltip="dynamic rarity">*</span
-              >{/if}{#if annotations?.length}<span
-                class="annot-icon"
-                data-tooltip={formatAnnotations(annotations)}>?</span
-              >{/if}
-          </td>
-          <td class="doors">{room.doors ?? "—"}</td>
-          <td class="gems">{room.baseGemCost || ""}</td>
-          <td class="source">
-            {#if source}<span class="source-label"
-                >{SOURCE_LABELS[source] ?? source}</span
-              >{/if}
-          </td>
-          {#if pSlot}
-            {#each pSlot as slotP, idx}
-              {@const pctValue = slotP * 100}
-              {@const display = pctValue === 0 ? "" : pctValue.toFixed(1)}
-              {@const tooltipValue = pctValue >= 10 ? pctValue.toPrecision(3) : pctValue.toPrecision(2)}
-              <td class="prob" data-tooltip={tooltipValue + '%'}>{display}</td>
-            {/each}
-          {:else}
-            <td class="prob" colspan="3"></td>
-          {/if}
-        </tr>
-      {/each}
-    </tbody>
-    <tfoot>
-      <tr class="totals-row">
-        <td colspan="7"></td>
-        {#each slotTotals() as total, idx}
-          {@const pctValue = total * 100}
-          {@const display = pctValue.toFixed(1)}
-          <td class="prob total">{display}</td>
+            <td class="rarity rarity-{effectiveRarity}">
+              {rarityName(effectiveRarity)}{#if rarityExplicit}<span
+                  class="rarity-base"
+                  data-tooltip="player-set rarity">**</span
+                >{:else if rarityDynamic}<span
+                  class="rarity-base"
+                  data-tooltip="dynamic rarity">*</span
+                >{/if}{#if annotations?.length}<span
+                  class="annot-icon"
+                  data-tooltip={formatAnnotations(annotations)}>?</span
+                >{/if}
+            </td>
+            <td class="doors">{room.doors ?? "—"}</td>
+            <td class="gems">{room.baseGemCost || ""}</td>
+            <td class="source">
+              {#if source}<span class="source-label"
+                  >{SOURCE_LABELS[source] ?? source}</span
+                >{/if}
+            </td>
+            {#if pSlot}
+              {#each pSlot as slotP, idx}
+                {@const pctValue = slotP * 100}
+                {@const display = pctValue === 0 ? "" : pctValue.toFixed(1)}
+                {@const tooltipValue =
+                  pctValue >= 10
+                    ? pctValue.toPrecision(3)
+                    : pctValue.toPrecision(2)}
+                <td class="prob" data-tooltip={tooltipValue + "%"}>{display}</td
+                >
+              {/each}
+            {:else}
+              <td class="prob" colspan="3"></td>
+            {/if}
+          </tr>
         {/each}
-      </tr>
-    </tfoot>
-  </table>
+      </tbody>
+      <tfoot>
+        <tr class="totals-row">
+          <td colspan="7"></td>
+          {#each slotTotals() as total, idx}
+            {@const pctValue = total * 100}
+            {@const display = pctValue.toFixed(1)}
+            <td class="prob total">{display}</td>
+          {/each}
+        </tr>
+      </tfoot>
+    </table>
   {/if}
 </section>
 
@@ -546,7 +576,7 @@
     z-index: 10;
   }
 
-.prob {
+  .prob {
     text-align: right;
     color: var(--text-muted);
     font-size: 0.8rem;

@@ -39,12 +39,9 @@ export function getDynamicRarities(
     dynamicRarities[o.slug] = o.default
   }
 
-  // Apply daily overrides if this day did not start on V-mode
-  // TODO: interaction with curse_or_dare, which applies vmode *before* day 1?
-  //   How does workshop end up with no DR on curse/dare?
-  // TODO: what exactly is meant by "week 2 rates"?
-  //   Why does the vmode article say these start day 6 rather than 8?
-  if (!game.haveRoom46 && (game.curseOrDare || day.day === 1)) {
+  // Apply daily overrides, if we're not in vmode and don't have room 46.
+  // TODO: add specific curse/dare overrides.
+  if (!(game.haveRoom46 || game.curseOrDare || (game.vmode && day.day > 1))) {
     const key = dayToKey(day.day)
     if (key !== null) {
       for (const o of RARITY_OVERRIDES) {
