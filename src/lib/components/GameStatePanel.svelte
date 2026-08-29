@@ -16,9 +16,8 @@
   import type { Item, Entry } from "./searchPairTypes";
   import { loadPanelOpen, savePanelOpen } from "../panelState";
 
-  let { gameState = $bindable() }: { gameState: GameState } = $props();
+  let { gameState = $bindable(), open = $bindable(loadPanelOpen("game", false)) }: { gameState: GameState; open: boolean } = $props();
 
-  let open = $state(loadPanelOpen("game", false));
   $effect(() => savePanelOpen("game", open));
 
   const PAGE7_ROOMS = roomsForPage(7);

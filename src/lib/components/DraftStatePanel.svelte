@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { Direction, TileColumn, TileRow } from "bp-logic";
   import { ROOMS } from "bp-logic";
+  import { untrack } from "svelte";
   import SearchInput from "./SearchInput.svelte";
   import { loadPanelOpen, savePanelOpen } from "../panelState";
 
@@ -17,6 +18,7 @@
     previousDraft = $bindable(),
     outerRoomDraftCount = $bindable(),
     previouslyDraftedOuter = $bindable(),
+    open = $bindable(loadPanelOpen("draft", false)),
   }: {
     mode: Mode;
     column: TileColumn;
@@ -28,7 +30,10 @@
     previousDraft: [string, string, string];
     outerRoomDraftCount: number;
     previouslyDraftedOuter: string;
+    open: boolean;
   } = $props();
+
+  $effect(() => savePanelOpen("draft", open));
 
   const outerRoomOptions = ROOMS
     .filter((r) => r.directoryPage === 9)
@@ -44,12 +49,22 @@
     { value: "W", label: "West" },
   ];
 
-  let open = $state(loadPanelOpen("draft", true));
-  $effect(() => savePanelOpen("draft", open));
-
   const roomOptions = ROOMS.map((r) => ({ id: r.slug, label: r.name })).sort(
     (a, b) => a.label.localeCompare(b.label),
   );
+
+  const invalidDirections = $derived(new Set<Direction>([
+    ...(row === 1 ? ['N' as Direction] : []),
+    ...(row === 9 ? ['S' as Direction] : []),
+    ...(column === 'A' ? ['E' as Direction] : []),
+    ...(column === 'E' ? ['W' as Direction] : []),
+  ]));
+
+  $effect(() => {
+    if (invalidDirections.has(untrack(() => toDirection))) {
+      toDirection = DIRECTIONS.find((d) => !invalidDirections.has(d.value))?.value ?? 'N';
+    }
+  });
 </script>
 
 <details class="panel" bind:open>
@@ -94,7 +109,7 @@
       <div class="inline-field">
         <select bind:value={toDirection}>
           {#each DIRECTIONS as d}
-            <option value={d.value}>{d.label}</option>
+            <option value={d.value} disabled={invalidDirections.has(d.value)}>{d.label}</option>
           {/each}
         </select>
         into

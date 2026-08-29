@@ -16,6 +16,7 @@
     type TileRow,
   } from "bp-logic";
   import { loadState, saveState, persistLocally } from "../stateSerializer";
+  import { loadPanelOpen } from "../panelState";
   import GameStatePanel from "./GameStatePanel.svelte";
   import DayStatePanel from "./DayStatePanel.svelte";
   import HouseStatePanel from "./HouseStatePanel.svelte";
@@ -31,10 +32,8 @@
   let houseState: HouseState = $state(loaded?.house ?? initHouse());
 
   const initHouseDraft =
-    loaded?.draft && !('kind' in loaded.draft) ? loaded.draft : undefined;
-  let draftMode: Mode = $state(
-    !loaded?.draft ? "none" : ('kind' in loaded.draft) ? "outer" : "house",
-  );
+    loaded?.draft && loaded.draft.kind == "house" ? loaded.draft : undefined;
+  let draftMode: Mode = $state(!loaded?.draft ? "none" : loaded.draft.kind);
   let draftColumn: TileColumn = $state(
     initHouseDraft?.toLocation.tile.column ?? "C",
   );
@@ -49,26 +48,33 @@
     initHouseDraft?.previousDraft ?? ["", "", ""],
   );
   let outerRoomDraftCount = $state<number>(
-    (loaded?.draft && 'kind' in loaded.draft)
+    loaded?.draft && loaded.draft.kind == "outer"
       ? (loaded.draft as OuterDraftParams).outerRoomDraftCount
       : 0,
   );
   let previouslyDraftedOuter = $state<string>(
-    (loaded?.draft && 'kind' in loaded.draft)
+    loaded?.draft && loaded.draft.kind == "outer"
       ? ((loaded.draft as OuterDraftParams).previouslyDraftedOuter ?? "")
       : "",
   );
   let draftKey = $state(0);
 
+  let gamePanelOpen = $state(loadPanelOpen("game", false));
+  let dayPanelOpen = $state(loadPanelOpen("day", false));
+  let housePanelOpen = $state(loadPanelOpen("house", false));
+  let draftPanelOpen = $state(loadPanelOpen("draft", false));
+
   let draftParams: DraftParams | undefined = $derived.by(() => {
     if (draftMode === "none") return undefined;
-    if (draftMode === "outer") return {
-      kind: 'outer' as const,
-      outerRoomDraftCount,
-      previouslyDraftedOuter: previouslyDraftedOuter || undefined,
-    };
+    if (draftMode === "outer")
+      return {
+        kind: "outer" as const,
+        outerRoomDraftCount,
+        previouslyDraftedOuter: previouslyDraftedOuter || undefined,
+      };
     const hasPreviousDraft = draftPreviousDraft.some((s) => s !== "");
     return {
+      kind: "house",
       toLocation: {
         tile: { column: draftColumn, row: draftRow as TileRow },
         toDirection: draftToDirection,
@@ -109,6 +115,10 @@
     draftPreviousDraft = ["", "", ""];
     outerRoomDraftCount = 0;
     previouslyDraftedOuter = "";
+    gamePanelOpen = false;
+    dayPanelOpen = false;
+    housePanelOpen = false;
+    draftPanelOpen = false;
     draftKey++;
   }
 
@@ -217,9 +227,9 @@
 
 <div class="layout">
   <div class="config">
-    <GameStatePanel bind:gameState />
-    <DayStatePanel bind:dayState />
-    <HouseStatePanel bind:houseState />
+    <GameStatePanel bind:gameState bind:open={gamePanelOpen} />
+    <DayStatePanel bind:dayState bind:open={dayPanelOpen} />
+    <HouseStatePanel bind:houseState bind:open={housePanelOpen} />
     {#key draftKey}
       <DraftStatePanel
         bind:mode={draftMode}
@@ -232,6 +242,7 @@
         bind:previousDraft={draftPreviousDraft}
         bind:outerRoomDraftCount
         bind:previouslyDraftedOuter
+        bind:open={draftPanelOpen}
       />
     {/key}
     <div class="bottom-btns">

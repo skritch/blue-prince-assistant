@@ -2,9 +2,8 @@
   import { type DayState, type RoomColor } from "bp-logic";
   import { loadPanelOpen, savePanelOpen } from "../panelState";
 
-  let { dayState = $bindable() }: { dayState: DayState } = $props();
+  let { dayState = $bindable(), open = $bindable(loadPanelOpen("day", false)) }: { dayState: DayState; open: boolean } = $props();
 
-  let open = $state(loadPanelOpen("day", false));
   $effect(() => savePanelOpen("day", open));
 
   const ROOM_COLORS: RoomColor[] = [
