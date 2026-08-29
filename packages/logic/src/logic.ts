@@ -400,6 +400,18 @@ function applyWeightedRooms(
   draft: HouseDraftParams,
 ): [KeyedVec, KeyedVec, KeyedVec] {
 
+  let newSlotPools = slotPools
+
+  // Override very first draft
+  if (day.day == 1 && house.placedRooms.length == 2) {
+    newSlotPools = [
+      KeyedVec.empty().set('bedroom', 1),
+      KeyedVec.empty().set('closet', 1),
+      KeyedVec.empty().set('hallway', 1)
+    ]
+    return newSlotPools
+  }
+
   // Locations in house are already determined by the room being in the pool
   const weightedRooms = [
     {
@@ -439,8 +451,6 @@ function applyWeightedRooms(
     (acc, pr) => toCheck.includes(pr.room.slug) ? [...acc, pr.room.slug] : acc,
     Array<string>()
   )
-
-  let newSlotPools = slotPools
 
   for (let i = 0; i < weightedRooms.length; i++) {
     const wr = weightedRooms[i]
