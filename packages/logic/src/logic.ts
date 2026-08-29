@@ -7,7 +7,8 @@ import type { HouseState } from './house'
 import { type GameState } from './game'
 import { getAdHocRarities, getDynamicRarities } from './rarity'
 
-import { applyFilters, getDeckMinimums, getPDeck, initDecks, mergeMarkedDecks, selectDecks, type DraftParams } from './draft'
+import { applyFilters, draftOuterBlueFilter, getDeckMinimums, getPDeck, initDecks, mergeMarkedDecks, outerWeightedDist, selectDecks, type DraftParams, type HouseDraftParams, type OuterDraftParams } from './draft'
+import type { RoomColor } from './types'
 import { KeyedVec } from './math'
 
 // Basic algorithm to determine the eligible pool
@@ -28,7 +29,7 @@ export function generateDraftPool(
   pool = applyDraftingBlocks(pool, game, day, draft)
   pool = setDynamicRarities(pool, game, day, house)
   if (draft !== undefined) {
-    pool = applyDraftLogic(pool, game, day, house, draft)
+    pool = runDraft(pool, game, day, house, draft)
   }
   return pool
 }
@@ -114,8 +115,6 @@ function applyDraftingBlocks(
   draft?: DraftParams
 ) {
 
-  // TODO:
-  // - try to incorporate blocks persisting from previous drafts? infeasible?
   if (!(game.haveRoom46
     || game.foundEpsenTomb
     || (game.vmode && (2 <= day.day && day.day <= 7))
@@ -132,11 +131,11 @@ function applyDraftingBlocks(
   }
 
 
-  if (draft !== undefined && draft !== 'outer') {
+  if (draft !== undefined && !('kind' in draft)) {
     const loc = draft.toLocation
     const exit = classifyExitTo(loc.tile, loc.toDirection)
     if (exit == 'center' && ['W', 'E'].includes(loc.toDirection)) {
-      // note this block persists until next center N/S draft
+      // Note this block persists until next center N/S draft
       pool = blockDraft(pool, 'tunnel', "blocked when drafting W or E into a center tile until next draft N or S into a center tile")
     }
 
@@ -144,7 +143,7 @@ function applyDraftingBlocks(
       // Not sure if "block" is right mechanism here
       pool = blockDraft(pool, 'foundation', "blocked in C8 and row 2")
     } else if (loc.tile.row == 3) {
-      // technically removes from exit list. Only applies to center tiles, but Foundation is not eligible for edges anyway
+      // technically removes from exit list? Only applies to center tiles, but Foundation is not eligible for edges anyway
       pool = annotateRoom(pool,
         { blockPct: 90, blockNote: "blocked when drafting into rank 3 center tiles", },
         'foundation')
@@ -155,8 +154,8 @@ function applyDraftingBlocks(
       || (['east-retreat', 'west-retreat'].includes(exit) && loc.tile.row == 2)
     ) {
       // Unintended behavior here: secret-passage is blocked until 
-      // drafting some other advance/retreat on wings. Annotate?
-      const reason = "blocked when drafting north into row 8 or south into row 2"
+      // drafting some other advance/retreat on wings.
+      const reason = "blocked when drafting north into row 8 or south into row 2 until next E/W edge draft"
       pool = blockDraft(pool, 'secret-passage', reason)
       if (game.upgrades['spare-room'] == 'spare-secret-passage') {
         pool = blockDraft(pool, 'spare-room', reason)
@@ -196,7 +195,6 @@ function removeDraftedRooms(
   // TODO: how do secret passage, prism key work? 
   // Do they remove from the pool as usual?
   // Does monk block a room from being drafted in the main house?
-  // Assuming yes to both.
 
   const houseCounts: Record<string, number> = {}
   for (const slug of house.placedRooms) {
@@ -204,8 +202,6 @@ function removeDraftedRooms(
   }
 
   // We just remove the first of each room from the pool
-  // TODO: all of this will get much worse if we try to handle *which* copy
-  //   in the pool has been drafted, e.g. if one is upgrade and one not or something.
   const removed: Record<string, number> = {}
   const newRooms = pool.rooms.filter(({ room }) => {
     if ((removed[room.slug] ?? 0) < houseCounts[room.slug]) {
@@ -220,7 +216,6 @@ function removeDraftedRooms(
     ...pool,
     rooms: newRooms
   }
-
 
   return pool
 }
@@ -266,16 +261,16 @@ function applyLocation(
   // - pawn armory
   // - chamber of mirrors rooms having different exits
 
-  if (draft === 'outer') {
+  if ('kind' in draft) {
     const eligible = new Set(OUTER_ROOMS)
     const ineligible = pool.rooms
       .filter(({ room }) => !eligible.has(room.slug))
       .map(({ room }) => room.slug)
     // Obviously ignoring monk
-    pool = removeFromPool(pool, ineligible, "house room")
+    pool = removeFromPool(pool, ineligible, "ineligible for drafting as an outer room")
   } else {
 
-    pool = removeFromPool(pool, OUTER_ROOMS, "outer room")
+    pool = removeFromPool(pool, OUTER_ROOMS, "ineligible for drafting in the house")
 
     const eligible = new Set(
       getRoomsAt(draft.toLocation.tile, draft.toLocation.toDirection)
@@ -296,22 +291,38 @@ function applyLocation(
 
 
 
-// Most of the drafting logic is here, factored out of the main function so it
-// can call itself recursively for redraws.
-function draftSlots(
+
+// Simulate a draft in the house, based on:
+// https://www.reddit.com/r/BluePrince/comments/1lu20ky/drafting_mechanics_drawing_from_the_room_decks/
+//
+// Rather than "simulating", we attempt to follow the flow of probability weight
+// through the whole deck. Our procedure is:
+// 
+// Apply filters to the whole pool. Divide into 8 decks.
+// For each slot:
+// - find probability of each deck being chosen (rarity x free | gem).
+// - simulate the whole deck-choice-with-fallback procedure:
+//   - select the first deck with enough cards, checking rarities in fallback order.
+//     p(room) = p(deck i rolled) * p(deck j selected | i rolled) * 1/(cards in deck j) 
+//   - if no decks have enough cards, but some decks have at least one ("marked"),
+//     draw from  one at random.
+//     p(room) = p(deck i rolled) * p(deck j marked | i rolled & none selected) 
+//       * p(j selected from marked decks | non selected) * 1/(cards in deck j) 
+//   - else fallback to draw 2, without cond. filters, adding the full pool for this slot
+//     scaled by p(no decks selected & no decks marked) 
+// - for each room in the overall pool, sum across all i, weighted by p(deck i rolled)
+// - ignore validation, "discarding", and draw 3
+//
+// Returns a vector representing the probability of each room appearing in each slot.
+function draftHouse(
   pool: DraftPool,
   game: GameState,
   day: DayState,
   house: HouseState,
-  draft: DraftParams,
+  draft: HouseDraftParams,
   useConditionalFilters: boolean = true
 ): [KeyedVec, KeyedVec, KeyedVec] {
 
-  // TODO
-  // https://www.reddit.com/r/BluePrince/comments/1liagtk/outer_room_basic_draft_rates_effects_of_rarity/
-  if (draft == 'outer') {
-    return [KeyedVec.empty(), KeyedVec.empty(), KeyedVec.empty()]
-  }
 
   // Apply runback/conditional filters in advance, why not?
   const filteredPool = applyFilters(pool, game, day, house, draft, useConditionalFilters)
@@ -326,7 +337,7 @@ function draftSlots(
   // Prepare redraw pool in advance, since all slots use it
   let draw2pools = [KeyedVec.empty(), KeyedVec.empty(), KeyedVec.empty()]
   if (useConditionalFilters) {
-    draw2pools = draftSlots(pool, game, day, house, draft, false)
+    draw2pools = draftHouse(pool, game, day, house, draft, false)
   }
 
   // Determine the draft probability for each room and slot
@@ -335,7 +346,9 @@ function draftSlots(
     let slotPool = KeyedVec.empty()
 
     const pDeckRoll = getPDeck(
-      slot, day.day, draft.gems || 0, rank, house.placedRooms.length - 2, game.vmode
+      slot, day.day,
+      draft.gems || 0, rank, house.placedRooms.length - 2,
+      game.vmode, house.solariumInHouse
     )
 
     // Keeps track of the total probability of a second draw across
@@ -366,50 +379,129 @@ function draftSlots(
   return slotPools as [KeyedVec, KeyedVec, KeyedVec]
 }
 
-// Actual Procedure, approximately:
+
+// Draft an outer room, based on:
+// https://www.reddit.com/r/BluePrince/comments/1liagtk/outer_room_basic_draft_rates_effects_of_rarity/
 //
-// Divide into 8 decks, free|gem x 4 rarities
-// First determine free vs. gem based on "Rare checks"
-// Determine a "base rarity" based on rank, date, etc.
-// - Start with base-rarity deck.
-// - Filter it based on runback/conditional etc.
-// - If it has ~3+ rooms, draw from it
-//   If less but nonempty, repeat computation for other rarity decks. 
-//     Select one at random and draw from it.
-// If all that fails, repeat with no conditional filters active and a new rarity, 
-//   but discards still discarded?
-// If that fails, repeat with all decks mixed together.
-// Validate: duplicates, 3x dead-ends, gem in slot 1.
+// The 8 outer rooms are shuffled, then specific rooms are biased toward the back
+// (positions 6-8, not visible) or front (positions 1-3, visible) based on game state
+// and active color filters.
 //
-// Our procedure to determine approximate probabilities:
-// 
-// Apply filters to the whole pool.
-// Divide into 8 decks.
-// For each slot:
-// - find probability of each deck being chosen (rarity x free | gem).
-// - simulate the whole deck-choice-with-fallback procedure:
-//   - if not enough cards in deck, next rarity is used in priority order.
-//   - if no decks have enough cards, fallback to draw 2
-//   - If one deck survives, assign:
-//     p(card) = p(deck) * 1/(cards in deck) 
-//   - If multiple, assign for each:
-//     p(card) = 1/(viable decks) * p(deck) * 1/(cards in deck)
-// - for each room in the overall pool, sum the probabilities across 
-//   all 8 rarity x free | gem possiblities.
-// - add in the result of a redraw * the approximate probability of redrawing, 
-//   summed across all choices of the original deck
-// - ignore validation
-//
-// Returns the pool for each slot, keyed by slug, with "p" set appropriately.
-export function applyDraftLogic(
+// Color filter position overrides:
+//   Bedroom (purple):    Hovel → 1st entry
+//   Green Room (green):  Root Cellar → 1st entry
+//   Shop (gold):         Trading Post → 1st entry  (TODO: verify gold vs orange for "yellow")
+//   Blueprint (blue):    50/50 between two 3-room patterns with secondary boosts
+//   Blackprint/Draxus:   Tomb → 1st entry
+export function draftOuter(
   pool: DraftPool,
   game: GameState,
   day: DayState,
   house: HouseState,
-  draft: DraftParams,
-  useConditionalFilters: boolean = true) {
+  draft: OuterDraftParams
+): [KeyedVec, KeyedVec, KeyedVec] {
 
-  const slotPools = draftSlots(pool, game, day, house, draft, useConditionalFilters)
+  const { outerRoomDraftCount, previouslyDraftedOuter } = draft
+
+  // Day 1 force: first outer draft always shows root-cellar, toolshed, hovel,
+  // except in vmode. 
+  // Technically vmode only disables the forced first-draft if you draft it 
+  // *on* day 1, but it's not worth exposing an option for that.
+  if (outerRoomDraftCount === 0 && !game.vmode) {
+    return [
+      KeyedVec.empty<string>().set('root-cellar', 1.0),
+      KeyedVec.empty<string>().set('toolshed', 1.0),
+      KeyedVec.empty<string>().set('hovel', 1.0),
+    ]
+  }
+
+  // Displacement probabilities: how likely each room ends up in positions 6-8 
+  // (not visible unless rerolled).
+  let pTombBack: number
+  let pSchoolhouseBack: number
+  let pShrineBack: number
+
+  if (game.haveRoom46 || (game.vmode && day.day == 1)) {
+    pTombBack = 0.10; pSchoolhouseBack = 0.10; pShrineBack = 0.10
+  } else if (day.day >= 8 || game.vmode || outerRoomDraftCount >= 4) {
+    pTombBack = 0.45; pSchoolhouseBack = 0.45; pShrineBack = 0.30
+  } else {
+    pTombBack = 0.99; pSchoolhouseBack = 0.95; pShrineBack = 0.60
+  }
+
+  // Foundation elevator + 3+ outer drafts
+  if (game.haveFoundationElevator && outerRoomDraftCount >= 3) {
+    pTombBack = 0.1
+  }
+
+  const pBack: Record<string, number> = {
+    'tomb': pTombBack,
+    'schoolhouse': pSchoolhouseBack,
+    'shrine': pShrineBack,
+  }
+
+  // Previously drafted outer room is displaced to position 4 (not visible)
+  // TODO overriden by filters?
+  if (previouslyDraftedOuter) {
+    pBack[previouslyDraftedOuter] = 1.0
+  }
+
+  // Active color filters drive position overrides specific to outer room drafting.
+  const activeColors = new Set<RoomColor>()
+  if (day.chessColor) activeColors.add(day.chessColor)
+  if (day.scepterColor) activeColors.add(day.scepterColor)
+  if (house.greenhouseInHouse) activeColors.add('green')
+  if (day.draxusActive) activeColors.add('black')
+
+  if (activeColors.has('blue')) {
+    let blueResult = draftOuterBlueFilter()
+    if (activeColors.has('black')) {
+      // black overrides blue slot 1
+      blueResult[0] = KeyedVec.empty().set('tomb', 1)
+    }
+    return blueResult
+  }
+
+  // Single-room slot-1 promotions; priority order resolves conflicts
+  let promotedToSlot1: string | null = null
+  if (activeColors.has('black')) {
+    promotedToSlot1 = 'tomb'
+  } else if (activeColors.has('gold')) {
+    promotedToSlot1 = 'trading-post'
+  } else if (activeColors.has('green')) {
+    promotedToSlot1 = 'root-cellar'
+  } else if (activeColors.has('purple')) {
+    promotedToSlot1 = 'hovel'
+  }
+
+  if (promotedToSlot1) {
+    const slot1 = KeyedVec.empty<string>().set(promotedToSlot1, 1.0)
+    // Displacement for the promoted room is overridden by the color filter;
+    // remaining rooms compete by weight for slots 2 and 3.
+    const rest = outerWeightedDist(pBack, [promotedToSlot1])
+    return [slot1, rest, rest]
+  }
+
+  // No color override: each slot's marginal distribution is the same weighted draw.
+  const dist = outerWeightedDist(pBack, [])
+  return [dist, dist, dist]
+}
+
+
+export function runDraft(
+  pool: DraftPool,
+  game: GameState,
+  day: DayState,
+  house: HouseState,
+  draft: DraftParams) {
+
+  let slotPools: [KeyedVec, KeyedVec, KeyedVec]
+  if ('kind' in draft) {
+    slotPools = draftOuter(pool, game, day, house, draft)
+  } else {
+    slotPools = draftHouse(pool, game, day, house, draft, true)
+  }
+
   const finalRooms = pool.rooms.map((pr) => {
     return {
       ...pr,

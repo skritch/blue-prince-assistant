@@ -11,6 +11,7 @@ export interface GameState {
   foundEpsenTomb: boolean
   vmode: boolean
   curseOrDare: boolean
+  haveFoundationElevator: boolean
 
   // Conservatory / Gear Wrench permanent rarity shifts;
   // https://www.reddit.com/r/BluePrince/comments/1lnn4y6/dynamic_rarity_room_rarity_changes_behind_the/
@@ -52,6 +53,7 @@ export function initGameState(): GameState {
     foundEpsenTomb: false,
     vmode: false,
     curseOrDare: false,
+    haveFoundationElevator: false,
     rarityOverrides: {},
     chamberOfMirrorsAdditions: [],
     upgrades: {}
@@ -68,6 +70,7 @@ export function initGameFull(): GameState {
     foundEpsenTomb: false,
     vmode: false,
     curseOrDare: false,
+    haveFoundationElevator: false,
     rarityOverrides: {},
     chamberOfMirrorsAdditions: [],
     upgrades: {}

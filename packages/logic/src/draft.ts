@@ -8,6 +8,7 @@ import type { DayState } from './day'
 import type { GameState } from './game'
 import type { HouseState } from './house'
 import { partition } from './utils'
+import { OUTER_ROOMS } from './rooms'
 
 
 const RARITY_PROBABILITIES = rawRarityProbabilities as unknown as Record<string, Record<'byRank', [number, number, number, number][]>>
@@ -26,11 +27,15 @@ export interface HouseDraftParams {
   keyUsed?: 'silver' | 'secret-garden' | 'room-8' | ['prism', RoomColor]
   secretPassageColor?: Exclude<RoomColor, 'black' | 'blue'> | null
   boilerActivated?: boolean
-
-
 }
 
-export type DraftParams = HouseDraftParams | 'outer'
+export interface OuterDraftParams {
+  kind: 'outer'
+  outerRoomDraftCount: number  // 0 = first outer draft this game (forces root-cellar/toolshed/hovel)
+  previouslyDraftedOuter?: string  // slug of last outer room drafted; moved to 4th position
+}
+
+export type DraftParams = HouseDraftParams | OuterDraftParams
 
 
 function rareCheckSlot2Chance(gems: number, rank: number) {
@@ -146,10 +151,10 @@ export function getPDeck(
   slot: 1 | 2 | 3,
   day: number, gems: number,
   row: TileRow, placedRooms: number,
-  vmode: boolean
+  vmode: boolean, solarium: boolean
 ): KeyedVec<number> {
   let pDecks = KeyedVec.empty<number>()
-  const pRarities = getRarityProbabilities(day, slot, row, false)
+  const pRarities = getRarityProbabilities(day, slot, row, solarium)
   const pGem = getPGemBySlot(gems, slot, placedRooms, row, day, vmode)
   for (const [rarityIdx, pRarity] of pRarities.entries()) {
     pDecks = pDecks.set(rarityIdx, pRarity * (1 - pGem))
@@ -192,8 +197,8 @@ export function applyFilters(
   useConditionalFilters: boolean = true
 ): DraftPool {
 
-  // TODO: handle outer room differently
-  if (draft === 'outer') {
+  // Outer draft uses position-override mechanics instead of conditional filters
+  if (!draft || 'kind' in draft) {
     return pool
   }
 
@@ -209,7 +214,7 @@ export function applyFilters(
     // TODO: secret passage does not affect runback, but prism does.
     // Outer rooms do not involve runback, prior draft is used.
     // Berry picker, secret garden, room 8 make a secret draw and apply it to runback
-    if ((draft !== undefined && draft.previousDraft !== undefined)) {
+    if (draft.previousDraft !== undefined) {
       const rarity = pool.rarityOverrides[pr.room.slug] || pr.room.baseRarity
       filterResults.push(applyRunbackFilter(
         pr,
@@ -437,3 +442,56 @@ export function mergeMarkedDecks(
 }
 
 
+
+// Blue filter (Blueprint): 50/50 A/B split, each with a 50% secondary room insertion.
+// Results in 4 equally-likely ordered triples for slots 1-3:
+//   A0 (25%): toolshed, shelter, shrine
+//   A1 (25%): schoolhouse, toolshed, shelter   (schoolhouse inserts at 1st)
+//   B0 (25%): shrine, shelter, schoolhouse
+//   B1 (25%): toolshed, shrine, shelter         (toolshed inserts at 1st)
+export function draftOuterBlueFilter(): [KeyedVec, KeyedVec, KeyedVec] {
+  const roomSet = new Set(OUTER_ROOMS)
+  const scenarios: [string, string, string][] = [
+    ['toolshed', 'shelter', 'shrine'],
+    ['schoolhouse', 'toolshed', 'shelter'],
+    ['shrine', 'shelter', 'schoolhouse'],
+    ['toolshed', 'shrine', 'shelter'],
+  ]
+
+  let slots: [KeyedVec, KeyedVec, KeyedVec] = [
+    KeyedVec.empty(), KeyedVec.empty(), KeyedVec.empty()
+  ]
+  for (const scenario of scenarios) {
+    for (let k = 0; k < 3; k++) {
+      const room = scenario[k]
+      if (roomSet.has(room)) {
+        slots[k] = slots[k].set(room, slots[k].get(room) + 0.25)
+      }
+    }
+  }
+  return slots
+}
+
+
+// P(room in slot) proportional to (1 - pBack[room]), normalized to sum=1.
+// Excluded rooms (already assigned to another slot) are skipped.
+export function outerWeightedDist(
+  pBack: Record<string, number>,
+  excluded: string[]
+): KeyedVec {
+  const skip = new Set(excluded)
+  let totalWeight = 0
+  const weights: [string, number][] = []
+
+  for (const room of OUTER_ROOMS) {
+    if (skip.has(room)) continue
+    const w = 1.0 - (pBack[room] ?? 0)
+    if (w > 0) { weights.push([room, w]); totalWeight += w }
+  }
+
+  let result = KeyedVec.empty<string>()
+  for (const [room, w] of weights) {
+    result = result.set(room, totalWeight > 0 ? w / totalWeight : 0)
+  }
+  return result
+}

@@ -10,6 +10,7 @@
     type DayState,
     type HouseState,
     type DraftParams,
+    type OuterDraftParams,
     type Direction,
     type TileColumn,
     type TileRow,
@@ -30,9 +31,9 @@
   let houseState: HouseState = $state(loaded?.house ?? initHouse());
 
   const initHouseDraft =
-    loaded?.draft && loaded.draft !== "outer" ? loaded.draft : undefined;
+    loaded?.draft && !('kind' in loaded.draft) ? loaded.draft : undefined;
   let draftMode: Mode = $state(
-    !loaded?.draft ? "none" : loaded.draft === "outer" ? "outer" : "house",
+    !loaded?.draft ? "none" : ('kind' in loaded.draft) ? "outer" : "house",
   );
   let draftColumn: TileColumn = $state(
     initHouseDraft?.toLocation.tile.column ?? "C",
@@ -47,11 +48,25 @@
   let draftPreviousDraft = $state<[string, string, string]>(
     initHouseDraft?.previousDraft ?? ["", "", ""],
   );
+  let outerRoomDraftCount = $state<number>(
+    (loaded?.draft && 'kind' in loaded.draft)
+      ? (loaded.draft as OuterDraftParams).outerRoomDraftCount
+      : 0,
+  );
+  let previouslyDraftedOuter = $state<string>(
+    (loaded?.draft && 'kind' in loaded.draft)
+      ? ((loaded.draft as OuterDraftParams).previouslyDraftedOuter ?? "")
+      : "",
+  );
   let draftKey = $state(0);
 
   let draftParams: DraftParams | undefined = $derived.by(() => {
     if (draftMode === "none") return undefined;
-    if (draftMode === "outer") return "outer";
+    if (draftMode === "outer") return {
+      kind: 'outer' as const,
+      outerRoomDraftCount,
+      previouslyDraftedOuter: previouslyDraftedOuter || undefined,
+    };
     const hasPreviousDraft = draftPreviousDraft.some((s) => s !== "");
     return {
       toLocation: {
@@ -92,6 +107,8 @@
     draftGems = 0;
     draftIsReroll = false;
     draftPreviousDraft = ["", "", ""];
+    outerRoomDraftCount = 0;
+    previouslyDraftedOuter = "";
     draftKey++;
   }
 
@@ -213,6 +230,8 @@
         bind:gems={draftGems}
         bind:isReroll={draftIsReroll}
         bind:previousDraft={draftPreviousDraft}
+        bind:outerRoomDraftCount
+        bind:previouslyDraftedOuter
       />
     {/key}
     <div class="bottom-btns">
@@ -244,6 +263,9 @@
     flex-direction: column;
     gap: 0.5rem;
     flex: 0 0 390px;
+    position: sticky;
+    top: 1rem;
+    align-self: flex-start;
   }
 
   .bottom-btns {

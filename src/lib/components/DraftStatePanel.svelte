@@ -15,6 +15,8 @@
     gems = $bindable(),
     isReroll = $bindable(),
     previousDraft = $bindable(),
+    outerRoomDraftCount = $bindable(),
+    previouslyDraftedOuter = $bindable(),
   }: {
     mode: Mode;
     column: TileColumn;
@@ -24,7 +26,14 @@
     gems: number;
     isReroll: boolean;
     previousDraft: [string, string, string];
+    outerRoomDraftCount: number;
+    previouslyDraftedOuter: string;
   } = $props();
+
+  const outerRoomOptions = ROOMS
+    .filter((r) => r.directoryPage === 9)
+    .map((r) => ({ id: r.slug, label: r.name }))
+    .sort((a, b) => a.label.localeCompare(b.label));
 
   const COLUMNS: TileColumn[] = ["A", "B", "C", "D", "E"];
   const ROWS: TileRow[] = [1, 2, 3, 4, 5, 6, 7, 8, 9];
@@ -55,6 +64,31 @@
         ><input type="radio" bind:group={mode} value="house" /> House</label
       >
     </div>
+
+    {#if mode === "outer"}
+      <div class="outer-fields">
+        <label class="inline-field">
+          Times drafted:
+          <input
+            type="number"
+            min="0"
+            class="narrow"
+            value={outerRoomDraftCount}
+            oninput={(e) => (outerRoomDraftCount = parseInt(e.currentTarget.value) || 0)}
+          />
+        </label>
+        <div class="inline-field">
+          Previously drafted:
+          <div class="prev-outer-input">
+            <SearchInput
+              items={outerRoomOptions}
+              bind:value={previouslyDraftedOuter}
+              placeholder="none"
+            />
+          </div>
+        </div>
+      </div>
+    {/if}
 
     {#if mode === "house"}
       <div class="inline-field">
@@ -160,5 +194,31 @@
     display: flex;
     align-items: center;
     gap: 0.4rem;
+  }
+
+  .outer-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .inline-field {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+  }
+
+  .narrow {
+    width: 4rem;
+  }
+
+  .prev-outer-input {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .prev-outer-input :global(.text-input) {
+    font-size: 0.7rem;
   }
 </style>

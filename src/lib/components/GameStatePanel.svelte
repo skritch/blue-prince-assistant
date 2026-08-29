@@ -205,6 +205,10 @@
           ><input type="checkbox" bind:checked={gameState.foundEpsenTomb} /> Epsen
           Tomb Found</label
         >
+        <label
+          data-tooltip="After 3+ outer room drafts, the Tomb is no longer biased to the back of the outer room list"
+          ><input type="checkbox" bind:checked={gameState.haveFoundationElevator} /> Foundation Elevator</label
+        >
       </div>
     </div>
 
