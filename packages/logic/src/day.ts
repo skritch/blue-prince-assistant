@@ -33,8 +33,6 @@ export interface DayState {
   // --- Minor---
   coatCheckDraftedToday: number    // Times Coat Check room has been drafted today 
   aquariumExperimentActivations: number | null    // (Laboratory) adds extra Aquariums to pool
-  // Has subtle effects even if the Foundation has since been removed from the house
-  haveDraftedFoundation: boolean   // Should be game state or house?
   pawnChessKnight: boolean         // Also adds Armory, but slightly different
 
 }
@@ -53,7 +51,6 @@ export function initDay(day: number): DayState {
     haveGearWrench: false,
     haveElectromagnet: false,
     haveChronograph: false,
-    haveDraftedFoundation: false,
     mailRoomUsed: false,
     coatCheckUsed: false,
     coatCheckDraftedToday: 0,

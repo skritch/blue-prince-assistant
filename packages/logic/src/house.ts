@@ -5,6 +5,7 @@ export interface HouseState {
 
 
 
+  foundationDrafted: boolean        // Lowers Master Bedroom; raises Billiard Room on day 7+
   schoolhouseInHouse: boolean      // Alters Library rarity and adds classrooms
   chamberOfMirrorsInHouse: boolean // adds same-day duplicates of already-placed rooms
   poolInHouse: boolean             // adds Locker Room, Sauna, Pump Room
@@ -17,7 +18,7 @@ export interface HouseState {
 export function initHouse(): HouseState {
   return {
     placedRooms: ['entrance-hall', 'antechamber'],
-    maxRank: 1, schoolhouseInHouse: false,
+    maxRank: 1, foundationDrafted: false, schoolhouseInHouse: false,
     chamberOfMirrorsInHouse: false,
     poolInHouse: false,
     furnaceInHouse: false,

@@ -23,6 +23,7 @@
     { slug: 'chamber-of-mirrors', flag: 'chamberOfMirrorsInHouse', label: 'Chamber of Mirrors', tooltip: 'Re-adds many rooms after they are drafted, or prevents their removal the first time they are drafted' },
     { slug: 'greenhouse', flag: 'greenhouseInHouse', label: 'Greenhouse', tooltip: 'Green rooms appear more often' },
     { slug: 'solarium', flag: 'solariumInHouse', label: 'Solarium', tooltip: 'Rare rooms appear more often' },
+    { slug: 'foundation', flag: 'foundationDrafted', label: 'Foundation', tooltip: 'Lowers Master Bedroom from rare to unusual; raises Billiard Room to unusual on day 7+' },
   ];
 
   const FURNACE_NOTE = "The Furnace's red-room bias can be blocked by certain in-game mechanics even when Furnace is in your house, so this is set independently from the placed rooms list.";

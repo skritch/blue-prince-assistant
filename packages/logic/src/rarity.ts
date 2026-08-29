@@ -106,7 +106,7 @@ export function getAdHocRarities(
   }
 
   // Master Bedroom (deterministic branch only)
-  if (!day.haveDraftedFoundation && (day.day <= 9 || !game.haveRoom46)) {
+  if (!house.foundationDrafted && (day.day <= 9 || !game.haveRoom46)) {
     rarities['master-bedroom'] = 4
   }
 
@@ -154,7 +154,7 @@ export function getAdHocRarities(
   }
 
   // Master Bedroom (probabilistic branch)
-  if (day.haveDraftedFoundation && day.day >= 7) {
+  if (house.foundationDrafted && day.day >= 7) {
     annotate('master-bedroom', '30% chance drops to standard (foundation drafted, day 7+)')
     annotate('billiard-room', '30% chance rises to unusual (foundation drafted, day 7+)')
   }
