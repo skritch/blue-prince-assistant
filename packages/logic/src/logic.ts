@@ -269,10 +269,11 @@ function setDynamicRarities(
   // Apply conservatory/gear wrench overrides, which supersede all DRs
   Object.assign(dynamicRarities, game.rarityOverrides)
 
-  // Append rarity annotations for things we can't determine exactly
   pool = { ...pool, rarityOverrides: dynamicRarities }
 
+  // Append rarity annotations for things we can't determine exactly
   for (const [slug, notes] of Object.entries(annotations)) {
+    if (adHocRarities[slug] !== undefined) { continue }
     for (const note of notes) {
       pool = annotateRoom(pool, note, slug)
     }
@@ -292,13 +293,13 @@ function constrainForLocation(
   // - idiosyncrasies of different classrooms
   // - pawn armory
   // - chamber of mirrors rooms having different exits
+  // - Monked outer rooms
 
   if (draft.kind == 'outer') {
     const eligible = new Set(OUTER_ROOMS)
     const ineligible = pool.rooms
       .filter(({ room }) => !eligible.has(room.slug))
       .map(({ room }) => room.slug)
-    // Obviously ignoring monk
     pool = removeFromPool(pool, ineligible, "ineligible for drafting as an outer room")
   } else {
 
@@ -385,7 +386,7 @@ function draftHouse(
       game.vmode, house.solariumInHouse, inLibrary
     )
 
-    // Cumulative probability of a second draw
+    // Cumulative probability of a second draw for this slot
     let pRedraw = 0
 
     for (const [i, deck] of effectiveDecks.entries()) {
@@ -394,7 +395,6 @@ function draftHouse(
     }
 
     // If the first draw fails, it will be repeated without conditional filters.
-    // Precompute the resulting probabilities for all rooms, for each slot.
     if (useConditionalFilters && pRedraw > 0) {
       const draw2pool = draw2pools[slot - 1]
 
@@ -407,7 +407,7 @@ function draftHouse(
   }) as [KeyedVec, KeyedVec, KeyedVec]
 
   // Any rooms removed with certainty by filters, which were not re-added by draw 2,
-  // can be moved to the removed rooms output with a reason.
+  // can be moved to the removed rooms output with the filters they failed as a reason.
   const removed = filteredPool.removed.filter((rr) => {
     const slug = rr.room.slug
     return slotPools[0].get(slug) == 0
@@ -448,7 +448,8 @@ function applyWeightedRooms(
     return newSlotPools
   }
 
-  // Locations in house are already determined by the room being in the pool
+  // No conditions for locations in house because this is already determined
+  // by the room being in the pool
   const weightedRooms = [
     {
       slug: 'conservatory',
@@ -481,23 +482,28 @@ function applyWeightedRooms(
     },
   ]
 
-  // Scan for a relevant rooms once
+  // Precheck for presence of all the rooms we might add in this function
   const toCheck = ['library', 'bookshop', ...weightedRooms.map((wr) => wr.slug)]
   const roomsInPool: string[] = pool.rooms.reduce(
     (acc, pr) => toCheck.includes(pr.room.slug) ? [...acc, pr.room.slug] : acc,
     Array<string>()
   )
 
+  // Add weighted rooms, always in slot 3, only on the first draft at a door.
+  // TODO: if a candidate weighted room has already been drawn in slot 1-2, it won't appear
+  // in slot 3, this should lower its probability a bit.
   for (let i = 0; i < weightedRooms.length; i++) {
     const wr = weightedRooms[i]
-    if ((wr.condition === undefined || wr.condition)
+    if (
+      draft.isFirstDraftAtDoor
+      && (wr.condition === undefined || wr.condition)
       && roomsInPool.includes(wr.slug)
       && !house.placedRooms.includes(wr.slug)
     ) {
+      const wrOnly = KeyedVec.empty().set(wr.slug, wr.p)
       newSlotPools[2] = newSlotPools[2]
         .scale(1 - wr.p)
-        .add(KeyedVec.empty().set(wr.slug, wr.p)
-        )
+        .add(wrOnly)
       break
     }
   }

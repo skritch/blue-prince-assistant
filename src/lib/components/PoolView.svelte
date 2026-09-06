@@ -102,7 +102,10 @@
   });
 
   function permalink() {
-    saveState(gameState, dayState, houseState, draftParams, { sortBy, viewMode });
+    saveState(gameState, dayState, houseState, draftParams, {
+      sortBy,
+      viewMode,
+    });
   }
 
   function resetAll() {
@@ -232,7 +235,8 @@
     (loaded?.ui?.viewMode as ViewMode) ?? "room-pct",
   );
   let sortBy: "rarity" | "room" | "name" | "probability" = $state(
-    (loaded?.ui?.sortBy as "rarity" | "room" | "name" | "probability") ?? "probability",
+    (loaded?.ui?.sortBy as "rarity" | "room" | "name" | "probability") ??
+      "probability",
   );
 </script>
 
@@ -259,7 +263,7 @@
     <div class="bottom-btns">
       <button class="action-btn" onclick={permalink}>🔗</button>
       <div class="spacer"></div>
-      <button class="action-btn" onclick={randomPreset}>Random</button>
+      <button class="action-btn" onclick={randomPreset}>Randomize</button>
       <button class="action-btn" onclick={resetAll}>Reset all</button>
     </div>
   </div>

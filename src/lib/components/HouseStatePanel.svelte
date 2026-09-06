@@ -82,42 +82,65 @@
 <details class="panel" bind:open>
   <summary class="panel-header">House: {houseState.placedRooms.length} Rooms</summary>
   <div class="fields">
-    <label class="inline-field">
-      House Rank Reached:
-      <input type="number" min="1" max="9" bind:value={houseState.maxRank} />
-    </label>
-    <div class="section">
-      <div class="section-label">Special Rooms</div>
-      <div class="checks">
-        {#each SPECIAL_ROOMS as { slug, label, tooltip }}
-          <label data-tooltip={tooltip}>
-            <input
-              type="checkbox"
-              checked={houseState.placedRooms.includes(slug)}
-              onchange={(e) => toggleSpecialRoom(slug, e.currentTarget.checked)}
-            /> {label}
+    <div class="left-col">
+      {#key searchKey}
+        <SearchPairInput
+          label="Placed Rooms ({houseState.placedRooms.length})"
+          searchItems={roomSearchItems}
+          entries={placedEntries}
+          onadd={addRoom}
+          onremove={removeRoom}
+          alwaysOpen
+        />
+      {/key}
+    </div>
+    <div class="right-col">
+      <label class="inline-field">
+        House Rank Reached:
+        <input type="number" min="1" max="9" bind:value={houseState.maxRank} />
+      </label>
+      <div class="section">
+        <div class="section-label">Filters &amp; Additions</div>
+        <div class="checks">
+          {#each SPECIAL_ROOMS as { slug, label, tooltip }}
+            <label data-tooltip={tooltip}>
+              <input
+                type="checkbox"
+                checked={houseState.placedRooms.includes(slug)}
+                onchange={(e) => toggleSpecialRoom(slug, e.currentTarget.checked)}
+              /> {label}
+            </label>
+          {/each}
+          <label>
+            <input type="checkbox" bind:checked={houseState.furnaceInHouse} />
+            Furnace
+            <span class="help-icon" data-tooltip={FURNACE_NOTE}>?</span>
           </label>
-        {/each}
-        <label>
-          <input type="checkbox" bind:checked={houseState.furnaceInHouse} />
-          Furnace
-          <span class="help-icon" data-tooltip={FURNACE_NOTE}>?</span>
-        </label>
+        </div>
       </div>
     </div>
-    {#key searchKey}
-      <SearchPairInput
-        label="Placed Rooms ({houseState.placedRooms.length})"
-        searchItems={roomSearchItems}
-        entries={placedEntries}
-        onadd={addRoom}
-        onremove={removeRoom}
-      />
-    {/key}
   </div>
 </details>
 
 <style>
+  .fields {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0.75rem;
+    align-items: start;
+  }
+
+  .left-col {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .right-col {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
   .section {
     display: flex;
     flex-direction: column;

@@ -18,7 +18,9 @@ export interface HouseState {
 export function initHouse(): HouseState {
   return {
     placedRooms: ['entrance-hall', 'antechamber'],
-    maxRank: 1, foundationDrafted: false, schoolhouseInHouse: false,
+    maxRank: 1,
+    foundationDrafted: false,
+    schoolhouseInHouse: false,
     chamberOfMirrorsInHouse: false,
     poolInHouse: false,
     furnaceInHouse: false,

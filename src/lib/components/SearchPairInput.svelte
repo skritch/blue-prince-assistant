@@ -11,6 +11,7 @@
     entries,
     onadd,
     onremove,
+    alwaysOpen = false,
   }: {
     label: string;
     searchItems: Item[];
@@ -18,6 +19,7 @@
     entries: Entry[];
     onadd: (keyId: string, valueId?: string) => void;
     onremove: (index: number) => void;
+    alwaysOpen?: boolean;
   } = $props();
 
   let query = $state("");
@@ -64,8 +66,7 @@
   }
 </script>
 
-<details class="wrap">
-  <summary class="header">{label}</summary>
+{#snippet body()}
   <div class="body">
     <div class="input-row">
       <div class="search-wrap">
@@ -115,28 +116,45 @@
     </div>
 
     {#if entries.length > 0}
-      <ul class="entry-list">
-        {#each entries as entry, i}
+      <ul class="entry-list" class:entry-list-scroll={alwaysOpen}>
+        {#each entries.slice().reverse() as entry, ri}
           <li class="entry">
-            <span class="entry-label">
-              {entry.keyLabel}{entry.valueLabel ? ` → ${entry.valueLabel}` : ""}
-            </span>
             {#if entry.removable !== false}
-              <button type="button" class="remove-btn" onclick={() => onremove(i)}
+              <button type="button" class="remove-btn" onclick={() => onremove(entries.length - 1 - ri)}
                 >×</button
               >
             {/if}
+            <span class="entry-label">
+              {entry.keyLabel}{entry.valueLabel ? ` → ${entry.valueLabel}` : ""}
+            </span>
           </li>
         {/each}
       </ul>
     {/if}
   </div>
-</details>
+{/snippet}
+
+{#if alwaysOpen}
+  <div class="wrap wrap-open">
+    <div class="header header-static">{label}</div>
+    {@render body()}
+  </div>
+{:else}
+  <details class="wrap">
+    <summary class="header">{label}</summary>
+    {@render body()}
+  </details>
+{/if}
 
 <style>
   .wrap {
     border: 1px solid var(--border);
     border-radius: 4px;
+  }
+
+  .wrap-open {
+    display: flex;
+    flex-direction: column;
   }
 
   .header {
@@ -159,6 +177,14 @@
     transition: transform 0.15s;
   }
 
+  .header-static {
+    cursor: default;
+  }
+
+  .header-static::before {
+    content: none;
+  }
+
   details[open] .header::before {
     transform: rotate(90deg);
   }
@@ -170,6 +196,7 @@
     flex-direction: column;
     gap: 0.4rem;
   }
+
 
   .input-row {
     display: flex;
@@ -272,10 +299,14 @@
     gap: 0.15rem;
   }
 
+  .entry-list-scroll {
+    overflow-y: auto;
+    max-height: 13rem;
+  }
+
   .entry {
     display: flex;
     align-items: center;
-    justify-content: space-between;
     font-size: 0.8rem;
     gap: 0.4rem;
   }
@@ -286,6 +317,7 @@
     text-overflow: ellipsis;
     white-space: nowrap;
     font-size: 0.7rem;
+    flex: 1;
   }
 
   .remove-btn {

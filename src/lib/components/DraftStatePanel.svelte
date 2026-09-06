@@ -35,8 +35,7 @@
 
   $effect(() => savePanelOpen("draft", open));
 
-  const outerRoomOptions = ROOMS
-    .filter((r) => r.directoryPage === 9)
+  const outerRoomOptions = ROOMS.filter((r) => r.directoryPage === 9)
     .map((r) => ({ id: r.slug, label: r.name }))
     .sort((a, b) => a.label.localeCompare(b.label));
 
@@ -53,23 +52,28 @@
     (a, b) => a.label.localeCompare(b.label),
   );
 
-  const invalidDirections = $derived(new Set<Direction>([
-    ...(row === 1 ? ['N' as Direction] : []),
-    ...(row === 9 ? ['S' as Direction] : []),
-    ...(column === 'A' ? ['E' as Direction] : []),
-    ...(column === 'E' ? ['W' as Direction] : []),
-  ]));
+  const invalidDirections = $derived(
+    new Set<Direction>([
+      ...(row === 1 ? ["N" as Direction] : []),
+      ...(row === 9 ? ["S" as Direction] : []),
+      ...(column === "A" ? ["E" as Direction] : []),
+      ...(column === "E" ? ["W" as Direction] : []),
+    ]),
+  );
 
   $effect(() => {
     if (invalidDirections.has(untrack(() => toDirection))) {
-      toDirection = DIRECTIONS.find((d) => !invalidDirections.has(d.value))?.value ?? 'N';
+      toDirection =
+        DIRECTIONS.find((d) => !invalidDirections.has(d.value))?.value ?? "N";
     }
   });
 
   const panelTitle = $derived(
-    mode === "house" ? `Drafting ${toDirection} into ${column}${row}`
-    : mode === "outer" ? "Drafting Outer Room"
-    : "Drafting"
+    mode === "house"
+      ? `Drafting: ${toDirection} into ${column}${row}`
+      : mode === "outer"
+        ? "Drafting: Outer Room"
+        : "Drafting",
   );
 </script>
 
@@ -78,11 +82,9 @@
   <div class="fields">
     <div class="mode-row">
       <label><input type="radio" bind:group={mode} value="none" /> None</label>
-      <label
-        ><input type="radio" bind:group={mode} value="outer" /> Outer</label
+      <label><input type="radio" bind:group={mode} value="outer" /> Outer</label
       >
-      <label
-        ><input type="radio" bind:group={mode} value="house" /> House</label
+      <label><input type="radio" bind:group={mode} value="house" /> House</label
       >
     </div>
 
@@ -95,7 +97,8 @@
             min="0"
             class="narrow"
             value={outerRoomDraftCount}
-            oninput={(e) => (outerRoomDraftCount = parseInt(e.currentTarget.value) || 0)}
+            oninput={(e) =>
+              (outerRoomDraftCount = parseInt(e.currentTarget.value) || 0)}
           />
         </label>
         <div class="inline-field">
@@ -115,7 +118,9 @@
       <div class="inline-field">
         <select bind:value={toDirection}>
           {#each DIRECTIONS as d}
-            <option value={d.value} disabled={invalidDirections.has(d.value)}>{d.label}</option>
+            <option value={d.value} disabled={invalidDirections.has(d.value)}
+              >{d.label}</option
+            >
           {/each}
         </select>
         into
@@ -137,11 +142,32 @@
       <div class="draft-cols">
         <div class="draft-col">
           <div class="section-label">Previous draft:</div>
-          <div class="prev-input"><SearchInput items={roomOptions} bind:value={previousDraft[0]} placeholder="slot 1" /></div>
-          <div class="prev-input"><SearchInput items={roomOptions} bind:value={previousDraft[1]} placeholder="slot 2" /></div>
-          <div class="prev-input"><SearchInput items={roomOptions} bind:value={previousDraft[2]} placeholder="slot 3" /></div>
+          <div class="prev-input">
+            <SearchInput
+              items={roomOptions}
+              bind:value={previousDraft[0]}
+              placeholder="slot 1"
+            />
+          </div>
+          <div class="prev-input">
+            <SearchInput
+              items={roomOptions}
+              bind:value={previousDraft[1]}
+              placeholder="slot 2"
+            />
+          </div>
+          <div class="prev-input">
+            <SearchInput
+              items={roomOptions}
+              bind:value={previousDraft[2]}
+              placeholder="slot 3"
+            />
+          </div>
 
-          <label class="checkbox-field" data-tooltip="When rerolling, all three rooms from the previous draft are always filtered out. On the first draft at a door, they only have a chance of being removed.">
+          <label
+            class="checkbox-field"
+            data-tooltip="When rerolling, all three rooms from the previous draft are always filtered out. On the first draft at a door, they only have a chance of being removed."
+          >
             <input type="checkbox" bind:checked={isReroll} />
             Is reroll
           </label>
@@ -154,7 +180,13 @@
 
         <div class="draft-col">
           <div class="section-label">Drafting from:</div>
-          <div class="from-room-input"><SearchInput items={roomOptions} bind:value={fromRoomSlug} placeholder="room" /></div>
+          <div class="from-room-input">
+            <SearchInput
+              items={roomOptions}
+              bind:value={fromRoomSlug}
+              placeholder="room"
+            />
+          </div>
         </div>
       </div>
     {/if}

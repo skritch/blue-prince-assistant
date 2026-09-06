@@ -222,7 +222,8 @@
     font-size: 1.25rem;
     letter-spacing: 0.15em;
     margin: 0.15rem 0 0.6rem;
-    color: var(--text-muted);
+    color: var(--text);
+    font-weight: 500;
     text-align: center;
   }
   footer {
