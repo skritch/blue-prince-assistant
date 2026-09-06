@@ -1,6 +1,6 @@
 
 import { DEAD_ENDS, MIRROR_ROOMS, OUTER_ROOMS, POOL_ADDITIONS, POWER_CONNECTOR_ROOMS, POWERED_ROOMS, ROOM_46_REWARDS } from './rooms'
-import { classifyExitTo, getRoomsAt } from './roomLocations'
+import { classifyExitTo, getRoomsAt } from './tiles'
 import type { DayState } from './day'
 import { addToPool, annotateRoom, blockDraft, fromGameState, removeFromPool, type DraftPool, type PooledRoom, type RemovedRoom } from './pool'
 import type { HouseState } from './house'
@@ -74,15 +74,26 @@ function buildbasePool(
 
   // Schoolhouse classrooms
   // https://www.reddit.com/r/BluePrince/comments/1lrxff0/the_mechanics_of_drafting_multiple_classrooms/
-  // TODO: fairly complicated, for now we just add 8 schoolhouses
+  // We are not tracking how many drafts you've seen, or how many classrooms you've drafted
+  // in the past. We add one immediately with a note, and later on will prevent classrooms
+  // from being removed after drafting to simulate this logic.
   if (house.schoolhouseInHouse) {
-    pool = addToPool(pool, Array(8).fill('classroom'), 'schoolhouse')
+    pool = addToPool(pool, ['classroom'], 'schoolhouse')
+    pool = annotateRoom(pool, { condition: "additional classrooms are added to the pool as you draft" }, 'classroom')
   }
 
+  // TODO: how to handle such a conditional addition to the pool?
+  // For now, require the day is greater than the number of drafts required.
   if (game.vmode || game.haveRoom46) {
-    pool = annotateRoom(pool, { pct: 100 }, 'bookshop', "must have drafted library 5 times")
+    if (day.day >= 5) {
+      pool = addToPool(pool, ['bookshop'])
+    }
+    pool = annotateRoom(pool, { condition: "must have drafted library 5 times" }, 'bookshop')
   } else {
-    pool = annotateRoom(pool, { pct: 100 }, 'bookshop', "must have drafted library 8 times")
+    if (day.day >= 8) {
+      pool = addToPool(pool, ['bookshop'])
+    }
+    pool = annotateRoom(pool, { condition: "must have drafted library 8 times" }, 'bookshop')
   }
 
 
@@ -108,7 +119,7 @@ function buildbasePool(
         if (mirroredModifier == "never") {
           pool = annotateRoom(pool, { "mirrorNote": "will only be mirrored if drafted after CoM" }, slug)
         } else if (mirroredModifier == "modified") {
-          pool = annotateRoom(pool, { "mirrorNote": "if drafted after CoM, will modified drafting rules" }, slug)
+          pool = annotateRoom(pool, { "mirrorNote": "if drafted after CoM, draftable locations are modified" }, slug)
         }
       }
     }
@@ -214,6 +225,17 @@ function removeDraftedRooms(
   // We just remove the first of each room from the pool
   const removed: Record<string, number> = {}
   const newRooms = pool.rooms.filter(({ room }) => {
+    // Special logic simulate the gradual addition of classrooms throughout
+    // the day when a schoolhouse is drafted. We don't remove the classroom
+    // from the pool after it is drafted. 
+    if (room.slug == 'classroom'
+      && house.schoolhouseInHouse
+      && (houseCounts[room.slug] < 8
+        || (house.chamberOfMirrorsInHouse && houseCounts[room.slug] < 9))
+    ) {
+      return true
+    }
+
     if ((removed[room.slug] ?? 0) < houseCounts[room.slug]) {
       removed[room.slug] = (removed[room.slug] ?? 0) + 1
       return false

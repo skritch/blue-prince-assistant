@@ -18,6 +18,7 @@ export type RoomSource =
 
 
 type ChanceInPool = { pct: number }
+type ConditionalInPool = { condition: string }
 type MaybeMirrored = { mirrorNote: string }
 type ChanceOfRarity = { rarityNote: string }
 type MaybeBlocked = { blockPct: number, blockNote: string }
@@ -26,6 +27,7 @@ export type Annotation =
   | MaybeMirrored
   | ChanceOfRarity
   | MaybeBlocked
+  | ConditionalInPool
 
 export interface PooledRoom {
   room: Room

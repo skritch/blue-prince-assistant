@@ -1,5 +1,5 @@
 import { ADHOC_ADDITIONS, POOL_ADDITIONS, ROOMS, ROOM_46_REWARDS, ROOM_BY_SLUG, UNDRAFTABLE, roomsForPage } from './rooms'
-import type { Rarity, Room, RoomColor, Upgrade } from './types'
+import type { Rarity, Room } from './types'
 
 
 
@@ -32,12 +32,6 @@ const INIT_EXCLUDED_PAGES = new Set([7, 8])
 // Rooms excluded from the initial pool despite their page being included
 const INIT_EXCLUDED_SLUGS = new Set([
   ...ROOM_46_REWARDS,
-  ...POOL_ADDITIONS,
-  ...ADHOC_ADDITIONS,
-  ...UNDRAFTABLE
-])
-
-const FULL_EXCLUDED_SLUGS = new Set([
   ...POOL_ADDITIONS,
   ...ADHOC_ADDITIONS,
   ...UNDRAFTABLE
