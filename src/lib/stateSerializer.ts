@@ -42,6 +42,7 @@ interface Serialized {
   day: DayState
   house: HouseState
   draft?: DraftParams
+  ui?: { sortBy?: string; viewMode?: string }
 }
 
 export interface LoadedState {
@@ -49,6 +50,7 @@ export interface LoadedState {
   day: DayState
   house: HouseState
   draft: DraftParams | undefined
+  ui: { sortBy: string; viewMode: string }
 }
 
 function encodeState(
@@ -56,6 +58,7 @@ function encodeState(
   day: DayState,
   house: HouseState,
   draft: DraftParams | undefined,
+  ui: { sortBy: string; viewMode: string },
 ): string {
   const currentSlugs = new Set(game.pool.map((r) => r.slug))
   const addedSlugs = [...currentSlugs].filter((s) => !DEFAULT_POOL_SLUGS.has(s))
@@ -80,6 +83,7 @@ function encodeState(
     day,
     house,
     ...(draft !== undefined ? { draft } : {}),
+    ui,
   }
 
   return btoa(JSON.stringify(payload))
@@ -112,7 +116,8 @@ function decodeState(encoded: string): LoadedState | null {
       booksPurchased: data.game.booksPurchased ?? 0,
     }
 
-    return { game, day: data.day, house: data.house, draft: data.draft }
+    const ui = { sortBy: data.ui?.sortBy ?? 'probability', viewMode: data.ui?.viewMode ?? 'room-pct' }
+    return { game, day: data.day, house: data.house, draft: data.draft, ui }
   } catch {
     return null
   }
@@ -145,8 +150,9 @@ export function saveState(
   day: DayState,
   house: HouseState,
   draft: DraftParams | undefined,
+  ui: { sortBy: string; viewMode: string },
 ): void {
-  const encoded = encodeState(game, day, house, draft)
+  const encoded = encodeState(game, day, house, draft, ui)
   history.replaceState(null, '', '#' + HASH_PREFIX + encoded)
   try {
     localStorage.setItem(STORAGE_KEY, encoded)
@@ -160,12 +166,13 @@ export function persistLocally(
   day: DayState,
   house: HouseState,
   draft: DraftParams | undefined,
+  ui: { sortBy: string; viewMode: string },
 ): void {
   if (location.hash.startsWith('#' + HASH_PREFIX)) {
     history.replaceState(null, '', location.pathname + location.search)
   }
   try {
-    localStorage.setItem(STORAGE_KEY, encodeState(game, day, house, draft))
+    localStorage.setItem(STORAGE_KEY, encodeState(game, day, house, draft, ui))
   } catch {
     // ignore
   }

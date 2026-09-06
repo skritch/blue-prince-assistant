@@ -5,15 +5,18 @@
     type Rarity,
     type Annotation,
   } from "bp-logic";
+  import ColorDots from "./ColorDots.svelte";
 
   let {
     draftPool,
     gameRarityOverrides,
     houseState = $bindable(),
+    sortBy = $bindable(),
   }: {
     draftPool: DraftPool;
     gameRarityOverrides: Record<string, Rarity>;
     houseState: HouseState;
+    sortBy: "rarity" | "room" | "name" | "probability";
   } = $props();
 
   function addRoomToHouse(slug: string) {
@@ -71,33 +74,38 @@
   }
 
   let activeTab: "pool" | "removed" = $state("pool");
-  let sortBy: "rarity" | "room" | "probability" = $state("probability");
 
   let sortedRooms = $derived(
     [...draftPool.rooms].sort((a, b) => {
       if (sortBy === "probability") {
-        const aSum = (a.pSlot ?? [0, 0, 0]).reduce((sum, p) => sum + p, 0);
-        const bSum = (b.pSlot ?? [0, 0, 0]).reduce((sum, p) => sum + p, 0);
-        if (aSum !== bSum) return bSum - aSum; // descending
+        const pa = (a.pSlot ?? [0, 0, 0]).reduce((s, p) => s + p, 0);
+        const pb = (b.pSlot ?? [0, 0, 0]).reduce((s, p) => s + p, 0);
+        if (pa !== pb) return pb - pa;
+        if (a.room.directoryPage !== b.room.directoryPage)
+          return a.room.directoryPage - b.room.directoryPage;
+        return a.room.roomNumber - b.room.roomNumber;
       }
 
       if (sortBy === "room") {
-        if (a.room.directoryPage !== b.room.directoryPage) {
+        if (a.room.directoryPage !== b.room.directoryPage)
           return a.room.directoryPage - b.room.directoryPage;
-        }
-        if (a.room.roomNumber !== b.room.roomNumber) {
-          return a.room.roomNumber - b.room.roomNumber;
-        }
+        return a.room.roomNumber - b.room.roomNumber;
       }
 
-      // Default to rarity -> alphabetical
-      const ra = raritySort(
-        draftPool.rarityOverrides[a.room.slug] ?? a.room.baseRarity,
-      );
-      const rb = raritySort(
-        draftPool.rarityOverrides[b.room.slug] ?? b.room.baseRarity,
-      );
-      return ra !== rb ? ra - rb : a.room.name.localeCompare(b.room.name);
+      if (sortBy === "name") {
+        return a.room.name.localeCompare(b.room.name);
+      }
+
+      // rarity: effectiveRarity → free/gem → room number
+      const ra = raritySort(draftPool.rarityOverrides[a.room.slug] ?? a.room.baseRarity);
+      const rb = raritySort(draftPool.rarityOverrides[b.room.slug] ?? b.room.baseRarity);
+      if (ra !== rb) return ra - rb;
+      const ga = a.room.baseGemCost > 0 ? 1 : 0;
+      const gb = b.room.baseGemCost > 0 ? 1 : 0;
+      if (ga !== gb) return ga - gb;
+      if (a.room.directoryPage !== b.room.directoryPage)
+        return a.room.directoryPage - b.room.directoryPage;
+      return a.room.roomNumber - b.room.roomNumber;
     }),
   );
 
@@ -161,11 +169,7 @@
         {#each sortedRemoved as { room, reason }, i (room.slug + (reason ?? "") + i)}
           {@const effectiveRarity = room.baseRarity}
           <tr>
-            <td class="colors">
-              {#each room.color as c}
-                <span class="color-dot color-{c}"></span>
-              {/each}
-            </td>
+            <td class="colors"><ColorDots colors={room.color} /></td>
             <td class="name">{room.name}</td>
             <td class="rarity rarity-{effectiveRarity}"
               >{effectiveRarity ? rarityName(effectiveRarity) : ""}</td
@@ -176,40 +180,43 @@
       </tbody>
     </table>
   {:else}
-    <div class="sort-controls">
-      <label>Sort by:</label>
-      <button
-        class="sort-btn"
-        class:active={sortBy === "rarity"}
-        onclick={() => (sortBy = "rarity")}>Rarity</button
-      >
-      <button
-        class="sort-btn"
-        class:active={sortBy === "room"}
-        onclick={() => (sortBy = "room")}>Room #</button
-      >
-      <button
-        class="sort-btn"
-        class:active={sortBy === "probability"}
-        onclick={() => (sortBy = "probability")}>Probability</button
-      >
-    </div>
     <table>
       <thead>
         <tr>
-          <th></th>
-          <th></th>
-          <th>Room</th>
-          <th>Rarity</th>
+          <th class="btn-col"></th>
+          <th class="btn-col"></th>
+          <th class="source-icon-col"></th>
+          <th
+            class="sortable"
+            class:sorted={sortBy === "room"}
+            onclick={() => (sortBy = "room")}
+            title="Sort by room number"
+          >Color <span class="sort-arrow">{sortBy === "room" ? "▲" : "△"}</span></th>
+          <th
+            class="sortable"
+            class:sorted={sortBy === "name"}
+            onclick={() => (sortBy = "name")}
+            title="Sort by room name"
+          >Room <span class="sort-arrow">{sortBy === "name" ? "▲" : "△"}</span></th>
+          <th
+            class="sortable"
+            class:sorted={sortBy === "rarity"}
+            onclick={() => (sortBy = "rarity")}
+            title="Sort by rarity"
+          >Rarity <span class="sort-arrow">{sortBy === "rarity" ? "▲" : "△"}</span></th>
           <th>Doors</th>
           <th class="gems-col">Gems</th>
-          <th>Source</th>
-          <th class="prob-col" colspan="3" style="text-align: center;"
+          <th
+            class="prob-col sortable"
+            class:sorted={sortBy === "probability"}
+            colspan="3"
+            style="text-align: center;"
+            onclick={() => (sortBy = "probability")}
             ><span
               class="prob-col-label"
               data-tooltip="approximate chance this room appears in each slot"
               >%[slot]</span
-            ></th
+            > <span class="sort-arrow">{sortBy === "probability" ? "▼" : "▽"}</span></th
           >
         </tr>
       </thead>
@@ -240,25 +247,23 @@
             (s) => s === room.slug,
           ).length}
           <tr>
-            <td class="place-btns">
+            <td class="btn-col">
               {#if placedCount > 0}
-                <span class="placed-count">{placedCount}</span>
                 <button
                   class="place-btn minus"
                   onclick={() => removeRoomFromHouse(room.slug)}>−</button
                 >
               {/if}
+            </td>
+            <td class="btn-col">
               <button
                 class="place-btn plus"
                 data-tooltip="add to house"
                 onclick={() => addRoomToHouse(room.slug)}>+</button
               >
             </td>
-            <td class="colors">
-              {#each upgrade?.color ?? room.color as c}
-                <span class="color-dot color-{c}"></span>
-              {/each}
-            </td>
+            <td class="source-icon-col">{#if source}<span class="source-icon" data-tooltip={`added by: ${SOURCE_LABELS[source] ?? source}`}>?</span>{/if}</td>
+            <td class="colors"><ColorDots colors={upgrade?.color ?? room.color} /></td>
             <td class="name" data-tooltip={tooltip}
               >{upgrade?.name ?? room.name}</td
             >
@@ -276,11 +281,6 @@
             </td>
             <td class="doors">{room.doors ?? "—"}</td>
             <td class="gems">{room.baseGemCost || ""}</td>
-            <td class="source">
-              {#if source}<span class="source-label"
-                  >{SOURCE_LABELS[source] ?? source}</span
-                >{/if}
-            </td>
             {#if pSlot}
               {#each pSlot as slotP, idx}
                 {@const pctValue = slotP * 100}
@@ -300,7 +300,7 @@
       </tbody>
       <tfoot>
         <tr class="totals-row">
-          <td colspan="7"></td>
+          <td colspan="8"></td>
           {#each slotTotals() as total, idx}
             {@const pctValue = total * 100}
             {@const display = pctValue.toFixed(1)}
@@ -341,40 +341,28 @@
     color: var(--text);
   }
 
-  .sort-controls {
-    display: flex;
-    gap: 0.5rem;
-    align-items: center;
-    margin-bottom: 0.75rem;
-    font-size: 0.75rem;
+  .sortable {
+    user-select: none;
   }
 
-  .sort-controls label {
-    color: var(--text-muted);
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
-
-  .sort-btn {
-    background: transparent;
-    border: 1px solid var(--border);
-    padding: 0.25rem 0.5rem;
-    font-size: 0.75rem;
-    color: var(--text-muted);
+  .sortable:not(.sorted),
+  .sortable:not(.sorted) .prob-col-label,
+  .sortable:not(.sorted) .sort-arrow {
     cursor: pointer;
-    border-radius: 3px;
   }
 
-  .sort-btn.active {
+  .sortable:hover {
     color: var(--text);
-    border-color: var(--text);
-    background: var(--border);
   }
 
-  .sort-btn:hover:not(.active) {
+  .sort-arrow {
+    font-size: 0.7rem;
+    opacity: 0.4;
+  }
+
+  .sorted .sort-arrow {
+    opacity: 1;
     color: var(--text);
-    border-color: var(--text);
   }
 
   .reason {
@@ -415,35 +403,6 @@
     min-width: 90px;
   }
 
-  .color-dot {
-    display: inline-block;
-    width: 10px;
-    height: 10px;
-    border-radius: 2px;
-    margin-right: 2px;
-  }
-
-  .color-blue {
-    background: #3b82f6;
-  }
-  .color-purple {
-    background: #8b5cf6;
-  }
-  .color-orange {
-    background: #f59e0b;
-  }
-  .color-green {
-    background: #22c55e;
-  }
-  .color-gold {
-    background: #facc15;
-  }
-  .color-red {
-    background: #ef4444;
-  }
-  .color-black {
-    background: #6b7280;
-  }
 
   .rarity {
     font-size: 0.8rem;
@@ -546,12 +505,10 @@
     text-align: right;
     color: var(--text-muted);
     white-space: nowrap;
-    cursor: help;
   }
 
   .prob-col-label {
     position: relative;
-    cursor: help;
   }
 
   .prob-col-label[data-tooltip]:hover::after {
@@ -601,15 +558,51 @@
     z-index: 10;
   }
 
-  .source {
-    width: 90px;
-    min-width: 90px;
+  .source-icon-col {
+    width: 18px;
+    min-width: 18px;
+    padding-left: 0;
+    padding-right: 0;
+    text-align: center;
   }
 
-  .source-label {
-    font-size: 0.75rem;
+  .source-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--border);
     color: var(--text-muted);
-    font-style: italic;
+    font-size: 0.65rem;
+    font-weight: 700;
+    cursor: help;
+    position: relative;
+  }
+
+  .source-icon::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: #111827;
+    color: #f9fafb;
+    border: 1px solid #374151;
+    padding: 0.4rem 0.6rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 400;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    z-index: 10;
+    transition: opacity 0.1s;
+  }
+
+  .source-icon:hover::after {
+    opacity: 1;
   }
 
   .annot-icon {
@@ -654,18 +647,12 @@
     opacity: 1;
   }
 
-  .place-btns {
-    white-space: nowrap;
-    text-align: left;
-    padding-left: 0.4rem;
-    width: 72px;
-    min-width: 72px;
-  }
-
-  .placed-count {
-    font-size: 0.75rem;
-    color: var(--text-muted);
-    margin-right: 2px;
+  .btn-col {
+    width: 26px;
+    min-width: 26px;
+    padding-left: 0.25rem;
+    padding-right: 0.25rem;
+    text-align: center;
   }
 
   .place-btn {
@@ -682,7 +669,6 @@
     line-height: 1;
     cursor: pointer;
     padding: 0;
-    margin-left: 2px;
   }
 
   .place-btn:hover {

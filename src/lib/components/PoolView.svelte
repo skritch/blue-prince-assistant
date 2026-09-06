@@ -22,6 +22,9 @@
   import HouseStatePanel from "./HouseStatePanel.svelte";
   import DraftStatePanel from "./DraftStatePanel.svelte";
   import PoolTable from "./PoolTable.svelte";
+  import RoomListView from "./RoomListView.svelte";
+
+  type ViewMode = "room-pct" | "room-list" | "door-pct";
 
   type Mode = "none" | "outer" | "house";
 
@@ -93,12 +96,13 @@
     const d = $state.snapshot(dayState) as DayState;
     const h = $state.snapshot(houseState) as HouseState;
     const p = draftParams;
-    const timer = setTimeout(() => persistLocally(g, d, h, p), 300);
+    const ui = { sortBy, viewMode };
+    const timer = setTimeout(() => persistLocally(g, d, h, p, ui), 300);
     return () => clearTimeout(timer);
   });
 
   function permalink() {
-    saveState(gameState, dayState, houseState, draftParams);
+    saveState(gameState, dayState, houseState, draftParams, { sortBy, viewMode });
   }
 
   function resetAll() {
@@ -223,6 +227,13 @@
   let draftPool = $derived(
     computePool(gameState, dayState, houseState, draftParams),
   );
+
+  let viewMode: ViewMode = $state(
+    (loaded?.ui?.viewMode as ViewMode) ?? "room-pct",
+  );
+  let sortBy: "rarity" | "room" | "name" | "probability" = $state(
+    (loaded?.ui?.sortBy as "rarity" | "room" | "name" | "probability") ?? "probability",
+  );
 </script>
 
 <div class="layout">
@@ -253,11 +264,35 @@
     </div>
   </div>
   <div class="results">
-    <PoolTable
-      {draftPool}
-      gameRarityOverrides={gameState.rarityOverrides}
-      bind:houseState
-    />
+    <div class="view-toggle">
+      <button
+        class="view-btn"
+        class:active={viewMode === "room-pct"}
+        onclick={() => (viewMode = "room-pct")}>Room %s</button
+      >
+      <button
+        class="view-btn"
+        class:active={viewMode === "room-list"}
+        onclick={() => (viewMode = "room-list")}>Room Lists</button
+      >
+      <button
+        class="view-btn"
+        class:active={viewMode === "door-pct"}
+        onclick={() => (viewMode = "door-pct")}>Door %s</button
+      >
+    </div>
+    {#if viewMode === "room-pct"}
+      <PoolTable
+        {draftPool}
+        gameRarityOverrides={gameState.rarityOverrides}
+        bind:houseState
+        bind:sortBy
+      />
+    {:else if viewMode === "room-list"}
+      <RoomListView {draftPool} />
+    {:else}
+      <div class="stub">Door %s coming soon.</div>
+    {/if}
   </div>
 </div>
 
@@ -304,6 +339,41 @@
   .results {
     flex: 1 1 0;
     min-width: 0;
+  }
+
+  .view-toggle {
+    display: flex;
+    justify-content: flex-end;
+    gap: 2px;
+    margin-bottom: 0.75rem;
+  }
+
+  .view-btn {
+    padding: 0.25rem 0.65rem;
+    font-size: 0.8rem;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+  }
+
+  .view-btn:hover:not(.active) {
+    background: var(--border);
+    color: var(--text);
+  }
+
+  .view-btn.active {
+    background: var(--accent-light);
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+
+  .stub {
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    padding: 2rem 0;
+    text-align: center;
   }
 
   @media (max-width: 700px) {
