@@ -18,7 +18,7 @@
 </script>
 
 <details class="panel" bind:open>
-  <summary class="panel-header">Day</summary>
+  <summary class="panel-header">Day {dayState.day}: Conditions & Items</summary>
   <div class="fields">
     <div class="inline-fields">
       <label class="inline-field">

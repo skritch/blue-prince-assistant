@@ -183,7 +183,7 @@
 </script>
 
 <details class="panel" bind:open>
-  <summary class="panel-header">Game</summary>
+  <summary class="panel-header">Permanent Unlocks</summary>
   <div class="fields">
     <div class="section">
       <div class="section-label">Unlocks</div>

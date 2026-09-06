@@ -65,10 +65,16 @@
       toDirection = DIRECTIONS.find((d) => !invalidDirections.has(d.value))?.value ?? 'N';
     }
   });
+
+  const panelTitle = $derived(
+    mode === "house" ? `Drafting ${toDirection} into ${column}${row}`
+    : mode === "outer" ? "Drafting Outer Room"
+    : "Drafting"
+  );
 </script>
 
 <details class="panel" bind:open>
-  <summary class="panel-header">Draft</summary>
+  <summary class="panel-header">{panelTitle}</summary>
   <div class="fields">
     <div class="mode-row">
       <label><input type="radio" bind:group={mode} value="none" /> None</label>

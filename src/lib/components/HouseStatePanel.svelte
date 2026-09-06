@@ -80,7 +80,7 @@
 </script>
 
 <details class="panel" bind:open>
-  <summary class="panel-header">House</summary>
+  <summary class="panel-header">House: {houseState.placedRooms.length} Rooms</summary>
   <div class="fields">
     <label class="inline-field">
       House Rank Reached:
