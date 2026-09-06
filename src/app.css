@@ -1,3 +1,10 @@
+@font-face {
+  font-family: 'dArchitect';
+  src: url('/fonts/dArchitect.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
 :root {
   --text: #1a1a2e;
   --text-muted: #5a5a7a;

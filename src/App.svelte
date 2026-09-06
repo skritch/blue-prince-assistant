@@ -51,7 +51,13 @@
 
 <main class:blurred={showSpoilerWarning}>
   <header>
-    <h1>Blue Prince Draft Assistant</h1>
+    <div class="title-block">
+      <h1>
+        <span class="title-blue">BLUE</span>
+        <span class="title-white">PRINCE</span>
+      </h1>
+      <p class="subtitle">drafting simulator</p>
+    </div>
   </header>
   <PoolVIew />
   <footer>
@@ -189,10 +195,35 @@
   header {
     border-bottom: 1px solid var(--border);
     margin-bottom: 1.5rem;
+    line-height: 1;
+  }
+  .title-block {
+    display: inline-block;
   }
   h1 {
-    font-size: 1.5rem;
-    margin: 0.75rem 0;
+    font-size: 1.9rem;
+    font-weight: 900;
+    letter-spacing: 0.05em;
+    margin: 0.5rem 0 0;
+    line-height: 1;
+  }
+  .title-blue {
+    color: hsl(202 90% 47% / 1);
+    -webkit-text-stroke: 2px black;
+    paint-order: stroke fill;
+  }
+  .title-white {
+    color: white;
+    -webkit-text-stroke: 2px black;
+    paint-order: stroke fill;
+  }
+  .subtitle {
+    font-family: "dArchitect", "Architects Daughter", cursive;
+    font-size: 1.25rem;
+    letter-spacing: 0.15em;
+    margin: 0.15rem 0 0.6rem;
+    color: var(--text-muted);
+    text-align: center;
   }
   footer {
     margin-top: 2rem;
