@@ -50,18 +50,20 @@ function validateDeadEnds(
       .map((p, slug) => DEAD_ENDS.has(slug) ? p : 0)
       .sum()
   )
-  const p1or3isDeadEnd = pDeadEnds[0] + pDeadEnds[2] - pDeadEnds[0] * pDeadEnds[2]
+  const p1and3deadEnds = pDeadEnds[0] * pDeadEnds[2]
+  const p1all3deadEnds = pDeadEnds[0] * pDeadEnds[1] * pDeadEnds[2]
   const poolWithoutDeadEnds = {
     ...pool,
     rooms: pool.rooms.filter((pr) => !DEAD_ENDS.has(pr.room.slug))
   }
   const anyDrawWithoutDeadEndsResult = draftHouse(poolWithoutDeadEnds, game, day, house, draft, "any")
 
+
   slots[1] = slots[1]
     // Rescale slot 2 dead-end probabilities
-    .map((p, slug) => DEAD_ENDS.has(slug) ? p * p1or3isDeadEnd : p)
-    // Add the anyDrawResult times the total probability of a dead end in slot 2
-    .add(anyDrawWithoutDeadEndsResult.slots[1].scale(pDeadEnds[1]))
+    .map((p, slug) => DEAD_ENDS.has(slug) ? p * (1 - p1and3deadEnds) : p)
+    // Add the anyDrawResult times the total probability of all 3 dead ends
+    .add(anyDrawWithoutDeadEndsResult.slots[1].scale(p1all3deadEnds))
 
 
   return { ...draftResult, slots }

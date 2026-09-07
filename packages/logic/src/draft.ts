@@ -394,10 +394,8 @@ function selectDecksAnyDraw(
     for (const rarity2 of fallbackOrder) {
       const j = rarity2 - 1
 
-      const dFree = decks[j]
-      const dGem = decks[j + 4]
       // Merge free + gem decks for card counting
-      const dMerged = dFree.add(dGem)
+      const dMerged = decks[j].add(decks[j + 4])
       if (dMerged.length == 0) {
         continue
       }
@@ -410,15 +408,14 @@ function selectDecksAnyDraw(
 
       // Accept the free or gem deck in proportion to their lengths
       // The spec does not describe this clearly, it might be wrong.
-      const pFree = dFree.length / dMerged.length
+      const pFree = decks[j].length / dMerged.length
       pDeckIJ[i] = pDeckIJ[i].set(j, pDeckIJ[i].get(j) + pFirstAccepted * pFree)
       pDeckIJ[i] = pDeckIJ[i].set(j + 4, pDeckIJ[i].get(j + 4) + pFirstAccepted * (1 - pFree))
-      pAccepted = pAccepted.set(j, pAcceptedJ * pFree)
-      pAccepted = pAccepted.set(j + 4, pAcceptedJ * (1 - pFree))
+      pAccepted = pAccepted.set(j, pAcceptedJ)
 
       // Also mark in proportion to lengths
       pMarked = pMarked.set(j, pMarkedJ * pFree)
-      pMarked = pMarked.set(j, pMarkedJ * (1 - pFree))
+      pMarked = pMarked.set(j + 4, pMarkedJ * (1 - pFree))
     }
 
     const pNoneAcceptedI = pAccepted.values().reduce((acc, cur) => acc * (1 - cur), 1)
