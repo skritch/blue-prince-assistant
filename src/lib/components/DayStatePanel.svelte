@@ -71,6 +71,18 @@
             </label>
           </div>
         </div>
+
+        <div class="section">
+          <div class="section-label">Rooms Seen</div>
+          <div class="checks">
+            <label data-tooltip="Garage has been seen this day"
+              ><input type="checkbox" bind:checked={dayState.garageSeen} /> Garage</label
+            >
+            <label data-tooltip="Utility Closet has been seen this day"
+              ><input type="checkbox" bind:checked={dayState.utilityClosetSeen} /> Utility Closet</label
+            >
+          </div>
+        </div>
       </div>
 
       <!-- RIGHT COLUMN: Chess, Constellations, Specific Rooms -->

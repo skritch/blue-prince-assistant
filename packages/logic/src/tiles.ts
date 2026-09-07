@@ -12,7 +12,7 @@ export type Exit =
   | 'corner' | 'center'
   | 'outer'
 
-export type DraftResult =
+export type DraftKind =
   | { kind: 'nonexistent' }
   | { kind: 'center' }
   | { kind: 'corner'; edges: [Direction, Direction] }
@@ -30,7 +30,7 @@ export function getTilePosition(tile: GridTile): TilePosition {
   return { kind: 'corner', edges: [edges[0], edges[1]] }
 }
 
-export function getDraftResult(tile: GridTile, direction: Direction): DraftResult {
+export function getDraftResult(tile: GridTile, direction: Direction): DraftKind {
   const col = 1 + COLUMNS.indexOf(tile.column)
   const row = tile.row as number
 

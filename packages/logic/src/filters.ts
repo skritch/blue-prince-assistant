@@ -1,7 +1,8 @@
 import type { DayState } from "./day"
+import type { HouseDraftParams } from "./draft"
 import type { GameState } from "./game"
 import type { HouseState } from "./house"
-import { type PooledRoom } from "./pool"
+import { type DraftPool, type PooledRoom } from "./pool"
 import { LIBRARY_IGNORED } from "./rooms"
 import { type Rarity, type RoomColor } from "./types"
 import { partition } from "./utils"
@@ -166,5 +167,73 @@ export function applyLibraryFilter(
     }
   } else {
     return { p: 1 }
+  }
+}
+
+
+
+export function applyFilters(
+  pool: DraftPool,
+  game: GameState,
+  day: DayState,
+  house: HouseState,
+  draft: HouseDraftParams,
+  useConditionalFilters: boolean = true
+): DraftPool {
+
+  const condFilters = getConditionalFilters(game, day, house)
+
+  // first apply non-conditional filters
+  let filteredPool = pool.rooms.map((pr) => {
+    const filterResults: FilterResult[] = []
+
+    // Discard Filter -> omitted
+
+    // Runback Filter
+    // TODO: secret passage does not affect runback, but prism does.
+    // Outer rooms do not involve runback, prior draft is used.
+    // Berry picker, secret garden, room 8 make a secret draw and apply it to runback
+    if (draft.previousDraft !== undefined) {
+      const rarity = pool.rarityOverrides[pr.room.slug] || pr.room.baseRarity
+      filterResults.push(applyRunbackFilter(
+        pr,
+        rarity,
+        draft.previousDraft!,
+        draft.isFirstDraftAtDoor
+      ))
+    }
+
+    // Double Down Filter -> omitted
+
+    // Library Filter
+    if (draft.fromRoomSlug == 'library') {
+      filterResults.push(applyLibraryFilter(pr, draft.gems || 0))
+    }
+
+    // Ignore Filter -> freezer, rumpus, blue crown -> omitted
+
+    if (useConditionalFilters) {
+      filterResults.push(applyConditionalFilters(pr, condFilters))
+    }
+
+    const finalResult = filterResults.reduce((acc, cur) => ({
+      p: acc.p * cur.p,
+      failReason: acc.failReason || cur.failReason
+    }), { p: 1, failReason: undefined })
+
+    return [pr, finalResult]
+  }) as [PooledRoom, FilterResult][]
+
+  const [keptRooms, removedRooms] = partition(
+    filteredPool, ([, fr]) => (fr.failReason === undefined)
+  )
+
+  return {
+    ...pool,
+    rooms: keptRooms.map(([pr, fr]) => ({ ...pr, p: fr.p })),
+    removed: [
+      ...pool.removed,
+      ...removedRooms.map(([pr, fr]) => ({ ...pr, reason: fr.failReason }))
+    ]
   }
 }

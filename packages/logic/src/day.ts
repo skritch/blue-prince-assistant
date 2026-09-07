@@ -31,6 +31,10 @@ export interface DayState {
   mailRoomUsed: boolean            // Mail Room rarity effect triggers after first use
   coatCheckUsed: boolean           // Coat Check item available(affects rarity)
 
+  // --- Rooms Seen ---
+  garageSeen: boolean
+  utilityClosetSeen: boolean
+
   // --- Minor---
   boilerActivated: boolean         // Boiler Room has been activated this day
   coatCheckDraftedToday: number    // Times Coat Check room has been drafted today
@@ -58,5 +62,7 @@ export function initDay(day: number): DayState {
     mailRoomUsed: false,
     coatCheckUsed: false,
     coatCheckDraftedToday: 0,
+    garageSeen: false,
+    utilityClosetSeen: false,
   }
 }

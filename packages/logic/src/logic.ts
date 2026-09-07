@@ -7,9 +7,10 @@ import type { HouseState } from './house'
 import { type GameState } from './game'
 import { getAdHocRarities, getDynamicRarities } from './rarity'
 
-import { applyFilters, draftOuterBlueFilter, getDeckMinimums, getPDeck, initDecks, mergeMarkedDecks, outerWeightedDist, selectDecks, type DraftParams, type HouseDraftParams, type OuterDraftParams } from './draft'
+import { draftOuterBlueFilter, getDeckMinimums, getPDeck, initDecks, mergeMarkedDecks, outerWeightedDist, selectDecks, type DraftParams, type DraftResult, type HouseDraftParams, type OuterDraftParams } from './draft'
 import type { RoomColor } from './types'
 import { KeyedVec } from './math'
+import { applyFilters } from './filters'
 
 // Basic algorithm to determine the eligible pool
 export function generateDraftPool(
@@ -195,14 +196,16 @@ function applyDraftingBlocks(
   }
 
 
+  if (day.day == 1) {
+    pool = annotateRoom(pool, { blockPct: 100, blockNote: "blocked for 4:20 realtime on day 1" }, 'chapel')
+  }
+
   if (!game.curseOrDare && (day.day == 1 || (day.day == 2 && !game.vmode))) {
     pool = annotateRoom(pool, { blockPct: 95, blockNote: "95% chance blocked on days 1 and 2" }, 'drafting-studio')
     pool = annotateRoom(pool, { blockPct: 95, blockNote: "95% chance blocked on days 1 and 2" }, 'master-bedroom')
   }
 
   pool = annotateRoom(pool, { blockPct: 30, blockNote: "30% chance blocked after drafting 8 times" }, 'drafting-studio')
-
-  // TODO: chapel blocked for 4:20 realtime day 1?
 
   return pool
 }
@@ -344,23 +347,22 @@ function constrainForLocation(
 // - for each room in the overall pool, sum across all i, weighted by p(deck i rolled)
 // - ignore validation, "discarding", and draw 3
 //
-// Returns a vector representing the probability of each room appearing in each slot.
+// Returns:
+// - an array of 3 vectors of probabilities of rooms for each each slot.
+// - an array of 3 optional "reason" annotations explaining probabilities 
 function draftHouse(
   pool: DraftPool,
   game: GameState,
   day: DayState,
   house: HouseState,
   draft: HouseDraftParams,
-  useConditionalFilters: boolean = true
-): {
-  slotPools: [KeyedVec, KeyedVec, KeyedVec],
-  removed: RemovedRoom[]
-} {
+  draw: 1 | 2 | 3
+): DraftResult {
 
   const inLibrary = draft.fromRoomSlug == 'library'
 
-  // Apply runback/conditional filters in advance, why not?
-  const filteredPool = applyFilters(pool, game, day, house, draft, useConditionalFilters)
+  // Apply runback/conditional filters
+  const filteredPool = applyFilters(pool, game, day, house, draft, draw == 1)
   const decks = initDecks(filteredPool)
   const deckMinimums = getDeckMinimums(day.day, game.vmode, game.haveRoom46)
   const { pDeckIJ, pNoneMarked } = selectDecks(decks, deckMinimums, inLibrary)
@@ -371,8 +373,8 @@ function draftHouse(
 
   // Prepare redraw pool in advance, since all slots use it
   let draw2pools = [KeyedVec.empty(), KeyedVec.empty(), KeyedVec.empty()]
-  if (useConditionalFilters) {
-    const draw2 = draftHouse(pool, game, day, house, draft, false)
+  if (draw == 1) {
+    const draw2 = draftHouse(pool, game, day, house, draft, 2)
     draw2pools = draw2.slotPools
   }
 
@@ -395,7 +397,7 @@ function draftHouse(
     }
 
     // If the first draw fails, it will be repeated without conditional filters.
-    if (useConditionalFilters && pRedraw > 0) {
+    if (draw == 1 && pRedraw > 0) {
       const draw2pool = draw2pools[slot - 1]
 
       // Add draw 2 results to probability mass
@@ -406,18 +408,8 @@ function draftHouse(
     return sp
   }) as [KeyedVec, KeyedVec, KeyedVec]
 
-  // Any rooms removed with certainty by filters, which were not re-added by draw 2,
-  // can be moved to the removed rooms output with the filters they failed as a reason.
-  const removed = filteredPool.removed.filter((rr) => {
-    const slug = rr.room.slug
-    return slotPools[0].get(slug) == 0
-      && slotPools[1].get(slug) == 0
-      && slotPools[2].get(slug) == 0
-  })
 
-  slotPools = applyWeightedRooms(slotPools, filteredPool, game, day, house, draft)
-
-  return { slotPools, removed }
+  return { slotPools }
 }
 
 
@@ -426,26 +418,26 @@ function draftHouse(
 // https://www.reddit.com/r/BluePrince/comments/1lzdvv9/drafting_mechanics_weighted_rooms_the_library_and/
 //
 // We mostly don't attempt to reconcile conflicts between these mechanics.
-//
 function applyWeightedRooms(
-  slotPools: [KeyedVec, KeyedVec, KeyedVec],
+  draftResult: DraftResult,
   pool: DraftPool,
   game: GameState,
   day: DayState,
   house: HouseState,
   draft: HouseDraftParams,
-): [KeyedVec, KeyedVec, KeyedVec] {
+): DraftResult {
 
-  let newSlotPools = slotPools
+  let slotPools = draftResult.slotPools
+  let reasons = draftResult.reasons || [{}, {}, {}]
 
   // Override very first draft
   if (day.day == 1 && house.placedRooms.length == 2) {
-    newSlotPools = [
-      KeyedVec.empty().set('bedroom', 1),
-      KeyedVec.empty().set('closet', 1),
-      KeyedVec.empty().set('hallway', 1)
-    ]
-    return newSlotPools
+    const firstDraft = ['bedroom', 'closet', 'hallway']
+    for (let i = 1; i <= 3; i++) {
+      slotPools[i] = KeyedVec.empty().set(firstDraft[i], 1)
+      reasons[i] = { [firstDraft[i]]: ['guaranteed on first draft'] }
+    }
+    return { slotPools, reasons }
   }
 
   // No conditions for locations in house because this is already determined
@@ -458,13 +450,13 @@ function applyWeightedRooms(
     {
       slug: 'garage',
       p: 0.9,
-      condition: (day.day >= 3 || game.vmode) && !game.haveWestGate
+      condition: (day.day >= 3 || game.vmode) && !game.haveWestGate && !day.garageSeen
       // Also can't have been offered today, but we don't track that
     },
     {
       slug: 'garage',
       p: 0.925,
-      condition: (day.day >= 3 || game.vmode) && game.haveWestGate
+      condition: (day.day >= 3 || game.vmode) && game.haveWestGate && !day.garageSeen
     },
     {
       slug: 'morning-room',
@@ -476,7 +468,8 @@ function applyWeightedRooms(
     {
       slug: 'utility-closet',
       p: 0.7,
-      condition: (day.day >= 2) && house.placedRooms.includes('garage') && !game.haveWestGate
+      condition: (day.day >= 2) && house.placedRooms.includes('garage')
+        && !game.haveWestGate && !day.utilityClosetSeen
       // Floor plans in 1/2 shouldn't be dead ends
       // Fan't have been offered as a weighted room yet today
     },
@@ -492,6 +485,8 @@ function applyWeightedRooms(
   // Add weighted rooms, always in slot 3, only on the first draft at a door.
   // TODO: if a candidate weighted room has already been drawn in slot 1-2, it won't appear
   // in slot 3, this should lower its probability a bit.
+  let pWeighted = 0 // Store the weighted-room probability for later
+
   for (let i = 0; i < weightedRooms.length; i++) {
     const wr = weightedRooms[i]
     if (
@@ -501,15 +496,22 @@ function applyWeightedRooms(
       && !house.placedRooms.includes(wr.slug)
     ) {
       const wrOnly = KeyedVec.empty().set(wr.slug, wr.p)
-      newSlotPools[2] = newSlotPools[2]
+      slotPools[2] = slotPools[2]
         .scale(1 - wr.p)
         .add(wrOnly)
+
+      reasons[2][wr.slug] = [
+        ...(reasons[2][wr.slug] || []),
+        `weighted room +${Math.round(100 * wr.p)}%`
+      ]
+      pWeighted = wr.p
       break
     }
   }
 
   if (draft.fromRoomSlug == 'tunnel') {
-    newSlotPools[0] = KeyedVec.empty().set('tunnel', 1)
+    slotPools[0] = KeyedVec.empty().set('tunnel', 1)
+    reasons[0]['tunnel'] = ["forced tunnel from tunnel"]
   }
   if (draft.fromRoomSlug == 'nook'
     && game.upgrades['nook'] == 'reading-nook'
@@ -517,10 +519,11 @@ function applyWeightedRooms(
     && roomsInPool.includes('library')
   ) {
     // tiny adjustment to not draw library if one of the first two slots has it
-    const pLib12 = newSlotPools[0].get('library') + newSlotPools[1].get('library')
-    newSlotPools[2] = newSlotPools[2].scale(pLib12).add(
+    const pLib12 = slotPools[0].get('library') + slotPools[1].get('library')
+    slotPools[2] = slotPools[2].scale(pLib12).add(
       KeyedVec.empty().set('library', 3).scale(1 - pLib12)
     )
+    reasons[2]['library'] = ["forced library from reading nook"]
   }
 
   if (
@@ -540,32 +543,36 @@ function applyWeightedRooms(
     } else {
       pBookshop = 0.1
     }
-    newSlotPools[2] = newSlotPools[2]
+    slotPools[2] = slotPools[2]
       .scale(1 - pBookshop)
-      .add(KeyedVec.empty().set('bookshop', pBookshop)
-      )
+      .add(KeyedVec.empty().set('bookshop', pBookshop))
+
+    reasons[2]['bookshop'] = [`library +${Math.round(100 * pBookshop)}%`]
   }
 
   // Cloister-of-draxus dead-end effect. 
-  // Applied in validation stage; this is good enough.
+  // TODO: move to validation
   if (draft.fromRoomSlug == 'cloister'
     && game.upgrades['cloister'] == 'cloister-of-draxus'
   ) {
     // can any dead-ends be changed by upgrading? 
     // I don't think greenhouse wall changes its status.
-    newSlotPools = newSlotPools.map((sp) => {
-      const onlyDeadEnds = sp.map((p, k) => DEAD_ENDS.has(k) ? p : 0)
-      const total = onlyDeadEnds.sum()
-      if (total == 0) {
-        // Return original draft if no dead-ends remain in pool
-        return sp
-      } else {
-        return onlyDeadEnds.scale(1 / onlyDeadEnds.sum())
+
+    const deadEndCts = slotPools.map((sp) => {
+      return sp.map((p, k) => DEAD_ENDS.has(k) ? p : 0).sum()
+    })
+    for (let i = 1; i <= 3; i++) {
+      if (deadEndCts[i] > 0) {
+        const onlyDeadEnds = slotPools[i].map((p, k) => DEAD_ENDS.has(k) ? p : 0)
+        slotPools[i] = onlyDeadEnds.scale(1 / onlyDeadEnds.sum())
+
+        // TODO: set reasons & perhaps removed for draxus
       }
-    }) as [KeyedVec, KeyedVec, KeyedVec]
+    }
   }
 
-  // mt holly gift shop after room 46? probably not.
+
+  // mt holly gift shop after room 46? probably can't.
 
   // Duct Drafting
   // Ignoring electric eel aquarium
@@ -581,18 +588,20 @@ function applyWeightedRooms(
     // Is this right? Slots checked left to right, with pDuct1 used
     // if no duct draws selected yet?
     const pDuctSlots = [
-      pDuct1,
-      (1 - pDuct1) * pDuct1 + pDuct1 * pDuct23,
-      (1 - pDuct1) * (1 - pDuct1) * pDuct1   // neither of 1/2
-      + pDuct1 * (1 - pDuct23) * pDuct23 // 1 
-      + (1 - pDuct1) * pDuct1 * pDuct23 // 2
-      + pDuct1 * pDuct23 * pDuct23  // both
+      pDuct1, // Slot 1
+      (1 - pDuct1) * pDuct1 + pDuct1 * pDuct23, // Slot 2
+      // Slot 3:
+      ((1 - pDuct1) * (1 - pDuct1) * pDuct1   // neither of 1/2
+        + pDuct1 * (1 - pDuct23) * pDuct23 // 1 
+        + (1 - pDuct1) * pDuct1 * pDuct23 // 2
+        + pDuct1 * pDuct23 * pDuct23) // both
+      * (1 - pWeighted) // scale down slot 3 by p of a weighted-room draw
     ]
     const fromConnector = POWER_CONNECTOR_ROOMS.has(draft.fromRoomSlug)
 
     for (let s = 0; s <= 2; s++) {
       let ductPool = new KeyedVec()
-      for (const [slug, p] of newSlotPools[s].entries()) {
+      for (const [slug, p] of slotPools[s].entries()) {
         if (
           // reject duct rooms with zero probability to keep
           // gem rooms from appearing in slot 1 and the like
@@ -608,14 +617,22 @@ function applyWeightedRooms(
       if (ductPool.length == 0) {
         continue
       }
-      ductPool = ductPool.scale(pDuctSlots[s] / ductPool.length)
-      newSlotPools[s] = newSlotPools[s]
+      const pEachDuct = pDuctSlots[s] / ductPool.length
+      ductPool = ductPool.scale(pEachDuct)
+      slotPools[s] = slotPools[s]
         .scale(1 - pDuctSlots[s])
         .add(ductPool)
+
+      for (const slug of ductPool.keys()) {
+        reasons[s][slug] = [
+          ...(reasons[s][slug] || []),
+          `duct draft +${Math.round(pEachDuct * 100)}%`
+        ]
+      }
     }
   }
 
-  return newSlotPools
+  return { slotPools, reasons }
 }
 
 // Draft an outer room, based on:
@@ -629,20 +646,24 @@ export function draftOuter(
   day: DayState,
   house: HouseState,
   draft: OuterDraftParams
-): [KeyedVec, KeyedVec, KeyedVec] {
+): DraftResult {
 
   const { outerRoomDraftCount, previouslyDraftedOuter } = draft
+
+  let slotPools: DraftResult['slotPools'] = [KeyedVec.empty(), KeyedVec.empty(), KeyedVec.empty()]
+  let reasons: DraftResult['reasons'] = [{}, {}, {}]
 
   // Day 1 force: first outer draft always shows root-cellar, toolshed, hovel,
   // except in vmode. 
   // Technically vmode only disables the forced first-draft if you draft it 
   // *on* day 1, but it's not worth exposing an option for that.
   if (outerRoomDraftCount === 0 && !game.vmode) {
-    return [
-      KeyedVec.empty<string>().set('root-cellar', 1.0),
-      KeyedVec.empty<string>().set('toolshed', 1.0),
-      KeyedVec.empty<string>().set('hovel', 1.0),
-    ]
+    const firstDraft = ['root-cellar', 'toolshed', 'hovel']
+    for (let i = 1; i <= 3; i++) {
+      slotPools[i] = KeyedVec.empty().set(firstDraft[i], 1)
+      reasons[i] = { [firstDraft[i]]: ['guaranteed on first draft'] }
+    }
+    return { slotPools, reasons }
   }
 
   // Displacement probabilities: how likely each room ends up in positions 6-8 
@@ -689,7 +710,7 @@ export function draftOuter(
       // black overrides blue slot 1
       blueResult[0] = KeyedVec.empty().set('tomb', 1)
     }
-    return blueResult
+    return { slotPools: blueResult }
   }
 
   // Single-room slot-1 promotions; priority order resolves conflicts
@@ -709,12 +730,12 @@ export function draftOuter(
     // Displacement for the promoted room is overridden by the color filter;
     // remaining rooms compete by weight for slots 2 and 3.
     const rest = outerWeightedDist(pBack, [promotedToSlot1])
-    return [slot1, rest, rest]
+    return { slotPools: [slot1, rest, rest] }
   }
 
   // No color override: each slot's marginal distribution is the same weighted draw.
   const dist = outerWeightedDist(pBack, [])
-  return [dist, dist, dist]
+  return { slotPools: [dist, dist, dist] }
 }
 
 
@@ -725,33 +746,36 @@ export function runDraft(
   house: HouseState,
   draft: DraftParams) {
 
-  let slotPools: [KeyedVec, KeyedVec, KeyedVec]
-  let removedRooms: RemovedRoom[] = []
+  let draftResult: DraftResult
   if (draft.kind == 'outer') {
-    slotPools = draftOuter(game, day, house, draft)
+    draftResult = draftOuter(game, day, house, draft)
   } else {
-    const draftResult = draftHouse(pool, game, day, house, draft, true)
-    slotPools = draftResult.slotPools
-    removedRooms = draftResult.removed
+    draftResult = draftHouse(pool, game, day, house, draft, 1)
+
+    // TODO: implement validation a bit here
+
+    // Weighted rooms, guaranteed draws, duct draws, etc.
+    // We apply these after validation, as they mostly ignore validation. This
+    // will be inaccurate for some duct draws, which can be validated if a 
+    // later slot is a free/gem draw.
+    draftResult = applyWeightedRooms(draftResult, pool, game, day, house, draft)
   }
 
-  // Discarding these removed rooms for now b/c they're not very informative.
-  // E.g. furnace is reported as rejected from draw 1 due to not meeting cond. filters, 
-  // but is really being omitted from draw 2 due to being in a deck of 1. 
-  // const removedSlugs = new Set(removedRooms.map((rr) => rr.room.slug))
+  if (!(draftResult.reasons)) {
+    draftResult.reasons = [{}, {}, {}]
+  }
 
   const finalRooms = pool.rooms
-    // .filter((pr) => !removedSlugs.has(pr.room.slug))
     .map((pr) => {
       return {
         ...pr,
-        pSlot: slotPools.map((sp) => sp.get(pr.room.slug) || 0)
+        pSlot: draftResult.slotPools.map((sp) => sp.get(pr.room.slug) || 0),
+        pReasons: draftResult.reasons!.map((r) => r[pr.room.slug]?.join('\n'))
       } as PooledRoom
     })
   return {
     ...pool,
     rooms: finalRooms,
-    // removed: removedRooms
   }
 }
 

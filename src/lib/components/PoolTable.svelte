@@ -222,7 +222,7 @@
         </tr>
       </thead>
       <tbody>
-        {#each sortedRooms as { room, source, upgrade, p, pSlot }, i (room.slug + (source ?? "") + i)}
+        {#each sortedRooms as { room, source, upgrade, p, pSlot, pReasons }, i (room.slug + (source ?? "") + i)}
           {@const effectiveRarity =
             draftPool.rarityOverrides[room.slug] ?? room.baseRarity}
           {@const annotations = draftPool.annotations[room.slug]}
@@ -290,7 +290,9 @@
                   pctValue >= 10
                     ? pctValue.toPrecision(3)
                     : pctValue.toPrecision(2)}
-                <td class="prob" data-tooltip={tooltipValue + "%"}>{display}</td
+                {@const reason = pReasons?.[idx]}
+                <td class="prob" data-tooltip={reason ? `${tooltipValue}%\n${reason}` : tooltipValue + "%"}
+                  >{display}{#if display && reason}<span class="prob-reason">*</span>{/if}</td
                 >
               {/each}
             {:else}
@@ -554,7 +556,7 @@
     padding: 0.4rem 0.6rem;
     border-radius: 4px;
     font-size: 0.75rem;
-    white-space: nowrap;
+    white-space: pre-line;
     pointer-events: none;
     z-index: 10;
   }
@@ -695,6 +697,13 @@
   .place-btn.minus:hover {
     background: #ef444422;
     color: #ef4444;
+  }
+
+  .prob-reason {
+    color: var(--text-muted);
+    font-size: 0.65rem;
+    vertical-align: super;
+    margin-left: 1px;
   }
 
   .totals-row {

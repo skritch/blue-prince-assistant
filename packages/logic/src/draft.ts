@@ -1,18 +1,11 @@
 import type { Direction, RoomColor, GridTile, TileRow, Rarity } from './types'
 
 import rawRarityProbabilities from './data/rarityProbabilities.json'
-import type { DraftPool, PooledRoom } from './pool'
+import type { DraftPool, RemovedRoom } from './pool'
 import { binomialAtLeast, KeyedVec } from './math'
-import { applyConditionalFilters, applyLibraryFilter, applyRunbackFilter, getConditionalFilters, type FilterResult } from './filters'
-import type { DayState } from './day'
-import type { GameState } from './game'
-import type { HouseState } from './house'
-import { partition } from './utils'
 import { OUTER_ROOMS } from './rooms'
 
 
-const RARITY_PROBABILITIES = rawRarityProbabilities as unknown as
-  Record<string, { byRank: [number, number, number, number][] }> & { library: [number, number, number, number] }
 
 export interface HouseDraftParams {
   kind: 'house'
@@ -38,6 +31,16 @@ export interface OuterDraftParams {
 
 export type DraftParams = HouseDraftParams | OuterDraftParams
 
+
+export type Deck = KeyedVec<string>
+export type DeckList = [Deck, Deck, Deck, Deck, Deck, Deck, Deck, Deck]
+
+export type DraftResult = {
+  slotPools: [KeyedVec, KeyedVec, KeyedVec],
+  reasons?: [Record<string, string[]>, Record<string, string[]>, Record<string, string[]>]
+}
+
+// --- Various helpers ---
 
 function rareCheckSlot2Chance(gems: number, rank: number) {
   if (gems >= 4) {
@@ -121,6 +124,9 @@ function getPGemBySlot(
   return pGems[slot - 1]
 }
 
+const RARITY_PROBABILITIES = rawRarityProbabilities as unknown as
+  Record<string, { byRank: [number, number, number, number][] }> & { library: [number, number, number, number] }
+
 function getRarityProbabilities(
   day: number,
   slot: 1 | 2 | 3,
@@ -169,7 +175,6 @@ export function getPDeck(
   return pDecks
 }
 
-// array of 8 counts for accepting cards
 export function getDeckMinimums(
   day: number,
   vmode: boolean,
@@ -189,81 +194,19 @@ export function getDeckMinimums(
   return minsVec
 }
 
-export type Deck = KeyedVec<string>
-export type DeckList = [Deck, Deck, Deck, Deck, Deck, Deck, Deck, Deck]
-
-
-// Drafting Steps
-export function applyFilters(
-  pool: DraftPool,
-  game: GameState,
-  day: DayState,
-  house: HouseState,
-  draft?: DraftParams,
-  useConditionalFilters: boolean = true
-): DraftPool {
-
-  // Outer draft uses position-override mechanics instead of conditional filters
-  if (!draft || draft.kind == 'outer') {
-    return pool
-  }
-
-  const condFilters = getConditionalFilters(game, day, house)
-
-  // first apply non-conditional filters
-  let filteredPool = pool.rooms.map((pr) => {
-    const filterResults: FilterResult[] = []
-
-    // Discard Filter -> omitted
-
-    // Runback Filter
-    // TODO: secret passage does not affect runback, but prism does.
-    // Outer rooms do not involve runback, prior draft is used.
-    // Berry picker, secret garden, room 8 make a secret draw and apply it to runback
-    if (draft.previousDraft !== undefined) {
-      const rarity = pool.rarityOverrides[pr.room.slug] || pr.room.baseRarity
-      filterResults.push(applyRunbackFilter(
-        pr,
-        rarity,
-        draft.previousDraft!,
-        draft.isFirstDraftAtDoor
-      ))
-    }
-
-    // Double Down Filter -> omitted
-
-    // Library Filter
-    if (draft.fromRoomSlug == 'library') {
-      filterResults.push(applyLibraryFilter(pr, draft.gems || 0))
-    }
-
-    // Ignore Filter -> freezer, rumpus, blue crown -> omitted
-
-    if (useConditionalFilters) {
-      filterResults.push(applyConditionalFilters(pr, condFilters))
-    }
-
-    const finalResult = filterResults.reduce((acc, cur) => ({
-      p: acc.p * cur.p,
-      failReason: acc.failReason || cur.failReason
-    }), { p: 1, failReason: undefined })
-
-    return [pr, finalResult]
-  }) as [PooledRoom, FilterResult][]
-
-  const [keptRooms, removedRooms] = partition(
-    filteredPool, ([, fr]) => (fr.failReason === undefined)
-  )
-
-  return {
-    ...pool,
-    rooms: keptRooms.map(([pr, fr]) => ({ ...pr, p: fr.p })),
-    removed: [
-      ...pool.removed,
-      ...removedRooms.map(([pr, fr]) => ({ ...pr, reason: fr.failReason }))
-    ]
-  }
+const RARITY_FALLBACKS = {
+  1: [1, 2, 3, 4],
+  2: [2, 1, 3, 4],
+  3: [3, 2, 1, 4],
+  4: [4, 3, 2, 1]
 }
+const LIBRARY_RARITY_FALLBACKS = {
+  1: [1, 4, 3, 2],
+  2: [2, 4, 3, 1],
+  3: [3, 4, 2, 1],
+  4: [4, 3, 2, 1]
+}
+
 
 
 // Divide the draft pool into 8 decks based on rarity
@@ -280,19 +223,7 @@ export function initDecks(
   return decks
 }
 
-
-const RARITY_FALLBACKS = {
-  1: [1, 2, 3, 4],
-  2: [2, 1, 3, 4],
-  3: [3, 2, 1, 4],
-  4: [4, 3, 2, 1]
-}
-const LIBRARY_RARITY_FALLBACKS = {
-  1: [1, 4, 3, 2],
-  2: [2, 4, 3, 1],
-  3: [3, 4, 2, 1],
-  4: [4, 3, 2, 1]
-}
+// --- Drafting Steps ---
 
 
 // Step of the drafting process where we determine which "decks" have enough

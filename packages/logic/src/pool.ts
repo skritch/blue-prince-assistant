@@ -38,6 +38,7 @@ export interface PooledRoom {
   p: number
   pInPool?: number
   pSlot?: [number, number, number]
+  pReasons?: [string, string, string]
 }
 
 export interface RemovedRoom extends PooledRoom {
