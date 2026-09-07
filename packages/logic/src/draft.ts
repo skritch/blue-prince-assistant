@@ -1,9 +1,12 @@
 import type { Direction, RoomColor, GridTile, TileRow, Rarity } from './types'
 
 import rawRarityProbabilities from './data/rarityProbabilities.json'
-import type { DraftPool, RemovedRoom } from './pool'
+import type { DraftPool } from './pool'
 import { binomialAtLeast, KeyedVec } from './math'
-import { OUTER_ROOMS } from './rooms'
+import type { DayState } from './day'
+import { applyFilters } from './filters'
+import type { GameState } from './game'
+import type { HouseState } from './house'
 
 
 
@@ -36,8 +39,8 @@ export type Deck = KeyedVec<string>
 export type DeckList = [Deck, Deck, Deck, Deck, Deck, Deck, Deck, Deck]
 
 export type DraftResult = {
-  slotPools: [KeyedVec, KeyedVec, KeyedVec],
-  reasons?: [Record<string, string[]>, Record<string, string[]>, Record<string, string[]>]
+  slots: [KeyedVec, KeyedVec, KeyedVec],
+  reasons: [Record<string, string[]>, Record<string, string[]>, Record<string, string[]>]
 }
 
 // --- Various helpers ---
@@ -163,11 +166,19 @@ export function getPDeck(
   day: number, gems: number,
   row: TileRow, placedRooms: number,
   vmode: boolean,
-  solarium: boolean, inLibrary: boolean
+  solarium: boolean, inLibrary: boolean,
+  anyDraw: boolean
 ): KeyedVec<number> {
   let pDecks = KeyedVec.empty<number>()
+  let pGem: number
   const pRarities = getRarityProbabilities(day, slot, row, solarium, inLibrary)
-  const pGem = getPGemBySlot(gems, slot, placedRooms, row, day, vmode, inLibrary)
+  // If anyDraw, we only assign probabilities to free slots
+  // TODO: is this right? We use free probabilities to choose a rarity?
+  if (anyDraw) {
+    pGem = 0
+  } else {
+    pGem = getPGemBySlot(gems, slot, placedRooms, row, day, vmode, inLibrary)
+  }
   for (const [rarityIdx, pRarity] of pRarities.entries()) {
     pDecks = pDecks.set(rarityIdx, pRarity * (1 - pGem))
     pDecks = pDecks.set(rarityIdx + 4, pRarity * pGem)
@@ -208,6 +219,7 @@ const LIBRARY_RARITY_FALLBACKS = {
 }
 
 
+// --- Drafting Steps ---
 
 // Divide the draft pool into 8 decks based on rarity
 export function initDecks(
@@ -223,7 +235,6 @@ export function initDecks(
   return decks
 }
 
-// --- Drafting Steps ---
 
 
 // Step of the drafting process where we determine which "decks" have enough
@@ -246,25 +257,28 @@ export function initDecks(
 // draw 2 from 1 here, expecting that draw 2 is likely to always accept a deck.
 // Draw 3 is currently not implemented.
 //
-// One complexity: cards only a probability of being in the decks, so the decks
+// One complexity: cards only have a probability of being in the decks, so the decks
 // themselves only have a probability of meeting the >= n or >= 1 criteria. 
-// We aim to simulate this procedure, returning for each deck i a vector:
+// We approximate this by returning a matrix like:
 //   Pr[deck j is drawn from | deck i rolled]
 // = Pr[deck j accepted & no deck j'<j accepted | deck i rolled]
 //   + Pr[deck j marked & none accepted | deck i rolled] * Pr[deck j selected | marked]
 //
-// We also return pNoneMarked, which triggers a redraw, i.e.:
-//  Pr[no deck is marked | deck i rolled]
+// We also return pRedrawI, which will trigger a redraw:
+//   Pr[no deck is accepted | deck i rolled]
+// or, if allowMarked is true,
+//   Pr[no deck is marked | deck i rolled]
 
 export function selectDecks(
   decks: DeckList,
   deckMinimums: KeyedVec<number>,  // indexed by i
-  inLibrary: boolean = false
-): { pDeckIJ: KeyedVec<number>[], pNoneMarked: KeyedVec<number> } {
+  inLibrary: boolean = false,
+  allowMarked: boolean = true,
+): { pDeckIJ: KeyedVec<number>[], pRedrawI: KeyedVec<number> } {
 
   // Pr[deck j is chosen | deck i was rolled originally]
   const pDeckIJ: KeyedVec<number>[] = Array(8).fill(KeyedVec.empty<number>()) // outer index i
-  let pNoneMarked = KeyedVec.empty<number>() // keyed by i
+  let pRedrawI = KeyedVec.empty<number>() // keyed by i
 
   for (let i = 0; i < 8; i++) {
     const rarity = i % 4 + 1 as Rarity
@@ -281,11 +295,14 @@ export function selectDecks(
       if (d2.length == 0) {
         continue
       }
-      const n = deckMinimums.get(j)  // or i? Does it depend on the rarity we rolled originally?
+
+      // Should this by i or j? Does it depend on the rarity of the deck we are currently
+      // checking (j), or the rarity we rolled originally (i)?
+      const n = deckMinimums.get(j)
 
       // Pr(has enough cards) ~= Pr(n or more of L q-coins come up heads)
       //                      ~= 1 - BinomialCDF(n; L, q)
-      // where q is the average p each card being in the deck.
+      // where q is the average p of each card being in the deck.
       const q = d2.mean()
       const pAcceptedJ = binomialAtLeast(d2.length, q, n)
       const pMarkedJ = binomialAtLeast(d2.length, q, 1)
@@ -304,13 +321,23 @@ export function selectDecks(
 
     const pNoneAcceptedI = pAccepted.values().reduce((acc, cur) => acc * (1 - cur), 1)
     const pNoneMarkedI = pMarked.values().reduce((acc, cur) => acc * (1 - cur), 1)
-    pNoneMarked = pNoneMarked.set(i, pNoneMarkedI)
 
+    // On draw 2, we don't consider marked decks at all
+    if (!allowMarked) {
+      pRedrawI = pRedrawI.set(i, pNoneAcceptedI)
+      continue
+    }
+
+    pRedrawI = pRedrawI.set(i, pNoneMarkedI)
+
+    // If it's certain a deck will be accepted, or that none will be marked
+    // no need to continue
     if (pNoneAcceptedI == 0 || pNoneMarkedI == 1) {
       continue
     }
 
-    // If none are accepted, one marked decks should be chosen at random.
+    // On draws other than draw 2, if no decks are accepted, 
+    // one marked decks will be chosen at random.
     // What is Pr(j marked | none accepted)?
     // = Pr(j marked & none accepted) / P(none accepted)
     // = [ Pr(j marked & j not accepted) * P(all j' != j not accepted) / P(none accepted)
@@ -318,8 +345,7 @@ export function selectDecks(
     // = (Pr(j marked) - Pr(j accepted)) / (1 - Pr(j accepted))
     const pMarkedGivenNoneAccepted = (pMarked
       .add(pAccepted.scale(-1)))
-      .mult(pAccepted.map((p => 1 / (1 - p)))
-      )
+      .mult(pAccepted.map((p => 1 / (1 - p))))
 
 
     for (const j of pMarked.keys()) {
@@ -344,14 +370,91 @@ export function selectDecks(
 
   }
 
-  return { pDeckIJ, pNoneMarked }
+  return { pDeckIJ, pRedrawI }
+}
+
+
+// Copy of the previous function adapted for "Any Draw"
+function selectDecksAnyDraw(
+  decks: DeckList,
+  deckMinimums: KeyedVec<number>,  // indexed by i
+  inLibrary: boolean = false
+): { pDeckIJ: KeyedVec<number>[], pRedrawI: KeyedVec<number> } {
+
+  const pDeckIJ: KeyedVec<number>[] = Array(8).fill(KeyedVec.empty<number>())
+  let pRedrawI = KeyedVec.empty<number>() // keyed by i
+
+  // Note we only iterate to 4, over the free decks.
+  for (let i = 0; i < 4; i++) {
+    const rarity = i % 4 + 1 as Rarity
+    const fallbackOrder = inLibrary ? LIBRARY_RARITY_FALLBACKS[rarity] : RARITY_FALLBACKS[rarity]
+    let pMarked = KeyedVec.empty<number>()
+    let pAccepted = KeyedVec.empty<number>()
+
+    for (const rarity2 of fallbackOrder) {
+      const j = rarity2 - 1
+
+      const dFree = decks[j]
+      const dGem = decks[j + 4]
+      // Merge free + gem decks for card counting
+      const dMerged = dFree.add(dGem)
+      if (dMerged.length == 0) {
+        continue
+      }
+      const n = deckMinimums.get(j)
+      const q = dMerged.mean()
+      const pAcceptedJ = binomialAtLeast(dMerged.length, q, n)
+      const pMarkedJ = binomialAtLeast(dMerged.length, q, 1)
+      const pNoneAcceptedSoFar = pAccepted.values().reduce((acc, cur) => acc * (1 - cur), 1)
+      const pFirstAccepted = pAcceptedJ * pNoneAcceptedSoFar
+
+      // Accept the free or gem deck in proportion to their lengths
+      // The spec does not describe this clearly, it might be wrong.
+      const pFree = dFree.length / dMerged.length
+      pDeckIJ[i] = pDeckIJ[i].set(j, pDeckIJ[i].get(j) + pFirstAccepted * pFree)
+      pDeckIJ[i] = pDeckIJ[i].set(j + 4, pDeckIJ[i].get(j + 4) + pFirstAccepted * (1 - pFree))
+      pAccepted = pAccepted.set(j, pAcceptedJ * pFree)
+      pAccepted = pAccepted.set(j + 4, pAcceptedJ * (1 - pFree))
+
+      // Also mark in proportion to lengths
+      pMarked = pMarked.set(j, pMarkedJ * pFree)
+      pMarked = pMarked.set(j, pMarkedJ * (1 - pFree))
+    }
+
+    const pNoneAcceptedI = pAccepted.values().reduce((acc, cur) => acc * (1 - cur), 1)
+    const pNoneMarkedI = pMarked.values().reduce((acc, cur) => acc * (1 - cur), 1)
+    pRedrawI = pRedrawI.set(i, pNoneMarkedI)
+
+    if (pNoneAcceptedI == 0 || pNoneMarkedI == 1) {
+      continue
+    }
+
+    const pMarkedGivenNoneAccepted = (pMarked
+      .add(pAccepted.scale(-1)))
+      .mult(pAccepted.map((p => 1 / (1 - p))))
+
+
+    for (const j of pMarked.keys()) {
+      const pj = pMarkedGivenNoneAccepted.get(j)
+      const pks = pMarkedGivenNoneAccepted.unset(j)
+      const e1 = pks.sum()
+      const e2 = (e1 * e1 - pks.map(pk => pk * pk).sum()) / 2
+      const e3 = pks.values().reduce((acc, pk) => pk != 0 ? acc * pk : acc, 1)
+      const pDrawJ = 1 - e1 / 2 + e2 / 3 - e3 / 4
+      const markWeight = pNoneAcceptedI * pj * pDrawJ
+      pDeckIJ[i] = pDeckIJ[i].set(j, pDeckIJ[i].get(j) + markWeight)
+    }
+
+  }
+
+  return { pDeckIJ, pRedrawI }
 }
 
 // Given the list of decks, and Pr[deck j chosen | deck i rolled],
 // produce, for each original roll i, the "effective" deck:
 //   Pr(room r | deck i rolled)
 //   = Pr(room r | deck j) * Pr(deck j | deck i rolled)
-export function mergeMarkedDecks(
+function mergeMarkedDecks(
   decks: DeckList,
   pDeckIJ: KeyedVec<number>[] // outer index i, inner j
 ): DeckList {
@@ -386,55 +489,98 @@ export function mergeMarkedDecks(
 
 
 
-// Blue filter (Blueprint): 50/50 A/B split, each with a 50% secondary room insertion.
-// Results in 4 equally-likely ordered triples for slots 1-3:
-//   A0 (25%): toolshed, shelter, shrine
-//   A1 (25%): schoolhouse, toolshed, shelter   (schoolhouse inserts at 1st)
-//   B0 (25%): shrine, shelter, schoolhouse
-//   B1 (25%): toolshed, shrine, shelter         (toolshed inserts at 1st)
-export function draftOuterBlueFilter(): [KeyedVec, KeyedVec, KeyedVec] {
-  const roomSet = new Set(OUTER_ROOMS)
-  const scenarios: [string, string, string][] = [
-    ['toolshed', 'shelter', 'shrine'],
-    ['schoolhouse', 'toolshed', 'shelter'],
-    ['shrine', 'shelter', 'schoolhouse'],
-    ['toolshed', 'shrine', 'shelter'],
-  ]
+// Simulate a draft in the house, based on:
+// https://www.reddit.com/r/BluePrince/comments/1lu20ky/drafting_mechanics_drawing_from_the_room_decks/
+//
+// Rather than "simulating", we attempt to follow the flow of probability weight
+// through the whole deck. Our procedure is:
+// 
+// Apply filters to the whole pool. Divide into 8 decks.
+// For each slot:
+// - find probability of each deck being chosen (rarity x free | gem).
+// - simulate the whole deck-choice-with-fallback procedure:
+//   - select the first deck with enough cards, checking rarities in fallback order.
+//     p(room) = p(deck i rolled) * p(deck j selected | i rolled) * 1/(cards in deck j) 
+//   - if no decks have enough cards, but some decks have at least one ("marked"),
+//     draw from  one at random.
+//     p(room) = p(deck i rolled) * p(deck j marked | i rolled & none selected) 
+//       * p(j selected from marked decks | non selected) * 1/(cards in deck j) 
+//   - else fallback to draw 2, without cond. filters, adding the full pool for this slot
+//     scaled by p(no decks selected & no decks marked) 
+// - for each room in the overall pool, sum across all i, weighted by p(deck i rolled)
+// - ignore validation, "discarding", and draw 3
+//
+// Returns:
+// - an array of 3 vectors of probabilities of rooms for each each slot.
+// - an array of 3 optional "reason" annotations explaining probabilities 
+export function draftHouse(
+  pool: DraftPool,
+  game: GameState,
+  day: DayState,
+  house: HouseState,
+  draft: HouseDraftParams,
+  draw: 1 | 2 | 3 | 'any'
+): DraftResult {
+  const inLibrary = draft.fromRoomSlug == 'library'
 
-  let slots: [KeyedVec, KeyedVec, KeyedVec] = [
-    KeyedVec.empty(), KeyedVec.empty(), KeyedVec.empty()
-  ]
-  for (const scenario of scenarios) {
-    for (let k = 0; k < 3; k++) {
-      const room = scenario[k]
-      if (roomSet.has(room)) {
-        slots[k] = slots[k].set(room, slots[k].get(room) + 0.25)
-      }
+  // Do "any" draws apply conditional filters?
+  const filteredPool = applyFilters(pool, game, day, house, draft, draw == 1 || draw == 3)
+  const decks = initDecks(filteredPool)
+  const deckMinimums = getDeckMinimums(day.day, game.vmode, game.haveRoom46)
+
+  let pDeckIJ: KeyedVec<number>[]
+  let pRedrawI: KeyedVec<number>
+
+  if (draw != 'any') {
+    const selection = selectDecks(decks, deckMinimums, inLibrary, draw != 2)
+    pDeckIJ = selection.pDeckIJ
+    pRedrawI = selection.pRedrawI
+  } else {
+    const selection = selectDecksAnyDraw(decks, deckMinimums, inLibrary)
+    pDeckIJ = selection.pDeckIJ
+    pRedrawI = selection.pRedrawI
+  }
+  const effectiveDecks = mergeMarkedDecks(decks, pDeckIJ)
+
+  const rank = draft.toLocation.tile.row
+  const slots: (1 | 2 | 3)[] = [1, 2, 3]
+
+  // Prepare redraw pool in advance, since all slots use it
+  let redrawPools = [KeyedVec.empty(), KeyedVec.empty(), KeyedVec.empty()]
+  if (draw == 1 || draw == 2) {
+    const redraw = draftHouse(pool, game, day, house, draft, draw + 1 as 2 | 3)
+    redrawPools = redraw.slots
+  }
+
+  // Build the pool for each slot
+  let slotPools = slots.map((slot) => {
+    let sp = KeyedVec.empty()
+
+    const pDeckRoll = getPDeck(
+      slot, day.day,
+      draft.gems || 0, rank, house.placedRooms.length - 2,
+      game.vmode, house.solariumInHouse, inLibrary,
+      draw == 'any'
+    )
+
+    // Cumulative probability of a second draw for this slot
+    let pRedraw = 0
+
+    for (const [i, deck] of effectiveDecks.entries()) {
+      sp = sp.add(deck.scale(pDeckRoll.get(i)))
+      pRedraw = pRedraw + pDeckRoll.get(i) * pRedrawI.get(i)
     }
-  }
-  return slots
+
+    if (pRedraw > 0) {
+      // Add redraw results to probability mass
+      sp = sp.add(redrawPools[slot - 1].scale(pRedraw))
+    }
+
+
+    return sp
+  }) as [KeyedVec, KeyedVec, KeyedVec]
+
+
+  return { slots: slotPools, reasons: [{}, {}, {}] }
 }
 
-
-// P(room in slot) proportional to (1 - pBack[room]), normalized to sum=1.
-// Excluded rooms (already assigned to another slot) are skipped.
-export function outerWeightedDist(
-  pBack: Record<string, number>,
-  excluded: string[]
-): KeyedVec {
-  const skip = new Set(excluded)
-  let totalWeight = 0
-  const weights: [string, number][] = []
-
-  for (const room of OUTER_ROOMS) {
-    if (skip.has(room)) continue
-    const w = 1.0 - (pBack[room] ?? 0)
-    if (w > 0) { weights.push([room, w]); totalWeight += w }
-  }
-
-  let result = KeyedVec.empty<string>()
-  for (const [room, w] of weights) {
-    result = result.set(room, totalWeight > 0 ? w / totalWeight : 0)
-  }
-  return result
-}

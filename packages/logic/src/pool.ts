@@ -63,7 +63,7 @@ export interface DraftPool {
   removed: RemovedRoom[]
 }
 
-export function fromGameState(game: GameState): DraftPool {
+export function initPool(game: GameState): DraftPool {
   return {
     rooms: game.pool.map((room) => {
       const upgradeSlug = game.upgrades[room.slug]

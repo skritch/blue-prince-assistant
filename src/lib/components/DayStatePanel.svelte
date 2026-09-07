@@ -75,10 +75,10 @@
         <div class="section">
           <div class="section-label">Rooms Seen</div>
           <div class="checks">
-            <label data-tooltip="Garage has been seen this day"
+            <label data-tooltip="Garage is only offered as a weighted room if it hasn't been seen yet today"
               ><input type="checkbox" bind:checked={dayState.garageSeen} /> Garage</label
             >
-            <label data-tooltip="Utility Closet has been seen this day"
+            <label data-tooltip="Utility Closet is only offered as a weighted room if it hasn't been seen yet today"
               ><input type="checkbox" bind:checked={dayState.utilityClosetSeen} /> Utility Closet</label
             >
           </div>
