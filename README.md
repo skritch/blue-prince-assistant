@@ -24,15 +24,15 @@ I'd like to add the following:
 - [ ] Silver/prism keys and secret passages
 - [ ] Display some information as to why a room gets the probability it does
   - Incomplete
+- [ ] The "validation" stage of drafting, which removes duplicates, 3x dead ends, etc.
+  - Dead ends implemented
+- [x] Probability of drawing e.g. right turn, gemless straight, etc.
 
 The following I am not currently planning to implement:
-- The "validation" stage of drafting, which removes duplicates, 3x dead ends, etc.
-- Draw 3, which is mostly relevant when the draw pool is very depleted
 - Idiosyncrasies of duplicated rooms, e.g. classrooms, chamber of mirrors
-- Probability of drawing e.g. right turn, gemless straight, etc.
 - Probabilites of items, dig spots, locked doors, etc.
-- A full map of the house to track drafted rooms
-- Tracking of the exact order of rooms drafted
+- A full map of the house
+- Anything which depends on the exact order of rooms drafted, or the house history
 
 
 
