@@ -7,7 +7,7 @@ import type { DayState } from './day'
 import { applyFilters } from './filters'
 import type { GameState } from './game'
 import type { HouseState } from './house'
-import type { PrismColor } from './prism'
+import type { PrismColor } from './keys'
 
 
 
@@ -19,7 +19,7 @@ export interface HouseDraftParams {
   }
 
   fromRoomSlug?: string
-  gems?: number
+  gems: number
 
   previousDraft?: [string, string, string]
   isFirstDraftAtDoor: boolean
@@ -556,7 +556,7 @@ export function draftHouse(
 
     const pDeckRoll = getPDeck(
       slot, day.day,
-      draft.gems || 0, rank, house.placedRooms.length - 2,
+      draft.gems, rank, house.placedRooms.length - 2,
       game.vmode, house.solariumInHouse, inLibrary,
       draw == 'any'
     )

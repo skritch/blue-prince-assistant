@@ -207,7 +207,7 @@ export function applyFilters(
 
     // Library Filter
     if (draft.fromRoomSlug == 'library') {
-      filterResults.push(applyLibraryFilter(pr, draft.gems || 0))
+      filterResults.push(applyLibraryFilter(pr, draft.gems))
     }
 
     // Ignore Filter -> freezer, rumpus, blue crown -> omitted

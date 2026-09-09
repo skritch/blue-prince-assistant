@@ -31,7 +31,7 @@ export interface Room {
   color: RoomColor[]
   baseRarity: Rarity | null
   baseGemCost: number
-  doors: number | null
+  doors: number
   directoryPage: number  // 1-9
   roomNumber: number
   tags: string[]

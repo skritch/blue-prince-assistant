@@ -225,7 +225,11 @@
       "mt-holly-gift-shop": null,
       "commissary": "rare gem",
       "tunnel": null,
-      "secret-passage": null
+      "secret-passage": null,
+      "drawing-room": [
+        "free",
+        "common gem"
+      ]
     },
     "north-south pierce": {
       "dormitory": null,
@@ -235,7 +239,8 @@
       "armory": "rare gem",
       "mt-holly-gift-shop": null,
       "commissary": "rare gem",
-      "kitchen": "rare gem"
+      "kitchen": "rare gem",
+      "drawing-room": "free"
     },
     "east-west": {
       "aquarium": "common gem",
@@ -282,5 +287,17 @@
       "darkroom",
       "chapel"
     ]
-  }
+  },
+  "silver_ignored": [
+    "foundation",
+    "spare-room",
+    "parlor",
+    "garage",
+    "music-room",
+    "corridor",
+    "patio",
+    "greenhouse",
+    "morning-room",
+    "maids-chamber"
+  ]
 }

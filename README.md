@@ -18,15 +18,15 @@ The following features are implemented
 - [x] Apply "conditional filters" (blessing of the king, etc.)
 - [x] Apply "weighted rooms", duct draft, library, etc.
 - [x] Show the pool for each slot
+- [x] Silver/prism keys and secret passages
 
 
 I'd like to add the following:
-- [ ] Silver/prism keys and secret passages
 - [ ] Display some information as to why a room gets the probability it does
   - Incomplete
 - [ ] The "validation" stage of drafting, which removes duplicates, 3x dead ends, etc.
   - Dead ends implemented
-- [x] Probability of drawing e.g. right turn, gemless straight, etc.
+- [ ] Probability of drawing e.g. right turn, gemless straight, etc.
 
 The following I am not currently planning to implement:
 - Idiosyncrasies of duplicated rooms, e.g. classrooms, chamber of mirrors

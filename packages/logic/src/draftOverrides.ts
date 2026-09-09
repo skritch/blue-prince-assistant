@@ -138,7 +138,7 @@ function applyForcedDraws(
   if (
     draft.fromRoomSlug == 'library'
     && !house.placedRooms.includes('bookshop')
-    && draft.gems || 0 >= 1
+    && draft.gems >= 1
   ) {
     let pBookshop: number
     if ((game.vmode || game.haveRoom46) && day.haveHallPass) {

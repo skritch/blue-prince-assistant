@@ -101,7 +101,9 @@ export class KeyedVec<K extends string | number = string> {
 
   static uniform<K extends string | number = string>(keys: K[]): KeyedVec<K> {
     const w = 1 / keys.length
-    return new KeyedVec(new Map(keys.map((k) => [k, w])))
+    const map = new Map<K, number>()
+    for (const k of keys) map.set(k, (map.get(k) ?? 0) + w)
+    return new KeyedVec(map)
   }
 
   sum(): number {

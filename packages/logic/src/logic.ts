@@ -10,7 +10,7 @@ import { draftHouse, type DraftParams, type DraftResult, type HouseDraftParams }
 import { draftOuter } from './draftOuter'
 import { applyDraftOverrides } from './draftOverrides'
 import { applyValidation } from './validation'
-import { draftPrismatic, type PrismColor } from './prism'
+import { draftPrismatic, draftSilver, type PrismColor } from './keys'
 import { draftBerryHouse, draftBerryOuter } from './misc'
 
 
@@ -25,10 +25,10 @@ function buildbasePool(
 
   // --- Deterministic Additions ---
 
+
   if (game.haveRoom46) {
-    pool = addToPool(pool, ROOM_46_REWARDS, 'room46')
-  } else if (day.day >= 46) {
-    pool = addToPool(pool, ['gallery'], 'day-46')
+    // Gallery and Trophy are "blocked" until this
+    pool = addToPool(pool, ['mount-holly-gift-shop'], 'room46')
   }
   if (game.haveTrophy && !game.haveRoom46) { pool = addToPool(pool, ['trophy-room'], 'trophy') }
   if (house.poolInHouse) { pool = addToPool(pool, POOL_ADDITIONS, 'pool-in-house') }
@@ -124,6 +124,12 @@ function applyDraftingBlocks(
   draft?: DraftParams
 ) {
 
+  if (!game.haveRoom46) {
+    pool = blockDraft(pool, 'trophy-room', "blocked until reaching room 46")
+  }
+  if (!(game.haveRoom46 || day.day >= 46)) {
+    pool = blockDraft(pool, 'gallery', "blocked until reaching room 46 or day 46")
+  }
   // Hack so regular drafting doesn't draw bookshop
   pool = blockDraft(pool, 'bookshop')
 
@@ -337,9 +343,13 @@ function runDraft(
     draftResult = draftBerryHouse(pool, game, day, house, draft)
   } else if (draft.secretPassageColor !== undefined) {
     return draftPrismatic(
-      pool, game, day, house,
+      pool, game, house,
       { ...draft, secretPassageColor: draft.secretPassageColor }
     )  // bypasses pool
+  } else if (draft.keyUsed == 'silver') {
+    return draftSilver(
+      pool, game, day, house, draft
+    )
   } else {
     draftResult = draftHouse(pool, game, day, house, draft, 1)
 

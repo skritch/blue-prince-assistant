@@ -31,7 +31,7 @@ const INIT_EXCLUDED_PAGES = new Set([7, 8])
 
 // Rooms excluded from the initial pool despite their page being included
 const INIT_EXCLUDED_SLUGS = new Set([
-  ...ROOM_46_REWARDS,
+  'mount-holly-gift-shop',
   ...POOL_ADDITIONS,
   ...ADHOC_ADDITIONS,
   ...UNDRAFTABLE
