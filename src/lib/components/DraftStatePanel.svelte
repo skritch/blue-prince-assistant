@@ -74,6 +74,15 @@
     }
   });
 
+  const showPassageColor = $derived(fromRoomSlug === "secret-passage");
+  const showPrismColor = $derived(keyUsed === "prism");
+
+  $effect(() => {
+    if (!showPassageColor && !showPrismColor) {
+      secretPassageColor = "";
+    }
+  });
+
   const panelTitle = $derived(
     mode === "house"
       ? `Drafting: ${toDirection} into ${column}${row}`
@@ -145,8 +154,44 @@
         </select>
       </div>
 
-      <div class="draft-cols">
-        <div class="draft-col">
+      <div class="house-grid">
+        <label class="inline-field">
+          Gems:
+          <input type="number" min="0" bind:value={gems} />
+        </label>
+        <label class="inline-field inline-field-end">
+          Key:
+          <select bind:value={keyUsed} class="key-select">
+            <option value="">None</option>
+            <option value="silver">Silver</option>
+            <option value="prism">Prism</option>
+          </select>
+        </label>
+
+        <label
+          class="checkbox-field"
+          data-tooltip="When rerolling, all three rooms from the previous draft are always filtered out. On the first draft at a door, they only have a chance of being removed."
+        >
+          <input type="checkbox" bind:checked={isReroll} />
+          Is reroll
+        </label>
+        <label class="inline-field inline-field-end" class:muted={!showPassageColor && !showPrismColor}>
+          Color:
+          <select
+            bind:value={secretPassageColor}
+            class="color-select"
+            disabled={!showPassageColor && !showPrismColor}
+          >
+            <option value="">—</option>
+            <option value="purple">Purple</option>
+            <option value="orange">Orange</option>
+            <option value="green">Green</option>
+            <option value="gold">Gold</option>
+            <option value="red">Red</option>
+          </select>
+        </label>
+
+        <div class="prev-draft">
           <div class="section-label">Previous draft:</div>
           <div class="prev-input">
             <SearchInput
@@ -169,22 +214,8 @@
               placeholder="slot 3"
             />
           </div>
-
-          <label
-            class="checkbox-field"
-            data-tooltip="When rerolling, all three rooms from the previous draft are always filtered out. On the first draft at a door, they only have a chance of being removed."
-          >
-            <input type="checkbox" bind:checked={isReroll} />
-            Is reroll
-          </label>
-
-          <label class="inline-field">
-            Gems:
-            <input type="number" min="0" bind:value={gems} />
-          </label>
         </div>
-
-        <div class="draft-col">
+        <div class="from-col">
           <div class="section-label">Drafting from:</div>
           <div class="from-room-input">
             <SearchInput
@@ -193,25 +224,6 @@
               placeholder="room"
             />
           </div>
-
-          <div class="section-label">Key:</div>
-          <div class="key-row">
-            <label><input type="radio" bind:group={keyUsed} value="" /> None</label>
-            <label><input type="radio" bind:group={keyUsed} value="silver" /> Silver</label>
-            <label><input type="radio" bind:group={keyUsed} value="prism" /> Prism</label>
-          </div>
-
-          <label class="inline-field">
-            {keyUsed === "prism" ? "Prism key color:" : "Passage color:"}
-            <select bind:value={secretPassageColor} class="color-select">
-              <option value="">—</option>
-              <option value="purple">Purple</option>
-              <option value="orange">Orange</option>
-              <option value="green">Green</option>
-              <option value="gold">Gold</option>
-              <option value="red">Red</option>
-            </select>
-          </label>
         </div>
       </div>
     {/if}
@@ -231,17 +243,20 @@
     gap: 0.3rem;
   }
 
-  .draft-cols {
+  .house-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 1rem;
-    align-items: start;
+    gap: 0.4rem 1rem;
+    align-items: center;
   }
 
-  .draft-col {
+  .prev-draft,
+  .from-col {
+    align-self: start;
     display: flex;
     flex-direction: column;
     gap: 0.35rem;
+    margin-top: 0.15rem;
   }
 
   .section-label {
@@ -287,6 +302,10 @@
     font-size: 0.875rem;
   }
 
+  .inline-field-end {
+    justify-content: flex-end;
+  }
+
   .narrow {
     width: 4rem;
   }
@@ -300,19 +319,13 @@
     font-size: 0.7rem;
   }
 
-  .key-row {
-    display: flex;
-    gap: 0.75rem;
-    font-size: 0.8rem;
-  }
-
-  .key-row label {
-    display: flex;
-    align-items: center;
-    gap: 0.3rem;
-  }
-
+  .key-select,
   .color-select {
     font-size: 0.8rem;
+  }
+
+  .muted {
+    color: var(--text-muted);
+    opacity: 0.5;
   }
 </style>

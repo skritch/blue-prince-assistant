@@ -15,6 +15,7 @@
     type TileColumn,
     type TileRow,
     type PrismColor,
+    type DraftPool,
   } from "bp-logic";
   import { loadState, saveState, persistLocally } from "../stateSerializer";
   import { loadPanelOpen } from "../panelState";
@@ -96,7 +97,7 @@
         ? (draftPreviousDraft as [string, string, string])
         : undefined,
       keyUsed: draftKeyUsed || undefined,
-      secretPassageColor: (draftSecretPassageColor as PrismColor) || null,
+      secretPassageColor: (draftSecretPassageColor as PrismColor) || undefined,
     };
   });
 
@@ -245,9 +246,17 @@
     draftKey++;
   }
 
-  let draftPool = $derived(
-    computePool(gameState, dayState, houseState, draftParams),
-  );
+  type PoolResult = { ok: true; pool: DraftPool } | { ok: false; error: Error };
+
+  let poolResult = $derived.by<PoolResult>(() => {
+    try {
+      return { ok: true, pool: computePool(gameState, dayState, houseState, draftParams) };
+    } catch (e) {
+      const err = e instanceof Error ? e : new Error(String(e));
+      console.error('[bp-drafter] computePool error:', err);
+      return { ok: false, error: err };
+    }
+  });
 
   let viewMode: ViewMode = $state(
     (loaded?.ui?.viewMode as ViewMode) ?? "room-pct",
@@ -305,15 +314,21 @@
         onclick={() => (viewMode = "door-pct")}>Door %s</button
       >
     </div>
-    {#if viewMode === "room-pct"}
+    {#if !poolResult.ok}
+      <div class="pool-error">
+        <p class="pool-error-msg">Pool computation failed.</p>
+        <p class="pool-error-detail">{poolResult.error.message}</p>
+        <button class="pool-error-reset" onclick={resetAll}>Reset to defaults</button>
+      </div>
+    {:else if viewMode === "room-pct"}
       <PoolTable
-        {draftPool}
+        draftPool={poolResult.pool}
         gameRarityOverrides={gameState.rarityOverrides}
         bind:houseState
         bind:sortBy
       />
     {:else if viewMode === "room-list"}
-      <RoomListView {draftPool} />
+      <RoomListView draftPool={poolResult.pool} />
     {:else}
       <div class="stub">Door %s coming soon.</div>
     {/if}
@@ -321,6 +336,44 @@
 </div>
 
 <style>
+  .pool-error {
+    margin-top: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .pool-error-msg {
+    margin: 0;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .pool-error-detail {
+    margin: 0;
+    font-size: 0.85rem;
+    font-family: monospace;
+    color: var(--text-muted);
+    word-break: break-all;
+  }
+
+  .pool-error-reset {
+    align-self: flex-start;
+    margin-top: 0.25rem;
+    padding: 0.35rem 0.75rem;
+    font-size: 0.8rem;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+  }
+
+  .pool-error-reset:hover {
+    background: var(--border);
+    color: var(--text);
+  }
+
   .layout {
     display: flex;
     flex-direction: row;

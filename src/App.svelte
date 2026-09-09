@@ -29,6 +29,23 @@
     localStorage.setItem("spoiler-dismissed", "true");
     showSpoilerWarning = false;
   }
+
+  let poolViewError = $state<Error | null>(null);
+  let poolViewReset: (() => void) | null = null;
+
+  function handlePoolError(error: unknown, reset: () => void) {
+    const err = error instanceof Error ? error : new Error(String(error));
+    console.error('[bp-drafter] PoolView render error:', err);
+    poolViewError = err;
+    poolViewReset = reset;
+  }
+
+  function resetFromError() {
+    localStorage.removeItem('bp-drafter-state');
+    history.replaceState(null, '', location.pathname + location.search);
+    poolViewError = null;
+    poolViewReset?.();
+  }
 </script>
 
 {#if showSpoilerWarning}
@@ -59,7 +76,18 @@
       <p class="subtitle">drafting calculator</p>
     </div>
   </header>
-  <PoolVIew />
+  <svelte:boundary onerror={handlePoolError}>
+    <PoolVIew />
+  </svelte:boundary>
+  {#if poolViewError}
+    <div class="error-panel">
+      <p class="error-msg">Something went wrong while rendering the pool.</p>
+      <p class="error-detail">{poolViewError.message}</p>
+      <button class="error-reset-btn" onclick={resetFromError}>
+        Reset to defaults and try again
+      </button>
+    </div>
+  {/if}
   <footer>
     <div>
       {#if githubUrl}
@@ -226,6 +254,45 @@
     font-weight: 500;
     text-align: center;
   }
+  .error-panel {
+    margin-top: 2rem;
+    padding: 1.5rem 2rem;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: flex-start;
+  }
+
+  .error-msg {
+    margin: 0;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .error-detail {
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-family: monospace;
+    word-break: break-all;
+  }
+
+  .error-reset-btn {
+    padding: 0.4rem 1rem;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text);
+    font-size: 0.875rem;
+    cursor: pointer;
+  }
+
+  .error-reset-btn:hover {
+    background: var(--border);
+  }
+
   footer {
     margin-top: 2rem;
     padding-top: 0.75rem;
