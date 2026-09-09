@@ -7,7 +7,7 @@ import type { DayState } from './day'
 import { applyFilters } from './filters'
 import type { GameState } from './game'
 import type { HouseState } from './house'
-import type { PrismColor } from './keys'
+import type { PrismColor } from './prism'
 
 
 
@@ -24,7 +24,7 @@ export interface HouseDraftParams {
   previousDraft?: [string, string, string]
   isFirstDraftAtDoor: boolean
 
-  keyUsed?: 'silver' | 'prism'
+  keyUsed?: 'silver' | 'prism' | 'berry picker'
   secretPassageColor?: PrismColor
 }
 
@@ -32,6 +32,7 @@ export interface OuterDraftParams {
   kind: 'outer'
   outerRoomDraftCount: number  // 0 = first outer draft this game (forces root-cellar/toolshed/hovel)
   previouslyDraftedOuter?: string  // slug of last outer room drafted; moved to 4th position
+  berryPicker: boolean
 }
 
 export type DraftParams = HouseDraftParams | OuterDraftParams

@@ -1,6 +1,7 @@
-import { ROOM_BY_SLUG, UPGRADE_LOOKUP, UPGRADES } from './rooms'
+import { ROOM_BY_SLUG, ROOMS, UPGRADE_LOOKUP, UPGRADES } from './rooms'
 import { type GameState } from './game'
 import type { Rarity, Room, RoomColor, Upgrade } from './types'
+import type { KeyedVec } from './math'
 
 
 export type RoomSource =
@@ -77,6 +78,30 @@ export function initPool(game: GameState): DraftPool {
   }
 }
 
+// For ad-hoc usage when we need to circumvent the regular pool
+export function initSpecificPool(
+  slugs: string[],
+  upgrades: Record<string, string> = {}
+): DraftPool {
+
+  const slugSet = new Set(slugs)
+  const rooms = ROOMS
+    .filter((r) => slugSet.has(r.slug))
+
+  return {
+    rooms: rooms.map((room) => {
+      const upgradeSlug = upgrades[room.slug]
+      const upgrade = upgradeSlug ? UPGRADE_LOOKUP[room.slug]?.[upgradeSlug] : undefined
+      return { room, upgrade, p: 1.0 }
+    }),
+    rarityOverrides: {},
+    annotations: {},
+    blocks: {},
+    removed: []
+  }
+}
+
+
 export function addToPool(pool: DraftPool, slugs: string[], source?: RoomSource): DraftPool {
   // Does not check if rooms already exist, as draft pool supports duplicates
   // Currently does not validate slugs
@@ -117,5 +142,27 @@ export function blockDraft(pool: DraftPool, slug: string, reason?: string) {
   return {
     ...pool,
     blocked: newBlocks
+  }
+}
+
+
+export function setProbabilities(
+  pool: DraftPool,
+  slots: [KeyedVec, KeyedVec, KeyedVec],
+  reasons?: [Record<string, string[]>, Record<string, string[]>, Record<string, string[]>]
+) {
+  const finalRooms = pool.rooms
+    .map((pr) => {
+      return {
+        ...pr,
+        pSlot: slots.map((sp) => sp.get(pr.room.slug) || 0),
+        pReasons: reasons !== undefined
+          ? reasons.map((r) => r[pr.room.slug]?.join('\n'))
+          : undefined
+      } as PooledRoom
+    })
+  return {
+    ...pool,
+    rooms: finalRooms,
   }
 }

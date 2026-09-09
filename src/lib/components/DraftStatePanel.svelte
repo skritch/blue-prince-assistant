@@ -22,6 +22,7 @@
     secretPassageColor = $bindable(),
     outerRoomDraftCount = $bindable(),
     previouslyDraftedOuter = $bindable(),
+    outerBerryPicker = $bindable(),
     open = $bindable(loadPanelOpen("draft", false)),
   }: {
     mode: Mode;
@@ -32,10 +33,11 @@
     gems: number;
     isReroll: boolean;
     previousDraft: [string, string, string];
-    keyUsed: "" | "silver" | "prism";
+    keyUsed: "" | "silver" | "prism" | "berry picker";
     secretPassageColor: "" | PrismColor;
     outerRoomDraftCount: number;
     previouslyDraftedOuter: string;
+    outerBerryPicker: boolean;
     open: boolean;
   } = $props();
 
@@ -126,6 +128,10 @@
             />
           </div>
         </div>
+        <label class="checkbox-field">
+          <input type="checkbox" bind:checked={outerBerryPicker} />
+          Berry Picker
+        </label>
       </div>
     {/if}
 
@@ -160,11 +166,12 @@
           <input type="number" min="0" bind:value={gems} />
         </label>
         <label class="inline-field inline-field-end">
-          Key:
+          Keys etc.:
           <select bind:value={keyUsed} class="key-select">
             <option value="">None</option>
             <option value="silver">Silver</option>
             <option value="prism">Prism</option>
+            <option value="berry picker">Berry Picker</option>
           </select>
         </label>
 

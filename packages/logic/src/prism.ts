@@ -1,9 +1,10 @@
 import keyLists from './data/keyLists.json';
+import type { DayState } from './day';
 import type { DraftResult, HouseDraftParams } from './draft';
 import type { GameState } from './game';
 import type { HouseState } from './house';
 import { KeyedVec } from './math';
-import { initPool, type DraftPool, type PooledRoom } from './pool';
+import { addToPool, initPool, initSpecificPool, setProbabilities, type DraftPool, type PooledRoom } from './pool';
 import { ROOMS_BY_COLOR, UPGRADE_LOOKUP } from './rooms';
 import { classifyExitTo, type Exit } from './tiles';
 
@@ -53,6 +54,7 @@ function getOverrideName(exit: Exit) {
 export function draftPrismatic(
   pool: DraftPool,
   game: GameState,
+  day: DayState,
   house: HouseState,
   draft: HouseDraftParams & { secretPassageColor: PrismColor }
 ): DraftPool {
@@ -242,6 +244,8 @@ export function draftPrismatic(
   // We need to output a fake pool of only rooms of the current color,
   // possibly including rooms that cannot be drafted at this location,
   // and account for any upgrades which have changed room colors.
+  // TODO: Do we need to special case add the armory here?
+
   const allCandidates = new Set([
     ...poolRooms.map(pr => pr.room.slug),
     ...prismaticPool,
@@ -249,18 +253,14 @@ export function draftPrismatic(
     ...prismaticSansDrafted,
     ...prismaticDefault
   ])
-  let fakePool: DraftPool = initPool(game)
-  fakePool = {
-    ...fakePool,
-    rooms: fakePool.rooms
-      .filter((pr) => allCandidates.has(pr.room.slug))
-      .map((pr) => ({
-        ...pr,
-        pSlot: slots.map((sp) => sp.get(pr.room.slug) || 0)
-      } as PooledRoom))
-  }
 
+  const fakePool: DraftPool = initSpecificPool(
+    [...allCandidates],
+    game.upgrades,
+  )
 
-
-  return fakePool
+  return setProbabilities(
+    fakePool,
+    slots
+  )
 }

@@ -52,7 +52,7 @@
   let draftPreviousDraft = $state<[string, string, string]>(
     initHouseDraft?.previousDraft ?? ["", "", ""],
   );
-  let draftKeyUsed = $state<"" | "silver" | "prism">(
+  let draftKeyUsed = $state<"" | "silver" | "prism" | "berry picker">(
     initHouseDraft?.keyUsed ?? "",
   );
   let draftSecretPassageColor = $state<"" | PrismColor>(
@@ -68,6 +68,11 @@
       ? ((loaded.draft as OuterDraftParams).previouslyDraftedOuter ?? "")
       : "",
   );
+  let outerBerryPicker = $state<boolean>(
+    loaded?.draft && loaded.draft.kind == "outer"
+      ? (loaded.draft as OuterDraftParams).berryPicker
+      : false,
+  );
   let draftKey = $state(0);
 
   let gamePanelOpen = $state(loadPanelOpen("game", false));
@@ -82,6 +87,7 @@
         kind: "outer" as const,
         outerRoomDraftCount,
         previouslyDraftedOuter: previouslyDraftedOuter || undefined,
+        berryPicker: outerBerryPicker,
       };
     const hasPreviousDraft = draftPreviousDraft.some((s) => s !== "");
     return {
@@ -134,6 +140,7 @@
     draftSecretPassageColor = "";
     outerRoomDraftCount = 0;
     previouslyDraftedOuter = "";
+    outerBerryPicker = false;
     gamePanelOpen = false;
     dayPanelOpen = false;
     housePanelOpen = false;
@@ -286,6 +293,7 @@
         bind:secretPassageColor={draftSecretPassageColor}
         bind:outerRoomDraftCount
         bind:previouslyDraftedOuter
+        bind:outerBerryPicker
         bind:open={draftPanelOpen}
       />
     {/key}

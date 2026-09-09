@@ -3,7 +3,7 @@ import { ALL_COLORS } from './types'
 import rawRooms from './data/rooms.json'
 import rawMirrorRooms from './data/mirrorRooms.json'
 import { default as UPGRADES } from './data/upgrades.json'
-import rawLibraryIgnored from './data/libraryIgnored.json'
+import rawLibrary from './data/libraryAndBerry.json'
 import { toSlug } from './utils'
 export { default as MIRROR_FLOORPLANS } from './data/mirrorFloorplans.json'
 
@@ -51,10 +51,15 @@ const mirrorRooms = rawMirrorRooms as { slug: string, mirrored?: "never" | "modi
 export const MIRROR_ROOMS: Record<string, { mirrored?: "never" | "modified" }> = Object.fromEntries(mirrorRooms.map(({ slug, ...rest }) => [slug, rest]))
 
 export const LIBRARY_IGNORED = {
-  always: new Set(rawLibraryIgnored.always.map(toSlug)),
-  belowTwoGems: new Set(rawLibraryIgnored.belowTwoGems.map(toSlug)),
-  twoOrMoreGems: new Set(rawLibraryIgnored.twoOrMoreGems.map(toSlug)),
+  always: new Set(rawLibrary.alwaysIgnore.map(toSlug)),
+  belowTwoGems: new Set(rawLibrary.ignoreTwoOrMoreGems.map(toSlug)),
+  twoOrMoreGems: new Set(rawLibrary.ignoreTwoOrMoreGems.map(toSlug)),
 }
+export const OUTER_BERRIES = rawLibrary.outerBerryPicker.reduce(
+  (acc, value) => {
+    acc[value] = (acc[value] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>)
 
 export const OUTER_ROOMS = ROOMS
   .filter(r => r.directoryPage === 9)

@@ -2,7 +2,7 @@
 import { MIRROR_ROOMS, OUTER_ROOMS, POOL_ADDITIONS, ROOM_46_REWARDS } from './rooms'
 import { classifyExitTo, getRoomsAt } from './tiles'
 import type { DayState } from './day'
-import { addToPool, annotateRoom, blockDraft, initPool, removeFromPool, type DraftPool, type PooledRoom } from './pool'
+import { addToPool, annotateRoom, blockDraft, initPool, removeFromPool, setProbabilities, type DraftPool, type PooledRoom } from './pool'
 import type { HouseState } from './house'
 import { type GameState } from './game'
 import { getAdHocRarities, getDynamicRarities } from './rarity'
@@ -10,7 +10,8 @@ import { draftHouse, type DraftParams, type DraftResult, type HouseDraftParams }
 import { draftOuter } from './draftOuter'
 import { applyDraftOverrides } from './draftOverrides'
 import { applyValidation } from './validation'
-import { draftPrismatic, type PrismColor } from './keys'
+import { draftPrismatic, type PrismColor } from './prism'
+import { draftBerryHouse, draftBerryOuter } from './misc'
 
 
 // Build the drafting pool, based on game conditions and unlocks
@@ -328,13 +329,17 @@ function runDraft(
 
   let draftResult: DraftResult
   if (draft.kind == 'outer') {
+    if (draft.berryPicker) {
+      return draftBerryOuter(game, house) // bypasses pool
+    }
     draftResult = draftOuter(game, day, house, draft)
+  } else if (draft.keyUsed == 'berry picker') {
+    draftResult = draftBerryHouse(pool, game, day, house, draft)
   } else if (draft.secretPassageColor !== undefined) {
-    // Prismatic drafts return a modified pool directly
     return draftPrismatic(
-      pool, game, house,
+      pool, game, day, house,
       { ...draft, secretPassageColor: draft.secretPassageColor }
-    )
+    )  // bypasses pool
   } else {
     draftResult = draftHouse(pool, game, day, house, draft, 1)
 
@@ -347,18 +352,11 @@ function runDraft(
     draftResult = applyDraftOverrides(draftResult, pool, game, day, house, draft)
   }
 
-  const finalRooms = pool.rooms
-    .map((pr) => {
-      return {
-        ...pr,
-        pSlot: draftResult.slots.map((sp) => sp.get(pr.room.slug) || 0),
-        pReasons: draftResult.reasons.map((r) => r[pr.room.slug]?.join('\n'))
-      } as PooledRoom
-    })
-  return {
-    ...pool,
-    rooms: finalRooms,
-  }
+  return setProbabilities(
+    pool,
+    draftResult.slots,
+    draftResult.reasons
+  )
 }
 
 
