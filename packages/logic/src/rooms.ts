@@ -1,4 +1,5 @@
 import type { Rarity, Room, RoomColor, Upgrade } from './types'
+import { ALL_COLORS } from './types'
 import rawRooms from './data/rooms.json'
 import rawMirrorRooms from './data/mirrorRooms.json'
 import { default as UPGRADES } from './data/upgrades.json'
@@ -39,6 +40,13 @@ export const ROOM_BY_SLUG: Record<string, Room> = Object.fromEntries(
   ROOMS.map((r) => [r.slug, r])
 )
 
+export const ROOMS_BY_COLOR: Record<RoomColor, string[]> =
+  ROOMS.reduce((acc, r) => {
+    for (const c of r.color) acc[c].push(r.slug)
+    return acc
+  }, Object.fromEntries(ALL_COLORS.map(c => [c, [] as string[]])) as Record<RoomColor, string[]>)
+
+
 const mirrorRooms = rawMirrorRooms as { slug: string, mirrored?: "never" | "modified" }[]
 export const MIRROR_ROOMS: Record<string, { mirrored?: "never" | "modified" }> = Object.fromEntries(mirrorRooms.map(({ slug, ...rest }) => [slug, rest]))
 
@@ -64,6 +72,7 @@ export function roomsForPage(page: number): Room[] {
 
 type RawUpgrade = { name?: string; description?: string; color?: string | string[], tags?: string[] }
 
+// room slug: {upgrade slog: Upgrade}
 export const UPGRADE_LOOKUP: Record<string, Record<string, Upgrade>> = {}
 
 for (const [baseSlug, entry] of Object.entries(UPGRADES as Record<string, { upgrades: RawUpgrade[] }>)) {

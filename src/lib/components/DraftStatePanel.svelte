@@ -7,6 +7,8 @@
 
   type Mode = "none" | "outer" | "house";
 
+  type PrismColor = "purple" | "orange" | "green" | "gold" | "red";
+
   let {
     mode = $bindable(),
     column = $bindable(),
@@ -16,6 +18,8 @@
     gems = $bindable(),
     isReroll = $bindable(),
     previousDraft = $bindable(),
+    keyUsed = $bindable(),
+    secretPassageColor = $bindable(),
     outerRoomDraftCount = $bindable(),
     previouslyDraftedOuter = $bindable(),
     open = $bindable(loadPanelOpen("draft", false)),
@@ -28,6 +32,8 @@
     gems: number;
     isReroll: boolean;
     previousDraft: [string, string, string];
+    keyUsed: "" | "silver" | "prism";
+    secretPassageColor: "" | PrismColor;
     outerRoomDraftCount: number;
     previouslyDraftedOuter: string;
     open: boolean;
@@ -187,6 +193,25 @@
               placeholder="room"
             />
           </div>
+
+          <div class="section-label">Key:</div>
+          <div class="key-row">
+            <label><input type="radio" bind:group={keyUsed} value="" /> None</label>
+            <label><input type="radio" bind:group={keyUsed} value="silver" /> Silver</label>
+            <label><input type="radio" bind:group={keyUsed} value="prism" /> Prism</label>
+          </div>
+
+          <label class="inline-field">
+            {keyUsed === "prism" ? "Prism key color:" : "Passage color:"}
+            <select bind:value={secretPassageColor} class="color-select">
+              <option value="">—</option>
+              <option value="purple">Purple</option>
+              <option value="orange">Orange</option>
+              <option value="green">Green</option>
+              <option value="gold">Gold</option>
+              <option value="red">Red</option>
+            </select>
+          </label>
         </div>
       </div>
     {/if}
@@ -273,5 +298,21 @@
 
   .prev-outer-input :global(.text-input) {
     font-size: 0.7rem;
+  }
+
+  .key-row {
+    display: flex;
+    gap: 0.75rem;
+    font-size: 0.8rem;
+  }
+
+  .key-row label {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+
+  .color-select {
+    font-size: 0.8rem;
   }
 </style>

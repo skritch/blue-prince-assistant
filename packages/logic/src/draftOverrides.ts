@@ -115,32 +115,28 @@ function applyForcedDraws(
   let slots = draftResult.slots
   let reasons = draftResult.reasons
 
-  const toCheck = ['library', 'bookshop']
-  const roomsInPool: string[] = pool.rooms.reduce(
-    (acc, pr) => toCheck.includes(pr.room.slug) ? [...acc, pr.room.slug] : acc,
-    Array<string>()
-  )
-
   if (draft.fromRoomSlug == 'tunnel') {
     slots[0] = KeyedVec.empty().set('tunnel', 1)
     reasons[0]['tunnel'] = ["forced tunnel from tunnel"]
   }
   if (draft.fromRoomSlug == 'nook'
     && game.upgrades['nook'] == 'reading-nook'
-    && !house.placedRooms.includes('library')  // or can it dupe?
-    && roomsInPool.includes('library')
   ) {
     // tiny adjustment to not draw library if one of the first two slots has it
-    const pLib12 = slots[0].get('library') + slots[1].get('library')
-    slots[2] = slots[2].scale(pLib12).add(
-      KeyedVec.empty().set('library', 3).scale(1 - pLib12)
+    const libraryInPool = pool.rooms.reduce(
+      (acc, pr) => (pr.room.slug == 'library') || acc, false
     )
-    reasons[2]['library'] = ["forced library from reading nook"]
+    if (libraryInPool) {
+      const pLib12 = slots[0].get('library') + slots[1].get('library')
+      slots[2] = slots[2].scale(pLib12).add(
+        KeyedVec.empty().set('library', 3).scale(1 - pLib12)
+      )
+      reasons[2]['library'] = ["forced library from reading nook"]
+    }
   }
 
   if (
-    draft.fromRoomSlug == 'bookshop'
-    && roomsInPool.includes('bookshop')
+    draft.fromRoomSlug == 'library'
     && !house.placedRooms.includes('bookshop')
     && draft.gems || 0 >= 1
   ) {

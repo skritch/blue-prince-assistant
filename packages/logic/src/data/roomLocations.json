@@ -455,6 +455,12 @@
       "east",
       "west-pierce",
       "east-pierce"
+    ],
+    "bookshop": [
+      "west",
+      "east",
+      "west-pierce",
+      "east-pierce"
     ]
   },
   "north-south": {
@@ -836,6 +842,12 @@
       "north",
       "north-pierce",
       "south-pierce"
+    ],
+    "bookshop": [
+      "north",
+      "south",
+      "north-pierce",
+      "south-pierce"
     ]
   },
   "corners": [
@@ -884,7 +896,8 @@
     "planetarium",
     "treasure-trove",
     "lost-and-found",
-    "conservatory"
+    "conservatory",
+    "bookshop"
   ],
   "non-center": [
     "garage",

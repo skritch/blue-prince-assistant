@@ -6,10 +6,11 @@ import { addToPool, annotateRoom, blockDraft, initPool, removeFromPool, type Dra
 import type { HouseState } from './house'
 import { type GameState } from './game'
 import { getAdHocRarities, getDynamicRarities } from './rarity'
-import { draftHouse, type DraftParams, type DraftResult } from './draft'
+import { draftHouse, type DraftParams, type DraftResult, type HouseDraftParams } from './draft'
 import { draftOuter } from './draftOuter'
 import { applyDraftOverrides } from './draftOverrides'
 import { applyValidation } from './validation'
+import { draftPrismatic, type PrismColor } from './keys'
 
 
 // Build the drafting pool, based on game conditions and unlocks
@@ -66,6 +67,9 @@ function buildbasePool(
     pool = annotateRoom(pool, { condition: "additional classrooms are added to the pool as you draft" }, 'classroom')
   }
 
+  // We sort of hack the bookshop: we add it to the pool here so we can 
+  // annotate it, but block it from regular drafting. Bookshop is actually 
+  // drafted as an override at the end.
   // TODO: how to handle such a conditional addition to the pool?
   // For now, require the day is greater than the number of drafts required.
   if (game.vmode || game.haveRoom46) {
@@ -119,6 +123,9 @@ function applyDraftingBlocks(
   draft?: DraftParams
 ) {
 
+  // Hack so regular drafting doesn't draw bookshop
+  pool = blockDraft(pool, 'bookshop')
+
   if (!(game.haveRoom46
     || game.foundEpsenTomb
     || (game.vmode && (2 <= day.day && day.day <= 7))
@@ -132,7 +139,6 @@ function applyDraftingBlocks(
   if (day.day < 3 && !game.vmode) {
     pool = blockDraft(pool, 'study', "blocked day 1/2 unless in v-mode.")
   }
-
 
   if (draft !== undefined && draft.kind == 'house') {
     const loc = draft.toLocation
@@ -161,6 +167,7 @@ function applyDraftingBlocks(
       pool = blockDraft(pool, 'greenhouse', "blocked when drafting north into E2 until next north draft on east wing")
     }
   }
+
 
   // Probabilistic & undeterminable blocks
 
@@ -253,6 +260,8 @@ function applyDynamicRarities(
 
 
 // Filters the draft pool for a particular exit in the house
+// This effectively produces the "Exit List" for the current draft
+// in the game's parlance.
 function constrainForLocation(
   pool: DraftPool,
   draft: DraftParams,
@@ -315,11 +324,17 @@ function runDraft(
   game: GameState,
   day: DayState,
   house: HouseState,
-  draft: DraftParams) {
+  draft: DraftParams): DraftPool {
 
   let draftResult: DraftResult
   if (draft.kind == 'outer') {
     draftResult = draftOuter(game, day, house, draft)
+  } else if (draft.secretPassageColor !== undefined) {
+    // Prismatic drafts return a modified pool directly
+    return draftPrismatic(
+      pool, game, house,
+      { ...draft, secretPassageColor: draft.secretPassageColor }
+    )
   } else {
     draftResult = draftHouse(pool, game, day, house, draft, 1)
 

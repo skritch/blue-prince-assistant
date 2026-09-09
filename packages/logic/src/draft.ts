@@ -7,6 +7,7 @@ import type { DayState } from './day'
 import { applyFilters } from './filters'
 import type { GameState } from './game'
 import type { HouseState } from './house'
+import type { PrismColor } from './keys'
 
 
 
@@ -22,8 +23,9 @@ export interface HouseDraftParams {
 
   previousDraft?: [string, string, string]
   isFirstDraftAtDoor: boolean
-  keyUsed?: 'silver' | 'secret-garden' | 'room-8' | ['prism', RoomColor]
-  secretPassageColor?: Exclude<RoomColor, 'black' | 'blue'> | null
+
+  keyUsed?: 'silver' | 'prism'
+  secretPassageColor?: PrismColor
 }
 
 export interface OuterDraftParams {

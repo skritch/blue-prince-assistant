@@ -59,6 +59,16 @@ export class KeyedVec<K extends string | number = string> {
     return new KeyedVec(result)
   }
 
+  dot(other: KeyedVec<K>): number {
+    let sum = 0
+    for (const [k, v] of this.data) {
+      if (other.get(k)) {
+        sum = sum + v * other.get(k)
+      }
+    }
+    return sum
+  }
+
   // Multiply all values by a scalar.
   scale(s: number): KeyedVec<K> {
     const result = new Map<K, number>()
@@ -85,10 +95,25 @@ export class KeyedVec<K extends string | number = string> {
     return new KeyedVec<K>()
   }
 
+  static one<K extends string | number = string>(k: K, v?: number): KeyedVec<K> {
+    return KeyedVec.empty<K>().set(k, v || 1)
+  }
+
+  static uniform<K extends string | number = string>(keys: K[]): KeyedVec<K> {
+    const w = 1 / keys.length
+    return new KeyedVec(new Map(keys.map((k) => [k, w])))
+  }
+
   sum(): number {
     let s = 0
     for (const v of this.data.values()) s += v
     return s
+  }
+
+  normalize(): KeyedVec<K> {
+    const sum = this.sum()
+    if (sum == 1) return this
+    return this.map((v) => v / sum)
   }
 
 }

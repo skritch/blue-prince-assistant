@@ -14,6 +14,7 @@
     type Direction,
     type TileColumn,
     type TileRow,
+    type PrismColor,
   } from "bp-logic";
   import { loadState, saveState, persistLocally } from "../stateSerializer";
   import { loadPanelOpen } from "../panelState";
@@ -49,6 +50,12 @@
   let draftIsReroll = $state(!(initHouseDraft?.isFirstDraftAtDoor ?? true));
   let draftPreviousDraft = $state<[string, string, string]>(
     initHouseDraft?.previousDraft ?? ["", "", ""],
+  );
+  let draftKeyUsed = $state<"" | "silver" | "prism">(
+    initHouseDraft?.keyUsed ?? "",
+  );
+  let draftSecretPassageColor = $state<"" | PrismColor>(
+    initHouseDraft?.secretPassageColor || "",
   );
   let outerRoomDraftCount = $state<number>(
     loaded?.draft && loaded.draft.kind == "outer"
@@ -88,6 +95,8 @@
       previousDraft: hasPreviousDraft
         ? (draftPreviousDraft as [string, string, string])
         : undefined,
+      keyUsed: draftKeyUsed || undefined,
+      secretPassageColor: (draftSecretPassageColor as PrismColor) || null,
     };
   });
 
@@ -120,6 +129,8 @@
     draftGems = 0;
     draftIsReroll = false;
     draftPreviousDraft = ["", "", ""];
+    draftKeyUsed = "";
+    draftSecretPassageColor = "";
     outerRoomDraftCount = 0;
     previouslyDraftedOuter = "";
     gamePanelOpen = false;
@@ -180,10 +191,17 @@
     const maxRank = randInt(1, 4) as 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
 
     // Set draft location
-    const columns: TileColumn[] = ["A", "B", "C", "D", "E"];
-    const direction = pick(["N", "E", "W"] as const);
-    const column = pick(columns);
     const row = maxRank as TileRow;
+    const columnChoices: TileColumn[] =
+      row === 1 ? ["A", "B", "D", "E"] : ["A", "B", "C", "D", "E"];
+    const column = pick(columnChoices);
+    const validDirections = (["N", "E", "W"] as const).filter(
+      (d) =>
+        !(d === "N" && row === 1) &&
+        !(d === "W" && column === "E") &&
+        !(d === "E" && column === "A"),
+    );
+    const direction = pick(validDirections);
 
     // Set previous draft: standardForDraft + 2 undrafted common rooms
     const undraftedCommon = commonRooms.filter(
@@ -255,6 +273,8 @@
         bind:gems={draftGems}
         bind:isReroll={draftIsReroll}
         bind:previousDraft={draftPreviousDraft}
+        bind:keyUsed={draftKeyUsed}
+        bind:secretPassageColor={draftSecretPassageColor}
         bind:outerRoomDraftCount
         bind:previouslyDraftedOuter
         bind:open={draftPanelOpen}

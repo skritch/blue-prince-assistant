@@ -1,8 +1,8 @@
 
 
-# Blue Prince Assistant
+# Blue Prince Darfting Calculator
 
-Visualizes the draft pool in [Blue Prince](https://www.blueprincegame.com/).
+Calcualtes the draft pool in [Blue Prince](https://www.blueprincegame.com/).
 
 Effort has been made to reflect many of the idiosyncrasies of the game, mostly based on documentation by Reddit user [TFMurphy](https://www.reddit.com/user/TFMurphy/submitted/). 
 Many obscure rules are noted in the UI as mousover tooltips, so this might provide a good way to learn the mechanics.

@@ -56,7 +56,7 @@
         <span class="title-blue">BLUE</span>
         <span class="title-white">PRINCE</span>
       </h1>
-      <p class="subtitle">drafting simulator</p>
+      <p class="subtitle">drafting calculator</p>
     </div>
   </header>
   <PoolVIew />
