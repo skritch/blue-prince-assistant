@@ -21,6 +21,8 @@ function buildbasePool(
 
   let pool = initPool(game)
 
+  // --- Deterministic Additions ---
+
   if (game.haveRoom46) {
     pool = addToPool(pool, ROOM_46_REWARDS, 'room46')
   } else if (day.day >= 46) {
@@ -43,13 +45,15 @@ function buildbasePool(
     pool = addToPool(pool, game.chamberOfMirrorsAdditions, 'com-permanent')
   }
 
+  // --- Probabilistic & undeterminable odifications ---
+
   // V-mode additions
   // https://www.reddit.com/r/BluePrinceUncensored/comments/1t4nmpn/v_mode_what_it_is_and_what_day_1_trophy_hunters/
   if (!game.vmode) {
     // TODO is this double-counting from the drafting block?
     // I think yes.
-    if (day.day < 3) { pool = annotateRoom(pool, { pct: 5 }, 'master-bedroom', "day 1/2") }
-    if (day.day < 5) { pool = annotateRoom(pool, { pct: 20 }, 'library', "day 1/2") }
+    if (day.day < 3) { pool = annotateRoom(pool, { inPoolPct: 5 }, 'master-bedroom', "day 1/2") }
+    if (day.day < 5) { pool = annotateRoom(pool, { inPoolPct: 20 }, 'library', "day 1/2") }
   }
 
   // Schoolhouse classrooms
@@ -75,7 +79,6 @@ function buildbasePool(
     }
     pool = annotateRoom(pool, { condition: "must have drafted library 8 times" }, 'bookshop')
   }
-
 
   // Chamber of Mirrors duplicates, simplified somewhat.
   // for each room already in the house and in the mirrored list
@@ -139,15 +142,6 @@ function applyDraftingBlocks(
       pool = blockDraft(pool, 'tunnel', "blocked when drafting W or E into a center tile until next draft N or S into a center tile")
     }
 
-    if ((loc.tile.column == 'C' && loc.tile.row == 8) || loc.tile.row == 2) {
-      // Not sure if "block" is right mechanism here
-      pool = blockDraft(pool, 'foundation', "blocked in C8 and row 2")
-    } else if (loc.tile.row == 3) {
-      // technically removes from exit list? Only applies to center tiles, but Foundation is not eligible for edges anyway
-      pool = annotateRoom(pool,
-        { blockPct: 90, blockNote: "blocked when drafting into rank 3 center tiles", },
-        'foundation')
-    }
 
     if (
       (['east-advance', 'west-advance'].includes(exit) && loc.tile.row == 8)
@@ -166,13 +160,9 @@ function applyDraftingBlocks(
       // greenhouse block persists until another E advance, making W retreat impossible
       pool = blockDraft(pool, 'greenhouse', "blocked when drafting north into E2 until next north draft on east wing")
     }
-
-    // Responsible for garage only appearing at 4+.
-    // Ignoring some exit lists subtleties that don't appear to do anything
-    if ([2, 3].includes(loc.tile.row)) {
-      pool = blockDraft(pool, 'garage', "blocked in ranks 2-3")
-    }
   }
+
+  // Probabilistic & undeterminable blocks
 
 
   if (day.day == 1) {
@@ -208,8 +198,8 @@ function removeDraftedRooms(
   const removed: Record<string, number> = {}
   const newRooms = pool.rooms.filter(({ room }) => {
     // Special logic simulate the gradual addition of classrooms throughout
-    // the day when a schoolhouse is drafted. We don't remove the classroom
-    // from the pool after it is drafted. 
+    // the day when a schoolhouse is drafted: we just don't remove the classroom
+    // from the pool after it is drafted, until all classrooms are placed.
     if (room.slug == 'classroom'
       && house.schoolhouseInHouse
       && (houseCounts[room.slug] < 8
@@ -226,18 +216,16 @@ function removeDraftedRooms(
     }
   })
 
-  pool = {
+  return {
     ...pool,
     rooms: newRooms
   }
-
-  return pool
 }
 
 
 // Set dynamic rarities based on date and game state
 // Annotates probabilistic rarities.
-function setDynamicRarities(
+function applyDynamicRarities(
   pool: DraftPool,
   game: GameState,
   day: DayState,
@@ -298,6 +286,25 @@ function constrainForLocation(
     const reason = `ineglibile for drafting ${loc.toDirection} into ${coord}`
 
     pool = removeFromPool(pool, ineligible, reason)
+
+
+
+    // Special Cases
+
+
+    // Responsible for garage only appearing at 4+.
+    // Ignoring some exit lists subtleties that don't appear to do anything
+    if ([2, 3].includes(loc.tile.row)) {
+      pool = removeFromPool(pool, ['garage'], "blocked in ranks 2-3")
+    }
+
+    if ((loc.tile.column == 'C' && loc.tile.row == 8) || loc.tile.row == 2) {
+      pool = removeFromPool(pool, ['foundation'], "blocked in C8 and row 2")
+    } else if (loc.tile.row == 3) {
+      pool = annotateRoom(pool,
+        { inPoolPct: 10, note: "90% chance of being removed when drafting rank 3 center tiles", },
+        'foundation')
+    }
   }
   return pool
 }
@@ -321,6 +328,7 @@ function runDraft(
     // Weighted rooms, guaranteed draws, duct draws, etc.
     // We apply these after validation, as they mostly ignore validation. This
     // will be inaccurate for some duct draws, which are validated in some cases.
+    // TODO: fix? Would have to annotate duct draws separately.
     draftResult = applyDraftOverrides(draftResult, pool, game, day, house, draft)
   }
 
@@ -355,7 +363,7 @@ export function generateDraftPool(
     pool = constrainForLocation(pool, draft)
   }
   pool = applyDraftingBlocks(pool, game, day, draft)
-  pool = setDynamicRarities(pool, game, day, house)
+  pool = applyDynamicRarities(pool, game, day, house)
   if (draft !== undefined) {
     pool = runDraft(pool, game, day, house, draft)
   }

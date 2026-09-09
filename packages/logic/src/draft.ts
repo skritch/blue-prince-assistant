@@ -221,12 +221,17 @@ const LIBRARY_RARITY_FALLBACKS = {
 
 // --- Drafting Steps ---
 
-// Divide the draft pool into 8 decks based on rarity
+// Divide the draft pool into 8 decks based on rarity.
+// Blocked rooms are ignored.
 export function initDecks(
   pool: DraftPool
 ): DeckList {
   const decks = Array(8).fill(KeyedVec.empty()) as DeckList
   for (const pr of pool.rooms) {
+    if (pool.blocks[pr.room.slug]) {
+      continue
+    }
+
     const rarity: Rarity = pool.rarityOverrides[pr.room.slug] || pr.room.baseRarity
     const freeGem = pr.room.baseGemCost > 0 ? 1 : 0
     const deckIdx = (rarity - 1) + 4 * freeGem
@@ -520,23 +525,16 @@ export function draftHouse(
 ): DraftResult {
   const inLibrary = draft.fromRoomSlug == 'library'
 
-  // Do "any" draws apply conditional filters?
+  // Do "any" draws apply conditional filters? Assuming no.
   const filteredPool = applyFilters(pool, game, day, house, draft, draw == 1 || draw == 3)
   const decks = initDecks(filteredPool)
   const deckMinimums = getDeckMinimums(day.day, game.vmode, game.haveRoom46)
 
-  let pDeckIJ: KeyedVec<number>[]
-  let pRedrawI: KeyedVec<number>
 
-  if (draw != 'any') {
-    const selection = selectDecks(decks, deckMinimums, inLibrary, draw != 2)
-    pDeckIJ = selection.pDeckIJ
-    pRedrawI = selection.pRedrawI
-  } else {
-    const selection = selectDecksAnyDraw(decks, deckMinimums, inLibrary)
-    pDeckIJ = selection.pDeckIJ
-    pRedrawI = selection.pRedrawI
-  }
+  const { pDeckIJ, pRedrawI } = draw == 'any'
+    ? selectDecksAnyDraw(decks, deckMinimums, inLibrary)
+    : selectDecks(decks, deckMinimums, inLibrary, draw != 2)
+
   const effectiveDecks = mergeMarkedDecks(decks, pDeckIJ)
 
   const rank = draft.toLocation.tile.row

@@ -17,13 +17,13 @@ export type RoomSource =
   | 'day-46'
 
 
-type ChanceInPool = { pct: number }
+type MaybeInPool = { inPoolPct: number, note?: string }
 type ConditionalInPool = { condition: string }
 type MaybeMirrored = { mirrorNote: string }
 type ChanceOfRarity = { rarityNote: string }
 type MaybeBlocked = { blockPct: number, blockNote: string }
 export type Annotation =
-  | ChanceInPool
+  | MaybeInPool
   | MaybeMirrored
   | ChanceOfRarity
   | MaybeBlocked
@@ -59,7 +59,7 @@ export interface DraftPool {
   // TODO: affix to rooms themselves?
   annotations: Record<string, Annotation[]>
 
-  blocks: Set<string>
+  blocks: Record<string, string> // slug: reason
   removed: RemovedRoom[]
 }
 
@@ -72,7 +72,7 @@ export function initPool(game: GameState): DraftPool {
     }),
     rarityOverrides: {},
     annotations: {},
-    blocks: new Set<string>(),
+    blocks: {},
     removed: []
   }
 }
@@ -108,14 +108,12 @@ export function annotateRoom(pool: DraftPool, annotation: Annotation, slug: stri
   }
 }
 
+// Blocking a draft is different from removing from the pool.
+// Effectively our "pool" gives the "Exit Lists" in game paralance.
+// Blocking prevents a room from being drafted without affecting the 
+// exit lists directly, so effects which bypass those can draft it.
 export function blockDraft(pool: DraftPool, slug: string, reason?: string) {
-  const newBlocks = new Set(...pool.blocks)
-  newBlocks.add(slug)
-
-  // Remove it, but also mark as blocked.
-  // Blocked rooms are still in "exit lists" and can be drafted
-  // in certain ways
-  pool = removeFromPool(pool, [slug], reason)
+  const newBlocks = { ...pool.blocks, [slug]: reason }
   return {
     ...pool,
     blocked: newBlocks

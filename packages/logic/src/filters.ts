@@ -171,7 +171,7 @@ export function applyLibraryFilter(
 }
 
 
-
+// Apply all filters to produce a modified DraftPool.
 export function applyFilters(
   pool: DraftPool,
   game: GameState,
