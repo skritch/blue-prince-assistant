@@ -92,74 +92,86 @@
         ? "Drafting: Outer Room"
         : "Drafting",
   );
+
+  function clearPreviousDraft() {
+    previousDraft = ["", "", ""];
+    fromRoomSlug = "";
+  }
 </script>
 
 <details class="panel" bind:open>
   <summary class="panel-header">{panelTitle}</summary>
   <div class="fields">
-    <div class="mode-row">
-      <label><input type="radio" bind:group={mode} value="none" /> None</label>
-      <label><input type="radio" bind:group={mode} value="outer" /> Outer</label
-      >
-      <label><input type="radio" bind:group={mode} value="house" /> House</label
-      >
-    </div>
+    <div class="top-grid">
+      <div class="mode-col">
+        <label><input type="radio" bind:group={mode} value="none" /> None</label>
+        <label><input type="radio" bind:group={mode} value="outer" /> Outer</label
+        >
+        <label><input type="radio" bind:group={mode} value="house" /> House</label
+        >
+      </div>
 
-    {#if mode === "outer"}
-      <div class="outer-fields">
-        <label class="inline-field">
-          Times drafted:
-          <input
-            type="number"
-            min="0"
-            class="narrow"
-            value={outerRoomDraftCount}
-            oninput={(e) =>
-              (outerRoomDraftCount = parseInt(e.currentTarget.value) || 0)}
-          />
-        </label>
-        <div class="inline-field">
-          Previously drafted:
-          <div class="prev-outer-input">
-            <SearchInput
-              items={outerRoomOptions}
-              bind:value={previouslyDraftedOuter}
-              placeholder="none"
+      {#if mode === "outer"}
+        <div class="outer-fields">
+          <label class="inline-field">
+            Times drafted:
+            <input
+              type="number"
+              min="0"
+              class="narrow"
+              value={outerRoomDraftCount}
+              oninput={(e) =>
+                (outerRoomDraftCount = parseInt(e.currentTarget.value) || 0)}
             />
+          </label>
+          <div class="prev-outer-col">
+            <div class="prev-outer-label">Previously drafted:</div>
+            <div class="prev-outer-input">
+              <SearchInput
+                items={outerRoomOptions}
+                bind:value={previouslyDraftedOuter}
+                placeholder="none"
+              />
+            </div>
+          </div>
+          <label class="checkbox-field">
+            <input type="checkbox" bind:checked={outerBerryPicker} />
+            Berry Picker
+          </label>
+        </div>
+      {/if}
+
+      {#if mode === "house"}
+        <div class="location-col">
+          <select bind:value={toDirection}>
+            {#each DIRECTIONS as d}
+              <option value={d.value} disabled={invalidDirections.has(d.value)}
+                >{d.label}</option
+              >
+            {/each}
+          </select>
+          <div class="into-label">into</div>
+          <div class="tile-selects">
+            <select bind:value={column}>
+              {#each COLUMNS as c}
+                <option value={c}>{c}</option>
+              {/each}
+            </select>
+            <select
+              value={row}
+              onchange={(e) => (row = parseInt(e.currentTarget.value))}
+            >
+              {#each ROWS as r}
+                <option value={r}>{r}</option>
+              {/each}
+            </select>
           </div>
         </div>
-        <label class="checkbox-field">
-          <input type="checkbox" bind:checked={outerBerryPicker} />
-          Berry Picker
-        </label>
-      </div>
-    {/if}
+      {/if}
+    </div>
 
     {#if mode === "house"}
-      <div class="inline-field">
-        <select bind:value={toDirection}>
-          {#each DIRECTIONS as d}
-            <option value={d.value} disabled={invalidDirections.has(d.value)}
-              >{d.label}</option
-            >
-          {/each}
-        </select>
-        into
-        <select bind:value={column}>
-          {#each COLUMNS as c}
-            <option value={c}>{c}</option>
-          {/each}
-        </select>
-        <select
-          value={row}
-          onchange={(e) => (row = parseInt(e.currentTarget.value))}
-        >
-          {#each ROWS as r}
-            <option value={r}>{r}</option>
-          {/each}
-        </select>
-      </div>
-
+      <div class="divider"></div>
       <div class="house-grid">
         <label class="inline-field">
           Gems:
@@ -199,7 +211,10 @@
         </label>
 
         <div class="prev-draft">
-          <div class="section-label">Previous draft:</div>
+          <div class="prev-draft-header">
+            <div class="section-label">Previous draft:</div>
+            <button class="clear-btn" onclick={clearPreviousDraft}>(clear)</button>
+          </div>
           <div class="prev-input">
             <SearchInput
               items={roomOptions}
@@ -238,16 +253,53 @@
 </details>
 
 <style>
-  .mode-row {
-    display: flex;
+  .top-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     gap: 1rem;
+    align-items: start;
+  }
+
+  .mode-col {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
     font-size: 0.875rem;
   }
 
-  .mode-row label {
+  .mode-col label {
     display: flex;
     align-items: center;
     gap: 0.3rem;
+  }
+
+  .location-col {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    font-size: 0.875rem;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .into-label {
+    font-size: 0.875rem;
+    color: var(--text);
+  }
+
+  .tile-selects {
+    display: flex;
+    gap: 0.3rem;
+  }
+
+  .tile-selects select {
+    width: 3.5rem;
+  }
+
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 0.5rem 0;
   }
 
   .house-grid {
@@ -300,6 +352,35 @@
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .outer-fields .inline-field {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .prev-outer-col {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .prev-outer-label {
+    font-size: 0.875rem;
+    color: var(--text);
+  }
+
+  .prev-outer-input {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .prev-outer-input :global(.text-input) {
+    font-size: 0.7rem;
   }
 
   .inline-field {
@@ -317,15 +398,6 @@
     width: 4rem;
   }
 
-  .prev-outer-input {
-    flex: 1;
-    min-width: 0;
-  }
-
-  .prev-outer-input :global(.text-input) {
-    font-size: 0.7rem;
-  }
-
   .key-select,
   .color-select {
     font-size: 0.8rem;
@@ -334,5 +406,25 @@
   .muted {
     color: var(--text-muted);
     opacity: 0.5;
+  }
+
+  .prev-draft-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.15rem;
+  }
+
+  .clear-btn {
+    padding: 0;
+    font-size: 0.7rem;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+  }
+
+  .clear-btn:hover {
+    color: var(--text);
   }
 </style>

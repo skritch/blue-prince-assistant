@@ -15,6 +15,12 @@
 
   let query = $state(value ? (itemById[value]?.label ?? value) : "");
   let focused = $state(false);
+  let selectedIndex = $state(-1);
+
+  // Sync query with value changes (e.g., when cleared externally)
+  $effect(() => {
+    query = value ? (itemById[value]?.label ?? value) : "";
+  });
 
   let matches = $derived(
     focused && query && !itemById[value]
@@ -24,19 +30,68 @@
       : [],
   );
 
-  function pick(item: Item) {
+  // Reset selected index when matches change
+  $effect(() => {
+    if (matches.length === 0) {
+      selectedIndex = -1;
+    } else if (selectedIndex >= matches.length) {
+      selectedIndex = matches.length - 1;
+    }
+  });
+
+  function pick(item: Item, shouldFocusNext = false) {
     value = item.id;
     query = item.label;
+    selectedIndex = -1;
+
+    if (shouldFocusNext) {
+      // Focus next input element
+      const input = document.activeElement as HTMLInputElement;
+      const form = input?.form || input?.closest('form') || document;
+      const inputs = Array.from(form.querySelectorAll('input, select, textarea, button'));
+      const currentIndex = inputs.indexOf(input);
+      const nextInput = inputs[currentIndex + 1] as HTMLElement;
+      if (nextInput) {
+        setTimeout(() => nextInput.focus(), 0);
+      }
+    }
   }
 
   function oninput() {
     value = "";
+    selectedIndex = -1;
   }
 
   function onkeydown(e: KeyboardEvent) {
     if (e.key === "Escape") {
       query = "";
       value = "";
+      selectedIndex = -1;
+      return;
+    }
+
+    if (matches.length === 0) return;
+
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      selectedIndex = selectedIndex < matches.length - 1 ? selectedIndex + 1 : 0;
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      selectedIndex = selectedIndex > 0 ? selectedIndex - 1 : matches.length - 1;
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      if (selectedIndex >= 0 && selectedIndex < matches.length) {
+        pick(matches[selectedIndex]);
+      } else if (matches.length > 0) {
+        pick(matches[0]);
+      }
+    } else if (e.key === "Tab" && matches.length > 0) {
+      e.preventDefault();
+      if (selectedIndex >= 0 && selectedIndex < matches.length) {
+        pick(matches[selectedIndex], true);
+      } else {
+        pick(matches[0], true);
+      }
     }
   }
 </script>
@@ -54,12 +109,14 @@
   />
   {#if matches.length > 0}
     <ul class="dropdown">
-      {#each matches as item}
+      {#each matches as item, i}
         <li>
           <button
             type="button"
             class="dropdown-item"
-            onmousedown={() => pick(item)}>{item.label}</button
+            class:selected={i === selectedIndex}
+            onmousedown={() => pick(item)}
+            onmouseenter={() => (selectedIndex = i)}>{item.label}</button
           >
         </li>
       {/each}
@@ -115,7 +172,8 @@
     cursor: pointer;
   }
 
-  .dropdown-item:hover {
+  .dropdown-item:hover,
+  .dropdown-item.selected {
     background: var(--accent-light);
   }
 </style>

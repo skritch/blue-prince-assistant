@@ -160,6 +160,8 @@
     <table>
       <thead>
         <tr>
+          <th class="btn-col"></th>
+          <th class="btn-col"></th>
           <th></th>
           <th>Room</th>
           <th>Rarity</th>
@@ -169,7 +171,25 @@
       <tbody>
         {#each sortedRemoved as { room, reason }, i (room.slug + (reason ?? "") + i)}
           {@const effectiveRarity = room.baseRarity}
+          {@const placedCount = houseState.placedRooms.filter(
+            (s) => s === room.slug,
+          ).length}
           <tr>
+            <td class="btn-col">
+              {#if placedCount > 0}
+                <button
+                  class="place-btn minus"
+                  onclick={() => removeRoomFromHouse(room.slug)}>−</button
+                >
+              {/if}
+            </td>
+            <td class="btn-col">
+              <button
+                class="place-btn plus"
+                data-tooltip="add to house"
+                onclick={() => addRoomToHouse(room.slug)}>+</button
+              >
+            </td>
             <td class="colors"><ColorDots colors={room.color} /></td>
             <td class="name">{room.name}</td>
             <td class="rarity rarity-{effectiveRarity}"

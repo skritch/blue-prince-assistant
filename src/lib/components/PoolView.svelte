@@ -148,6 +148,41 @@
     draftKey++;
   }
 
+  function nextDay() {
+    // Clear placed rooms (keep entrance-hall and antechamber)
+    houseState = {
+      ...initHouse(),
+      placedRooms: ["entrance-hall", "antechamber"],
+    };
+
+    // Clear all daily state except chess
+    const preservedChess = {
+      knightChess: dayState.knightChess,
+      chessColor: dayState.chessColor,
+      pawnChessKnight: dayState.pawnChessKnight,
+    };
+    dayState = {
+      ...initDay(dayState.day + 1),
+      ...preservedChess,
+    };
+
+    // Clear draft state and point to C2/N
+    draftMode = "house";
+    draftColumn = "C";
+    draftRow = 2;
+    draftToDirection = "N";
+    draftFromRoomSlug = "";
+    draftGems = 0;
+    draftIsReroll = false;
+    draftPreviousDraft = ["", "", ""];
+    draftKeyUsed = "";
+    draftSecretPassageColor = "";
+    outerRoomDraftCount = 0;
+    previouslyDraftedOuter = "";
+    outerBerryPicker = false;
+    draftKey++;
+  }
+
   function randomPreset() {
     // Helper to pick random element from array
     const pick = <T,>(arr: T[]): T =>
@@ -299,6 +334,7 @@
     {/key}
     <div class="bottom-btns">
       <button class="action-btn" onclick={permalink}>🔗</button>
+      <button class="action-btn" data-tooltip="Advance day" onclick={nextDay}>🕐</button>
       <div class="spacer"></div>
       <button class="action-btn" onclick={randomPreset}>Randomize</button>
       <button class="action-btn" onclick={resetAll}>Reset all</button>
