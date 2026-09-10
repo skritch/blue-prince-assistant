@@ -42,4 +42,4 @@ If you like this tool, consider [Buying Me a Coffee](https://buymeacoffee.com/sk
 
 Issues are welcome. 
 
-PRs are welcome if they checked and tested carefully by a competent human. I vibe-coded the front-end of this app, but the game logic is largely hand-written; AIs are bad that kind of thing.
+PRs are welcome if checked over and tested carefully by a competent human. I vibe-coded the front-end of this app, but the game logic is entirely hand-written; AIs are bad that kind of thing.
