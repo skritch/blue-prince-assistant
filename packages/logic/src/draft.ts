@@ -544,10 +544,10 @@ export function draftHouse(
   const slots: (1 | 2 | 3)[] = [1, 2, 3]
 
   // Prepare redraw pool in advance, since all slots use it
-  let redrawPools = [KeyedVec.empty(), KeyedVec.empty(), KeyedVec.empty()]
+  let redrawSlots = [KeyedVec.empty(), KeyedVec.empty(), KeyedVec.empty()]
   if (draw == 1 || draw == 2) {
     const redraw = draftHouse(pool, game, day, house, draft, draw + 1 as 2 | 3)
-    redrawPools = redraw.slots
+    redrawSlots = redraw.slots
   }
 
   // Build the pool for each slot
@@ -571,7 +571,7 @@ export function draftHouse(
 
     if (pRedraw > 0) {
       // Add redraw results to probability mass
-      sp = sp.add(redrawPools[slot - 1].scale(pRedraw))
+      sp = sp.add(redrawSlots[slot - 1].scale(pRedraw))
     }
 
 

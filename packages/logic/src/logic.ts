@@ -351,7 +351,6 @@ function runDraft(
     )
   } else {
     draftResult = draftHouse(pool, game, day, house, draft, 1)
-
     draftResult = applyValidation(draftResult, pool, game, day, house, draft)
 
     // Weighted rooms, guaranteed draws, duct draws, etc.

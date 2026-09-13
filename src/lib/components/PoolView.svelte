@@ -1,7 +1,9 @@
 <script lang="ts">
+  import { untrack } from "svelte";
   import {
     computePool,
     initGameState,
+    initGameFull,
     initDay,
     initHouse,
     ROOMS,
@@ -27,7 +29,8 @@
   import PoolTable from "./PoolTable.svelte";
   import RoomListView from "./RoomListView.svelte";
 
-  let { spoilerSettings = $bindable() }: { spoilerSettings: SpoilerSettings } = $props();
+  let { spoilerSettings = $bindable() }: { spoilerSettings: SpoilerSettings } =
+    $props();
 
   type ViewMode = "room-pct" | "room-list" | "door-pct";
 
@@ -108,6 +111,27 @@
       keyUsed: draftKeyUsed || undefined,
       secretPassageColor: (draftSecretPassageColor as PrismColor) || undefined,
     };
+  });
+
+  // Sync spoiler milestones → game state (never downgrade on uncheck)
+  $effect(() => {
+    const { westGate, room46, entireGame } = spoilerSettings;
+    if (entireGame) {
+      const cur = untrack(() => gameState);
+      gameState = {
+        ...initGameFull(),
+        rarityOverrides: cur.rarityOverrides,
+        chamberOfMirrorsAdditions: cur.chamberOfMirrorsAdditions,
+        upgrades: cur.upgrades,
+        booksPurchased: cur.booksPurchased,
+      };
+    } else if (room46) {
+      const cur = untrack(() => gameState);
+      if (!cur.haveRoom46) gameState = { ...cur, haveWestGate: true, haveRoom46: true };
+    } else if (westGate) {
+      const cur = untrack(() => gameState);
+      if (!cur.haveWestGate) gameState = { ...cur, haveWestGate: true };
+    }
   });
 
   $effect(() => {
@@ -297,10 +321,13 @@
 
   let poolResult = $derived.by<PoolResult>(() => {
     try {
-      return { ok: true, pool: computePool(gameState, dayState, houseState, draftParams) };
+      return {
+        ok: true,
+        pool: computePool(gameState, dayState, houseState, draftParams),
+      };
     } catch (e) {
       const err = e instanceof Error ? e : new Error(String(e));
-      console.error('[bp-drafter] computePool error:', err);
+      console.error("[bp-drafter] computePool error:", err);
       return { ok: false, error: err };
     }
   });
@@ -316,9 +343,19 @@
 
 <div class="layout">
   <div class="config">
-    <GameStatePanel bind:gameState bind:open={gamePanelOpen} bind:spoilerSettings day={dayState.day} />
+    <GameStatePanel
+      bind:gameState
+      bind:open={gamePanelOpen}
+      bind:spoilerSettings
+      day={dayState.day}
+    />
     <DayStatePanel bind:dayState bind:open={dayPanelOpen} {spoilerSettings} />
-    <HouseStatePanel bind:houseState bind:open={housePanelOpen} {spoilerSettings} {poolSlugs} />
+    <HouseStatePanel
+      bind:houseState
+      bind:open={housePanelOpen}
+      {spoilerSettings}
+      {poolSlugs}
+    />
     {#key draftKey}
       <DraftStatePanel
         bind:mode={draftMode}
@@ -342,10 +379,12 @@
     {/key}
     <div class="bottom-btns">
       <button class="action-btn" onclick={permalink}>🔗</button>
-      <button class="action-btn" data-tooltip="Advance day" onclick={nextDay}>🕐</button>
       <div class="spacer"></div>
+      <button class="action-btn" onclick={resetAll}>Reset</button>
       <button class="action-btn" onclick={randomPreset}>Randomize</button>
-      <button class="action-btn" onclick={resetAll}>Reset all</button>
+      <button class="action-btn" data-tooltip="Advance day" onclick={nextDay}
+        >Advance Day</button
+      >
     </div>
   </div>
   <div class="results">
@@ -370,7 +409,9 @@
       <div class="pool-error">
         <p class="pool-error-msg">Pool computation failed.</p>
         <p class="pool-error-detail">{poolResult.error.message}</p>
-        <button class="pool-error-reset" onclick={resetAll}>Reset to defaults</button>
+        <button class="pool-error-reset" onclick={resetAll}
+          >Reset to defaults</button
+        >
       </div>
     {:else if viewMode === "room-pct"}
       <PoolTable
