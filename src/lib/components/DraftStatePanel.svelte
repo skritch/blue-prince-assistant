@@ -104,10 +104,13 @@
   <div class="fields">
     <div class="top-grid">
       <div class="mode-col">
-        <label><input type="radio" bind:group={mode} value="none" /> None</label>
-        <label><input type="radio" bind:group={mode} value="outer" /> Outer</label
+        <label><input type="radio" bind:group={mode} value="none" /> None</label
         >
-        <label><input type="radio" bind:group={mode} value="house" /> House</label
+        <label
+          ><input type="radio" bind:group={mode} value="outer" /> Outer</label
+        >
+        <label
+          ><input type="radio" bind:group={mode} value="house" /> House</label
         >
       </div>
 
@@ -178,23 +181,26 @@
           <input type="number" min="0" bind:value={gems} />
         </label>
         <label class="inline-field inline-field-end">
-          Keys etc.:
+          Keys,&nbsp;etc.:
           <select bind:value={keyUsed} class="key-select">
             <option value="">None</option>
-            <option value="silver">Silver</option>
-            <option value="prism">Prism</option>
-            <option value="berry picker">Berry Picker</option>
+            <option value="silver">Silver Key</option>
+            <option value="prism">Prism Key</option>
+            <option value="berry picker">Blessing of the Berry Picker</option>
           </select>
         </label>
 
         <label
           class="checkbox-field"
-          data-tooltip="When rerolling, all three rooms from the previous draft are always filtered out. On the first draft at a door, they only have a chance of being removed."
+          data-tooltip="When rerolling, all three rooms from the previous draft are always filtered out, as opposed to the first draft at a door when they only have a chance of being removed."
         >
+          Reroll:
           <input type="checkbox" bind:checked={isReroll} />
-          Is reroll
         </label>
-        <label class="inline-field inline-field-end" class:muted={!showPassageColor && !showPrismColor}>
+        <label
+          class="inline-field inline-field-end"
+          class:muted={!showPassageColor && !showPrismColor}
+        >
           Color:
           <select
             bind:value={secretPassageColor}
@@ -213,7 +219,9 @@
         <div class="prev-draft">
           <div class="prev-draft-header">
             <div class="section-label">Previous draft:</div>
-            <button class="clear-btn" onclick={clearPreviousDraft}>(clear)</button>
+            <button class="clear-btn" onclick={clearPreviousDraft}
+              >(clear)</button
+            >
           </div>
           <div class="prev-input">
             <SearchInput
