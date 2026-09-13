@@ -10,15 +10,30 @@
     UNDRAFTABLE,
     type GameState,
     type Rarity,
+    type SpoilerSettings,
     initGameState,
   } from "bp-logic";
   import SearchPairInput from "./SearchPairInput.svelte";
   import type { Item, Entry } from "./searchPairTypes";
   import { loadPanelOpen, savePanelOpen } from "../panelState";
 
-  let { gameState = $bindable(), open = $bindable(loadPanelOpen("game", false)) }: { gameState: GameState; open: boolean } = $props();
+  let {
+    gameState = $bindable(),
+    open = $bindable(loadPanelOpen("game", false)),
+    spoilerSettings = $bindable(),
+  }: { gameState: GameState; open: boolean; spoilerSettings: SpoilerSettings } = $props();
 
   $effect(() => savePanelOpen("game", open));
+
+  // --- Spoiler-level gates ---
+  // Each gate is true once the relevant spoiler OR any later spoiler is set.
+  const showUnlockDetails = $derived(spoilerSettings.room46 || spoilerSettings.entireGame);
+  const showAllRoomsCheckboxes = $derived(spoilerSettings.allRooms || spoilerSettings.entireGame);
+  const showFullDirectory = $derived(spoilerSettings.room46 || spoilerSettings.entireGame);
+  const showCoM = $derived(spoilerSettings.room46 || spoilerSettings.entireGame);
+  const showCurseDare = $derived(spoilerSettings.giftShop || spoilerSettings.entireGame);
+  const showVmode = $derived(spoilerSettings.entireGame);
+  const tombLabel = $derived(spoilerSettings.entireGame ? "Epsen Tomb Found" : "Tomb candles lit");
 
   const PAGE7_ROOMS = roomsForPage(7);
   const PAGE8_ROOMS = roomsForPage(8);
@@ -29,6 +44,14 @@
 
   function setFlag(key: keyof GameState, value: boolean) {
     gameState = { ...gameState, [key]: value };
+    // Sync spoiler settings upward on check (never revoke on uncheck)
+    if (value) {
+      if (key === "haveWestGate") {
+        spoilerSettings = { ...spoilerSettings, westGate: true };
+      } else if (key === "haveRoom46") {
+        spoilerSettings = { ...spoilerSettings, westGate: true, room46: true };
+      }
+    }
   }
 
   function toggleRoom(slug: string, add: boolean) {
@@ -52,6 +75,10 @@
       gameState = initGameState();
     } else {
       gameState = initGameFull();
+      // Activating full directory implies allRooms spoiler
+      if (!spoilerSettings.allRooms) {
+        spoilerSettings = { ...spoilerSettings, westGate: true, room46: true, allRooms: true };
+      }
     }
   }
 
@@ -74,9 +101,13 @@
     { upgrades: Array<{ name?: string; description?: string }> }
   >;
 
-  const upgradeSearchItems: Item[] = Object.keys(UPGRADES as UpgradesShape)
-    .map((slug) => ({ id: slug, label: ROOM_NAME_BY_SLUG[slug] ?? slug }))
-    .sort((a, b) => a.label.localeCompare(b.label));
+  // throne-room upgrades are hidden until entireGame spoiler
+  let upgradeSearchItems: Item[] = $derived(
+    Object.keys(UPGRADES as UpgradesShape)
+      .filter((slug) => spoilerSettings.entireGame || slug !== "throne-room")
+      .map((slug) => ({ id: slug, label: ROOM_NAME_BY_SLUG[slug] ?? slug }))
+      .sort((a, b) => a.label.localeCompare(b.label)),
+  );
 
   function upgradeOptions(baseSlug: string): Item[] {
     const entry = (UPGRADES as UpgradesShape)[baseSlug];
@@ -141,8 +172,7 @@
 
   function addRarity(slug: string, rarityId?: string) {
     if (!rarityId) return;
-    const rarity: Rarity =
-      Number(rarityId) as Rarity;
+    const rarity: Rarity = Number(rarityId) as Rarity;
     gameState = {
       ...gameState,
       rarityOverrides: { ...gameState.rarityOverrides, [slug]: rarity },
@@ -180,106 +210,196 @@
     arr.splice(i, 1);
     gameState = { ...gameState, chamberOfMirrorsAdditions: arr };
   }
+
+  // --- Studio / Floorplan autocomplete (used when allRooms spoiler not yet set) ---
+  const studioSearchItems: Item[] = PAGE7_ROOMS.map((r) => ({
+    id: r.slug,
+    label: r.name,
+  })).sort((a, b) => a.label.localeCompare(b.label));
+
+  const floorplanSearchItems: Item[] = PAGE8_ROOMS.map((r) => ({
+    id: r.slug,
+    label: r.name,
+  })).sort((a, b) => a.label.localeCompare(b.label));
+
+  let studioEntries: Entry[] = $derived(
+    PAGE7_ROOMS.filter((r) => hasRoom(r.slug)).map((r) => ({
+      keyId: r.slug,
+      keyLabel: r.name,
+    })),
+  );
+
+  let floorplanEntries: Entry[] = $derived(
+    PAGE8_ROOMS.filter((r) => hasRoom(r.slug)).map((r) => ({
+      keyId: r.slug,
+      keyLabel: r.name,
+    })),
+  );
+
+  function addStudioRoom(slug: string) {
+    gameState = addRoom(gameState, slug);
+  }
+
+  function removeStudioRoom(i: number) {
+    gameState = removeRoom(gameState, studioEntries[i].keyId);
+  }
+
+  function addFloorplanRoom(slug: string) {
+    gameState = addRoom(gameState, slug);
+  }
+
+  function removeFloorplanRoom(i: number) {
+    gameState = removeRoom(gameState, floorplanEntries[i].keyId);
+  }
 </script>
 
 <details class="panel" bind:open>
   <summary class="panel-header">Permanent Unlocks</summary>
   <div class="fields">
+
     <div class="section">
       <div class="section-label">Unlocks</div>
       <div class="two-col">
         <label
-          data-tooltip="If west gate has not been accessed, Utility Closet becomes commonplace after day 2"
-          ><input type="checkbox" bind:checked={gameState.haveWestGate} /> West Gate</label
+          data-tooltip={showUnlockDetails ? "If West Gate has not been accessed, Utility Closet becomes commonplace after day 2" : undefined}
         >
+          <input
+            type="checkbox"
+            checked={gameState.haveWestGate}
+            onchange={(e) => setFlag("haveWestGate", e.currentTarget.checked)}
+          /> West Gate
+        </label>
         <label
-          data-tooltip="Adds Gallery, Trophy Room, and Mount Holly Gift Shop; affects various rarities"
-          ><input type="checkbox" bind:checked={gameState.haveRoom46} /> Room 46</label
+          data-tooltip={showUnlockDetails ? "Adds Gallery and Mount Holly Gift Shop; affects various rarities" : undefined}
         >
-        <label data-tooltip="Adds Trophy Room"
-          ><input type="checkbox" bind:checked={gameState.haveTrophy} /> Trophy Acquired</label
-        >
-        <label
-          data-tooltip="One of several ways to unlock Her Ladyship's Chamber"
-          ><input type="checkbox" bind:checked={gameState.foundEpsenTomb} /> Epsen
-          Tomb Found</label
-        >
-        <label
-          data-tooltip="After 3+ outer room drafts, the Tomb is no longer biased to the back of the outer room list"
-          ><input type="checkbox" bind:checked={gameState.haveFoundationElevator} /> Foundation Elevator</label
-        >
-        <label
-          data-tooltip="Chance of drawing Bookshop from Library decreases with each book bought. Realm &amp; Rune does not count."
-          class="inline-field"
-        >Books Bought: <input type="number" min="0" bind:value={gameState.booksPurchased} /></label
-        >
+          <input
+            type="checkbox"
+            checked={gameState.haveRoom46}
+            onchange={(e) => setFlag("haveRoom46", e.currentTarget.checked)}
+          /> Room 46
+        </label>
+        {#if showUnlockDetails}
+          <label data-tooltip="Adds Trophy Room">
+            <input
+              type="checkbox"
+              checked={gameState.haveTrophy}
+              onchange={(e) => setFlag("haveTrophy", e.currentTarget.checked)}
+            /> Trophy Acquired
+          </label>
+          <label data-tooltip={showVmode ? "One of several ways to unlock Her Ladyship's Chamber" : undefined}>
+            <input
+              type="checkbox"
+              checked={gameState.foundEpsenTomb}
+              onchange={(e) => setFlag("foundEpsenTomb", e.currentTarget.checked)}
+            /> {tombLabel}
+          </label>
+          <label data-tooltip="Affects the probability of drafting the Tomb as an outer room">
+            <input
+              type="checkbox"
+              checked={gameState.haveFoundationElevator}
+              onchange={(e) => setFlag("haveFoundationElevator", e.currentTarget.checked)}
+            /> Foundation Elevator Activated
+          </label>
+          <label
+            class="inline-field"
+            data-tooltip="Chance of drawing Bookshop from Library decreases with each book bought. Realm &amp; Rune does not count."
+          >
+            Books Bought: <input
+              type="number"
+              min="0"
+              bind:value={gameState.booksPurchased}
+            />
+          </label>
+        {/if}
       </div>
     </div>
 
     <div class="section">
       <div class="floorplan-cols">
-        <div>
-          <div class="section-label">Studio Additions</div>
-          <div class="checkboxes col">
-            {#each PAGE7_ROOMS as room}
-              <label>
-                <input
-                  type="checkbox"
-                  checked={hasRoom(room.slug)}
-                  onchange={(e) =>
-                    toggleRoom(room.slug, e.currentTarget.checked)}
-                />
-                {room.name}
-              </label>
-            {/each}
+        {#if showAllRoomsCheckboxes}
+          <div>
+            <div class="section-label">Studio Additions</div>
+            <div class="checkboxes col">
+              {#each PAGE7_ROOMS as room}
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={hasRoom(room.slug)}
+                    onchange={(e) => toggleRoom(room.slug, e.currentTarget.checked)}
+                  />
+                  {room.name}
+                </label>
+              {/each}
+            </div>
           </div>
-        </div>
-        <div>
-          <div class="section-label">Found Floorplans</div>
-          <div class="checkboxes col">
-            {#each PAGE8_ROOMS as room}
-              <label>
-                <input
-                  type="checkbox"
-                  checked={hasRoom(room.slug)}
-                  onchange={(e) =>
-                    toggleRoom(room.slug, e.currentTarget.checked)}
-                />
-                {room.name}
-              </label>
-            {/each}
+          <div>
+            <div class="section-label">Found Floorplans</div>
+            <div class="checkboxes col">
+              {#each PAGE8_ROOMS as room}
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={hasRoom(room.slug)}
+                    onchange={(e) => toggleRoom(room.slug, e.currentTarget.checked)}
+                  />
+                  {room.name}
+                </label>
+              {/each}
+            </div>
           </div>
-        </div>
+        {:else}
+          <SearchPairInput
+            label="Studio Additions"
+            alwaysOpen={true}
+            searchItems={studioSearchItems}
+            entries={studioEntries}
+            onadd={addStudioRoom}
+            onremove={removeStudioRoom}
+          />
+          <SearchPairInput
+            label="Found Floorplans"
+            alwaysOpen={true}
+            searchItems={floorplanSearchItems}
+            entries={floorplanEntries}
+            onadd={addFloorplanRoom}
+            onremove={removeFloorplanRoom}
+          />
+        {/if}
       </div>
     </div>
 
-    <div class="inline-fields">
-      <button
-        class="btn"
-        class:active={fullHouseActive}
-        onclick={toggleFullHouse}>Use Full Directory</button
-      >
-    </div>
+    {#if showFullDirectory}
+      <div class="inline-fields">
+        <button
+          class="btn"
+          class:active={fullHouseActive}
+          onclick={toggleFullHouse}
+        >Use Full Directory</button>
+      </div>
+    {/if}
 
-    <div class="two-col">
-      <label
-        data-tooltip="Modifies many room rarities. Activated by drafting 3 rooms in 45 seconds."
-      >
-        <input
-          type="checkbox"
-          checked={gameState.vmode}
-          onchange={(e) => setFlag("vmode", e.currentTarget.checked)}
-        />
-        Veteran Mode
-      </label>
-      <label
-        ><input
-          type="checkbox"
-          checked={gameState.curseOrDare}
-          onchange={(e) => setFlag("curseOrDare", e.currentTarget.checked)}
-        /> Curse / Dare Mode</label
-      >
-    </div>
+    {#if showCurseDare || showVmode}
+      <div class="two-col">
+        {#if showCurseDare}
+          <label>
+            <input
+              type="checkbox"
+              checked={gameState.curseOrDare}
+              onchange={(e) => setFlag("curseOrDare", e.currentTarget.checked)}
+            /> Curse / Dare Mode
+          </label>
+        {/if}
+        {#if showVmode}
+          <label>
+            <input
+              type="checkbox"
+              checked={gameState.vmode}
+              onchange={(e) => setFlag("vmode", e.currentTarget.checked)}
+            /> Veteran Mode
+          </label>
+        {/if}
+      </div>
+    {/if}
 
     <SearchPairInput
       label="Upgraded Rooms"
@@ -297,13 +417,15 @@
       onadd={addRarity}
       onremove={removeRarity}
     />
-    <SearchPairInput
-      label="Chamber of Mirrors Additions"
-      searchItems={comSearchItems}
-      entries={comEntries}
-      onadd={addComRoom}
-      onremove={removeComRoom}
-    />
+    {#if showCoM}
+      <SearchPairInput
+        label="Chamber of Mirrors Additions"
+        searchItems={comSearchItems}
+        entries={comEntries}
+        onadd={addComRoom}
+        onremove={removeComRoom}
+      />
+    {/if}
   </div>
 </details>
 
@@ -376,4 +498,5 @@
   .btn.active:hover {
     opacity: 0.85;
   }
+
 </style>

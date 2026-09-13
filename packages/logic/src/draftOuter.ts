@@ -87,7 +87,7 @@ export function draftOuter(
   // *on* day 1, but it's not worth exposing an option for that.
   if (outerRoomDraftCount === 0 && !game.vmode) {
     const firstDraft = ['root-cellar', 'toolshed', 'hovel']
-    for (let i = 1; i <= 3; i++) {
+    for (let i = 0; i < 3; i++) {
       slotPools[i] = KeyedVec.empty().set(firstDraft[i], 1)
       reasons[i] = { [firstDraft[i]]: ['guaranteed on first draft'] }
     }

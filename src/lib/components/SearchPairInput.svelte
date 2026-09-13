@@ -12,6 +12,7 @@
     onadd,
     onremove,
     alwaysOpen = false,
+    placeholder = "Search rooms...",
   }: {
     label: string;
     searchItems: Item[];
@@ -20,6 +21,7 @@
     onadd: (keyId: string, valueId?: string) => void;
     onremove: (index: number) => void;
     alwaysOpen?: boolean;
+    placeholder?: string;
   } = $props();
 
   let query = $state("");
@@ -81,7 +83,7 @@
             pendingValue = "";
           }}
           {onkeydown}
-          placeholder="Search rooms..."
+          {placeholder}
         />
         {#if matches.length > 0}
           <ul class="dropdown">

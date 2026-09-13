@@ -17,6 +17,7 @@ export interface DayState {
   haveElectromagnet: boolean
   haveChronograph: boolean
   haveHallPass: boolean
+  haveCompass: boolean
   scepterColor: RoomColor | null   // Royal Scepter color boost (null = inactive)
 
   // Chess
@@ -58,6 +59,7 @@ export function initDay(day: number): DayState {
     haveElectromagnet: false,
     haveChronograph: false,
     haveHallPass: false,
+    haveCompass: false,
     boilerActivated: false,
     mailRoomUsed: false,
     coatCheckUsed: false,

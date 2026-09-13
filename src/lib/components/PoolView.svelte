@@ -16,6 +16,7 @@
     type TileRow,
     type PrismColor,
     type DraftPool,
+    type SpoilerSettings,
   } from "bp-logic";
   import { loadState, saveState, persistLocally } from "../stateSerializer";
   import { loadPanelOpen } from "../panelState";
@@ -25,6 +26,8 @@
   import DraftStatePanel from "./DraftStatePanel.svelte";
   import PoolTable from "./PoolTable.svelte";
   import RoomListView from "./RoomListView.svelte";
+
+  let { spoilerSettings = $bindable() }: { spoilerSettings: SpoilerSettings } = $props();
 
   type ViewMode = "room-pct" | "room-list" | "door-pct";
 
@@ -311,8 +314,8 @@
 
 <div class="layout">
   <div class="config">
-    <GameStatePanel bind:gameState bind:open={gamePanelOpen} />
-    <DayStatePanel bind:dayState bind:open={dayPanelOpen} />
+    <GameStatePanel bind:gameState bind:open={gamePanelOpen} bind:spoilerSettings />
+    <DayStatePanel bind:dayState bind:open={dayPanelOpen} {spoilerSettings} />
     <HouseStatePanel bind:houseState bind:open={housePanelOpen} />
     {#key draftKey}
       <DraftStatePanel
