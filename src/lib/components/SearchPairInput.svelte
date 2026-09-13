@@ -270,26 +270,6 @@
     opacity: 0.5;
   }
 
-  .add-btn {
-    padding: 0.25rem 0.6rem;
-    font-size: 0.8rem;
-    border: 1px solid var(--border);
-    border-radius: 3px;
-    background: var(--accent-light);
-    color: var(--text);
-    cursor: pointer;
-    white-space: nowrap;
-  }
-
-  .add-btn:disabled {
-    opacity: 0.4;
-    cursor: default;
-  }
-
-  .add-btn:not(:disabled):hover {
-    border-color: var(--accent);
-  }
-
   .entry-list {
     margin: 0;
     padding: 0;

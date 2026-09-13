@@ -1,7 +1,8 @@
-import { ROOM_BY_SLUG, ROOMS, UPGRADE_LOOKUP, UPGRADES } from './rooms'
+import { ROOM_BY_SLUG, ROOMS, UNDRAFTABLE, UPGRADE_LOOKUP, UPGRADES } from './rooms'
 import { type GameState } from './game'
 import type { Rarity, Room, RoomColor, Upgrade } from './types'
 import type { KeyedVec } from './math'
+import { partition } from './utils'
 
 
 export type RoomSource =
@@ -42,7 +43,10 @@ export interface PooledRoom {
   pReasons?: [string, string, string]
 }
 
-export interface RemovedRoom extends PooledRoom {
+export interface RemovedRoom {
+  room: Room
+  source?: RoomSource
+  upgrade?: Upgrade,
   reason?: string
 }
 
@@ -65,8 +69,10 @@ export interface DraftPool {
 }
 
 export function initPool(game: GameState): DraftPool {
+  const [rooms, undraftable] = partition(game.pool, r => !UNDRAFTABLE.includes(r.slug))
+
   return {
-    rooms: game.pool.map((room) => {
+    rooms: rooms.map((room) => {
       const upgradeSlug = game.upgrades[room.slug]
       const upgrade = upgradeSlug ? UPGRADE_LOOKUP[room.slug]?.[upgradeSlug] : undefined
       return { room, upgrade, p: 1.0 }
@@ -74,7 +80,7 @@ export function initPool(game: GameState): DraftPool {
     rarityOverrides: {},
     annotations: {},
     blocks: {},
-    removed: []
+    removed: undraftable.map((r) => ({ room: r, reason: "undraftable" }))
   }
 }
 

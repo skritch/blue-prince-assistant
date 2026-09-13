@@ -13,7 +13,7 @@
 
   const itemById = $derived(Object.fromEntries(items.map((i) => [i.id, i])));
 
-  let query = $state(value ? (itemById[value]?.label ?? value) : "");
+  let query = $state("");
   let focused = $state(false);
   let selectedIndex = $state(-1);
 

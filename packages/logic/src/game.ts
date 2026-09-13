@@ -1,4 +1,4 @@
-import { ADHOC_ADDITIONS, POOL_ADDITIONS, ROOMS, ROOM_46_REWARDS, ROOM_BY_SLUG, UNDRAFTABLE, roomsForPage } from './rooms'
+import { ADHOC_ADDITIONS, INITIAL_ROOMS, POOL_ADDITIONS, ROOMS, ROOM_46_REWARDS, ROOM_BY_SLUG, UNDRAFTABLE, roomsForPage } from './rooms'
 import type { Rarity, Room } from './types'
 
 
@@ -34,7 +34,7 @@ const INIT_EXCLUDED_SLUGS = new Set([
   'mount-holly-gift-shop',
   ...POOL_ADDITIONS,
   ...ADHOC_ADDITIONS,
-  ...UNDRAFTABLE
+  ...INITIAL_ROOMS
 ])
 
 export function initGameState(): GameState {
