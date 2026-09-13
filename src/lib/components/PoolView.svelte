@@ -291,6 +291,8 @@
     draftKey++;
   }
 
+  const poolSlugs = $derived(new Set(gameState.pool.map((r) => r.slug)));
+
   type PoolResult = { ok: true; pool: DraftPool } | { ok: false; error: Error };
 
   let poolResult = $derived.by<PoolResult>(() => {
@@ -316,7 +318,7 @@
   <div class="config">
     <GameStatePanel bind:gameState bind:open={gamePanelOpen} bind:spoilerSettings day={dayState.day} />
     <DayStatePanel bind:dayState bind:open={dayPanelOpen} {spoilerSettings} />
-    <HouseStatePanel bind:houseState bind:open={housePanelOpen} {spoilerSettings} />
+    <HouseStatePanel bind:houseState bind:open={housePanelOpen} {spoilerSettings} {poolSlugs} />
     {#key draftKey}
       <DraftStatePanel
         bind:mode={draftMode}

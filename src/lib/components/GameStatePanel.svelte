@@ -152,11 +152,17 @@
 
   // --- Rarity Overrides ---
   const undraftableSet = new Set(UNDRAFTABLE);
-  const raritySearchItems: Item[] = ROOMS.filter(
-    (r) => !undraftableSet.has(r.slug),
-  )
-    .map((r) => ({ id: r.slug, label: r.name }))
-    .sort((a, b) => a.label.localeCompare(b.label));
+  const poolSlugSet = $derived(new Set(gameState.pool.map((r) => r.slug)));
+  let raritySearchItems: Item[] = $derived(
+    ROOMS.filter((r) => {
+      if (undraftableSet.has(r.slug)) return false;
+      if (r.directoryPage === 7 || r.directoryPage === 8) return poolSlugSet.has(r.slug);
+      if (r.directoryPage === 9) return spoilerSettings.westGate || spoilerSettings.entireGame;
+      return true;
+    })
+      .map((r) => ({ id: r.slug, label: r.name }))
+      .sort((a, b) => a.label.localeCompare(b.label)),
+  );
 
   const RARITY_OPTIONS: Item[] = [
     { id: "1", label: "Commonplace" },

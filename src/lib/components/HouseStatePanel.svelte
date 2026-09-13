@@ -8,7 +8,8 @@
     houseState = $bindable(),
     open = $bindable(loadPanelOpen("house", false)),
     spoilerSettings,
-  }: { houseState: HouseState; open: boolean; spoilerSettings: SpoilerSettings } = $props();
+    poolSlugs,
+  }: { houseState: HouseState; open: boolean; spoilerSettings: SpoilerSettings; poolSlugs: Set<string> } = $props();
 
   const showFilters = $derived(spoilerSettings.entireGame);
   const furnacePlaced = $derived(houseState.placedRooms.includes('furnace'));
@@ -17,10 +18,15 @@
 
   const roomNameBySlug = Object.fromEntries(ROOMS.map((r) => [r.slug, r.name]));
 
-  const roomSearchItems = ROOMS.map((r) => ({
-    id: r.slug,
-    label: r.name,
-  })).sort((a, b) => a.label.localeCompare(b.label));
+  const roomSearchItems = $derived(
+    ROOMS.filter((r) => {
+      if (r.directoryPage === 7 || r.directoryPage === 8) return poolSlugs.has(r.slug);
+      if (r.directoryPage === 9) return spoilerSettings.westGate || spoilerSettings.entireGame;
+      return true;
+    })
+      .map((r) => ({ id: r.slug, label: r.name }))
+      .sort((a, b) => a.label.localeCompare(b.label)),
+  );
 
   // Rooms whose flag is always in sync with placedRooms (checked ↔ room present)
   const SPECIAL_ROOMS: { slug: string; flag: keyof HouseState; label: string; tooltip: string }[] = [
