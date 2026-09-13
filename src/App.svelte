@@ -5,8 +5,8 @@
   import {
     loadSpoilerSettings,
     saveSpoilerSettings,
+    type SpoilerSettings,
   } from "./lib/spoilerSettings";
-  import type { SpoilerSettings } from "bp-logic";
 
   type Theme = "system" | "light" | "dark";
 

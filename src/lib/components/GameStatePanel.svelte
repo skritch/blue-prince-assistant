@@ -10,9 +10,9 @@
     UNDRAFTABLE,
     type GameState,
     type Rarity,
-    type SpoilerSettings,
     initGameState,
   } from "bp-logic";
+  import type { SpoilerSettings } from "../spoilerSettings";
   import SearchPairInput from "./SearchPairInput.svelte";
   import type { Item, Entry } from "./searchPairTypes";
   import { loadPanelOpen, savePanelOpen } from "../panelState";

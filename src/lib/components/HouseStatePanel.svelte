@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { ROOMS, type HouseState, type SpoilerSettings } from "bp-logic";
+  import { ROOMS, type HouseState } from "bp-logic";
+  import type { SpoilerSettings } from "../spoilerSettings";
   import SearchPairInput from "./SearchPairInput.svelte";
   import type { Entry } from "./searchPairTypes";
   import { loadPanelOpen, savePanelOpen } from "../panelState";

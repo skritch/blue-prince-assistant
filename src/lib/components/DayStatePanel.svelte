@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { type DayState, type RoomColor, type SpoilerSettings } from "bp-logic";
+  import { type DayState, type RoomColor } from "bp-logic";
+  import type { SpoilerSettings } from "../spoilerSettings";
   import { loadPanelOpen, savePanelOpen } from "../panelState";
   import SearchPairInput from "./SearchPairInput.svelte";
   import type { Item, Entry } from "./SearchPairInput.svelte";

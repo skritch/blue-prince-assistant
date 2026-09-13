@@ -1,12 +1,13 @@
 <script lang="ts">
-  import type { SpoilerSettings } from 'bp-logic'
+  import type { SpoilerSettings } from '../spoilerSettings'
 
   let { settings = $bindable() }: { settings: SpoilerSettings } = $props()
 
   type Field = keyof SpoilerSettings
 
   const prereqs: Partial<Record<Field, Field>> = {
-    room46: 'westGate',
+    antechamber: 'westGate',
+    room46: 'antechamber',
     allRooms: 'room46',
     allItems: 'room46',
     precipiceAccessed: 'room46',
@@ -39,6 +40,7 @@
     confirmingEntireGame = false
     settings = {
       westGate: true,
+      antechamber: true,
       room46: true,
       allRooms: true,
       allItems: true,
@@ -70,15 +72,27 @@
     <label class="row" class:locked={settings.entireGame}>
       <input
         type="checkbox"
+        checked={settings.antechamber}
+        disabled={settings.entireGame}
+        onchange={(e) => toggle('antechamber', e.currentTarget.checked)}
+      />
+      <span>Reached Antechamber</span>
+    </label>
+
+    {#if settings.antechamber}
+    <label class="row" class:locked={settings.entireGame}>
+      <input
+        type="checkbox"
         checked={settings.room46}
         disabled={settings.entireGame}
         onchange={(e) => toggle('room46', e.currentTarget.checked)}
       />
-      <span>Reached Room 46</span>
+      <span>{settings.room46 ? 'Reached Room 46' : 'Opened Antechamber north door'}</span>
     </label>
+    {/if}
 
     {#if settings.room46}
-      <label class="row indent-1" class:locked={settings.entireGame}>
+      <label class="row" class:locked={settings.entireGame}>
         <input
           type="checkbox"
           checked={settings.allRooms}
@@ -88,7 +102,7 @@
         <span>All rooms discovered</span>
       </label>
 
-      <label class="row indent-1" class:locked={settings.entireGame}>
+      <label class="row" class:locked={settings.entireGame}>
         <input
           type="checkbox"
           checked={settings.allItems}
@@ -98,7 +112,7 @@
         <span>All items discovered</span>
       </label>
 
-      <label class="row indent-1" class:locked={settings.entireGame}>
+      <label class="row" class:locked={settings.entireGame}>
         <input
           type="checkbox"
           checked={settings.precipiceAccessed}
@@ -109,7 +123,7 @@
       </label>
 
       {#if settings.precipiceAccessed}
-        <label class="row indent-2" class:locked={settings.entireGame}>
+        <label class="row indent-1" class:locked={settings.entireGame}>
           <input
             type="checkbox"
             checked={settings.precipiceSolved}
@@ -120,7 +134,7 @@
         </label>
       {/if}
 
-      <label class="row indent-1" class:locked={settings.entireGame}>
+      <label class="row" class:locked={settings.entireGame}>
         <input
           type="checkbox"
           checked={settings.giftShop}
@@ -175,7 +189,6 @@
   }
 
   .indent-1 { padding-left: 1.25rem; }
-  .indent-2 { padding-left: 2.5rem; }
 
   input[type='checkbox'] {
     flex-shrink: 0;

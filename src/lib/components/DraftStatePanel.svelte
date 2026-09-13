@@ -1,5 +1,6 @@
 <script lang="ts">
-  import type { Direction, TileColumn, TileRow, SpoilerSettings } from "bp-logic";
+  import type { Direction, TileColumn, TileRow } from "bp-logic";
+  import type { SpoilerSettings } from "../spoilerSettings";
   import { ROOMS } from "bp-logic";
   import { untrack } from "svelte";
   import SearchInput from "./SearchInput.svelte";

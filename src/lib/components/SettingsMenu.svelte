@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { SpoilerSettings } from 'bp-logic'
+  import type { SpoilerSettings } from '../spoilerSettings'
   import SpoilerSettingsPanel from './SpoilerSettingsPanel.svelte'
 
   type Theme = 'system' | 'light' | 'dark'

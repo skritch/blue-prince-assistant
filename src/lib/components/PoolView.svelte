@@ -16,8 +16,8 @@
     type TileRow,
     type PrismColor,
     type DraftPool,
-    type SpoilerSettings,
   } from "bp-logic";
+  import type { SpoilerSettings } from "../spoilerSettings";
   import { loadState, saveState, persistLocally } from "../stateSerializer";
   import { loadPanelOpen } from "../panelState";
   import GameStatePanel from "./GameStatePanel.svelte";

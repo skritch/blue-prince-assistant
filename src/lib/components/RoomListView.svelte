@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { type DraftPool, type Rarity, type SpoilerSettings } from "bp-logic";
+  import { type DraftPool, type Rarity } from "bp-logic";
+  import type { SpoilerSettings } from "../spoilerSettings";
   import ColorDots from "./ColorDots.svelte";
 
   let {

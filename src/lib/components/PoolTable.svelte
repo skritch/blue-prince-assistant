@@ -6,8 +6,8 @@
     type HouseState,
     type Rarity,
     type Annotation,
-    type SpoilerSettings,
   } from "bp-logic";
+  import type { SpoilerSettings } from "../spoilerSettings";
   import ColorDots from "./ColorDots.svelte";
 
   let {
@@ -80,7 +80,7 @@
   }
 
   // --- Spoiler gates ---
-  const showRemoved       = $derived(spoilerSettings.room46  || spoilerSettings.entireGame);
+  const showRemoved       = $derived(spoilerSettings.allRooms || spoilerSettings.entireGame);
   const showTooltips      = $derived(spoilerSettings.room46  || spoilerSettings.entireGame);
   const showBlockedRooms  = $derived(spoilerSettings.allRooms || spoilerSettings.entireGame);
 
