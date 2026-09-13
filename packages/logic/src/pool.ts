@@ -144,10 +144,10 @@ export function annotateRoom(pool: DraftPool, annotation: Annotation, slug: stri
 // Blocking prevents a room from being drafted without affecting the 
 // exit lists directly, so effects which bypass those can draft it.
 export function blockDraft(pool: DraftPool, slug: string, reason?: string) {
-  const newBlocks = { ...pool.blocks, [slug]: reason }
+  const newBlocks = { ...pool.blocks, [slug]: reason ?? '' }
   return {
     ...pool,
-    blocked: newBlocks
+    blocks: newBlocks
   }
 }
 

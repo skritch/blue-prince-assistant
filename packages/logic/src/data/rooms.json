@@ -182,7 +182,7 @@
     "doors": 1,
     "directoryPage": 1,
     "roomNumber": 12,
-    "description": "1 key, 1 gem, 1 coin",
+    "description": "1 key, 1 gems, 1 coin",
     "tags": [
       "dead-end"
     ]
@@ -261,7 +261,7 @@
     "doors": 3,
     "directoryPage": 1,
     "roomNumber": 17,
-    "description": "1 gem",
+    "description": "1 gems",
     "tags": []
   },
   {
@@ -276,7 +276,7 @@
     "doors": 1,
     "directoryPage": 1,
     "roomNumber": 18,
-    "description": "3 gem",
+    "description": "3 gems",
     "tags": [
       "dead-end"
     ]
@@ -293,7 +293,7 @@
     "doors": 2,
     "directoryPage": 1,
     "roomNumber": 19,
-    "description": "8 gem",
+    "description": "8 gems",
     "tags": []
   },
   {
@@ -1110,7 +1110,7 @@
     "doors": 2,
     "directoryPage": 4,
     "roomNumber": 69,
-    "description": "2 gem, tomorrow start with 2 gem",
+    "description": "2 gems, tomorrow start with 2 gems",
     "tags": [
       "tomorrow"
     ]

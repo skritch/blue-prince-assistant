@@ -128,7 +128,8 @@ const DESCRIPTION_BLOCKLIST = new Set(['none', 'puzzle', 'no room description'])
 function parseDescription(str) {
   const s = str?.trim()
   if (!s || DESCRIPTION_BLOCKLIST.has(s.toLowerCase())) return null
-  return s.charAt(0).toUpperCase() + s.slice(1)
+  const fixed = s.replace(/\b(\d+) gem\b/gi, '$1 gems')
+  return fixed.charAt(0).toUpperCase() + fixed.slice(1)
 }
 
 function parseDoors(doorsStr) {

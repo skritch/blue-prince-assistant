@@ -80,9 +80,8 @@
   }
 
   // --- Spoiler gates ---
-  const showRemoved       = $derived(spoilerSettings.allRooms || spoilerSettings.entireGame);
-  const showTooltips      = $derived(spoilerSettings.room46  || spoilerSettings.entireGame);
-  const showBlockedRooms  = $derived(spoilerSettings.allRooms || spoilerSettings.entireGame);
+  const showRemoved  = $derived(spoilerSettings.allRooms || spoilerSettings.entireGame);
+  const showTooltips = $derived(spoilerSettings.room46  || spoilerSettings.entireGame);
 
   let activeTab: "pool" | "removed" = $state("pool");
 
@@ -130,9 +129,7 @@
   );
 
   const blockedRooms = $derived(
-    showBlockedRooms
-      ? []
-      : sortedRooms.filter(({ room }) => room.slug in draftPool.blocks),
+    sortedRooms.filter(({ room }) => room.slug in draftPool.blocks),
   );
 
   const blockedRoomSet = $derived(new Set(blockedRooms));
@@ -178,36 +175,29 @@
     return result;
   });
 
-  const blockedPSlot = $derived.by<[number, number, number] | null>(() => {
-    if (blockedRooms.length === 0) return null;
-    const result: [number, number, number] = [0, 0, 0];
-    for (const { pSlot } of blockedRooms) {
-      if (pSlot) {
-        for (let i = 0; i < 3; i++) {
-          const v = pSlot[i];
-          if (v != null && !isNaN(v)) result[i] += v;
-        }
+  let sortedRemoved = $derived.by(() => {
+    const all = [
+      ...draftPool.removed.filter((r) => r.reason),
+      ...blockedRooms.map(({ room, source, upgrade }) => ({
+        room,
+        source,
+        upgrade,
+        reason: draftPool.blocks[room.slug],
+      })),
+    ];
+    return all.sort((a, b) => {
+      const ra = a.reason ?? "";
+      const rb = b.reason ?? "";
+      if (ra !== rb) {
+        if (!ra) return 1;
+        if (!rb) return -1;
+        return ra.localeCompare(rb);
       }
-    }
-    return result;
+      const ra2 = raritySort(a.room.baseRarity);
+      const rb2 = raritySort(b.room.baseRarity);
+      return ra2 !== rb2 ? ra2 - rb2 : a.room.name.localeCompare(b.room.name);
+    });
   });
-
-  let sortedRemoved = $derived(
-    [...draftPool.removed]
-      .filter((r) => r.reason)
-      .sort((a, b) => {
-        const ra = a.reason ?? "";
-        const rb = b.reason ?? "";
-        if (ra !== rb) {
-          if (!ra) return 1;
-          if (!rb) return -1;
-          return ra.localeCompare(rb);
-        }
-        const ra2 = raritySort(a.room.baseRarity);
-        const rb2 = raritySort(b.room.baseRarity);
-        return ra2 !== rb2 ? ra2 - rb2 : a.room.name.localeCompare(b.room.name);
-      }),
-  );
 
   let slotTotals = $derived(() => {
     const totals = [0, 0, 0];
@@ -397,7 +387,7 @@
                     ? pctValue.toPrecision(3)
                     : pctValue.toPrecision(2)}
                 {@const reason = pReasons?.[idx]}
-                <td class="prob" data-tooltip={showTooltips && reason ? `${tooltipValue}%\n${reason}` : undefined}
+                <td class="prob" data-tooltip={showTooltips && display ? (reason ? `${tooltipValue}%\n${reason}` : `${tooltipValue}%`) : undefined}
                   >{display}{#if display && reason && showTooltips}<span class="prob-reason">*</span>{/if}</td
                 >
               {/each}
@@ -425,23 +415,6 @@
           </tr>
         {/if}
 
-        {#if blockedPSlot}
-          <tr class="other-row">
-            <td class="btn-col"></td>
-            <td class="btn-col"></td>
-            <td class="source-icon-col"></td>
-            <td class="colors other-unknown">?</td>
-            <td class="name other-label">({blockedRooms.length} blocked rooms...)</td>
-            <td class="rarity other-unknown">?</td>
-            <td class="doors other-unknown">?</td>
-            <td class="gems other-unknown">?</td>
-            {#each blockedPSlot as slotP}
-              {@const pctValue = slotP * 100}
-              {@const display = pctValue === 0 ? "" : pctValue.toFixed(1)}
-              <td class="prob">{display}</td>
-            {/each}
-          </tr>
-        {/if}
       </tbody>
       <tfoot>
         <tr class="totals-row">
