@@ -80,8 +80,9 @@
   }
 
   // --- Spoiler gates ---
-  const showRemoved  = $derived(spoilerSettings.room46 || spoilerSettings.entireGame);
-  const showTooltips = $derived(spoilerSettings.room46 || spoilerSettings.entireGame);
+  const showRemoved       = $derived(spoilerSettings.room46  || spoilerSettings.entireGame);
+  const showTooltips      = $derived(spoilerSettings.room46  || spoilerSettings.entireGame);
+  const showBlockedRooms  = $derived(spoilerSettings.allRooms || spoilerSettings.entireGame);
 
   let activeTab: "pool" | "removed" = $state("pool");
 
@@ -128,10 +129,20 @@
     }),
   );
 
+  const blockedRooms = $derived(
+    showBlockedRooms
+      ? []
+      : sortedRooms.filter(({ room }) => room.slug in draftPool.blocks),
+  );
+
+  const blockedRoomSet = $derived(new Set(blockedRooms));
+
   const otherRooms = $derived(
     showRemoved
       ? []
-      : sortedRooms.filter(({ room }) => {
+      : sortedRooms.filter((pr) => {
+          if (blockedRoomSet.has(pr)) return false;
+          const { room } = pr;
           if (ALWAYS_SHOW_PAGES.has(room.directoryPage)) return false;
           if (ALWAYS_SHOW_SLUGS.has(room.slug)) return false;
           const effectiveRarity = draftPool.rarityOverrides[room.slug] ?? room.baseRarity;
@@ -150,13 +161,27 @@
   );
 
   const visibleRooms = $derived(
-    otherRoomSet.size === 0 ? sortedRooms : sortedRooms.filter((r) => !otherRoomSet.has(r)),
+    sortedRooms.filter((r) => !otherRoomSet.has(r) && !blockedRoomSet.has(r)),
   );
 
   const otherPSlot = $derived.by<[number, number, number] | null>(() => {
     if (otherRooms.length === 0) return null;
     const result: [number, number, number] = [0, 0, 0];
     for (const { pSlot } of otherRooms) {
+      if (pSlot) {
+        for (let i = 0; i < 3; i++) {
+          const v = pSlot[i];
+          if (v != null && !isNaN(v)) result[i] += v;
+        }
+      }
+    }
+    return result;
+  });
+
+  const blockedPSlot = $derived.by<[number, number, number] | null>(() => {
+    if (blockedRooms.length === 0) return null;
+    const result: [number, number, number] = [0, 0, 0];
+    for (const { pSlot } of blockedRooms) {
       if (pSlot) {
         for (let i = 0; i < 3; i++) {
           const v = pSlot[i];
@@ -393,6 +418,24 @@
             <td class="doors other-unknown">?</td>
             <td class="gems other-unknown">?</td>
             {#each otherPSlot as slotP}
+              {@const pctValue = slotP * 100}
+              {@const display = pctValue === 0 ? "" : pctValue.toFixed(1)}
+              <td class="prob">{display}</td>
+            {/each}
+          </tr>
+        {/if}
+
+        {#if blockedPSlot}
+          <tr class="other-row">
+            <td class="btn-col"></td>
+            <td class="btn-col"></td>
+            <td class="source-icon-col"></td>
+            <td class="colors other-unknown">?</td>
+            <td class="name other-label">({blockedRooms.length} blocked rooms...)</td>
+            <td class="rarity other-unknown">?</td>
+            <td class="doors other-unknown">?</td>
+            <td class="gems other-unknown">?</td>
+            {#each blockedPSlot as slotP}
               {@const pctValue = slotP * 100}
               {@const display = pctValue === 0 ? "" : pctValue.toFixed(1)}
               <td class="prob">{display}</td>

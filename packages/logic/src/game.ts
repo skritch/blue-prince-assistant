@@ -1,4 +1,4 @@
-import { ADHOC_ADDITIONS, INITIAL_ROOMS, POOL_ADDITIONS, ROOMS, ROOM_46_REWARDS, ROOM_BY_SLUG, UNDRAFTABLE, roomsForPage } from './rooms'
+import { ADHOC_ADDITIONS, INITIAL_ROOMS, POOL_ADDITIONS, ROOMS, ROOM_BY_SLUG, roomsForPage } from './rooms'
 import type { Rarity, Room } from './types'
 
 

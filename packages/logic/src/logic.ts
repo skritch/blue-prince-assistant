@@ -1,5 +1,5 @@
 
-import { MIRROR_ROOMS, OUTER_ROOMS, POOL_ADDITIONS, ROOM_46_REWARDS } from './rooms'
+import { MIRROR_ROOMS, OUTER_ROOMS, POOL_ADDITIONS } from './rooms'
 import { classifyExitTo, getRoomsAt } from './tiles'
 import type { DayState } from './day'
 import { addToPool, annotateRoom, blockDraft, initPool, removeFromPool, setProbabilities, type DraftPool, type PooledRoom } from './pool'
@@ -30,7 +30,6 @@ function buildbasePool(
     // Gallery and Trophy are "blocked" until this
     pool = addToPool(pool, ['mount-holly-gift-shop'], 'room46')
   }
-  if (game.haveTrophy && !game.haveRoom46) { pool = addToPool(pool, ['trophy-room'], 'trophy') }
   if (house.poolInHouse) { pool = addToPool(pool, POOL_ADDITIONS, 'pool-in-house') }
   if (day.baconAndEggs) { pool = addToPool(pool, ['morning-room'], 'bacon-and-eggs') }
   if (day.knightChess) { pool = addToPool(pool, ['armory'], 'knight-chess') }
@@ -124,8 +123,8 @@ function applyDraftingBlocks(
   draft?: DraftParams
 ) {
 
-  if (!game.haveRoom46) {
-    pool = blockDraft(pool, 'trophy-room', "blocked until reaching room 46")
+  if (!game.haveRoom46 && !game.haveTrophy) {
+    pool = blockDraft(pool, 'trophy-room', "blocked until reaching room 46 or acquiring a trophy")
   }
   if (!(game.haveRoom46 || day.day >= 46)) {
     pool = blockDraft(pool, 'gallery', "blocked until reaching room 46 or day 46")
