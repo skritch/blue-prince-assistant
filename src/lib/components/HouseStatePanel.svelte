@@ -1,10 +1,17 @@
 <script lang="ts">
-  import { ROOMS, type HouseState } from "bp-logic";
+  import { ROOMS, type HouseState, type SpoilerSettings } from "bp-logic";
   import SearchPairInput from "./SearchPairInput.svelte";
   import type { Entry } from "./searchPairTypes";
   import { loadPanelOpen, savePanelOpen } from "../panelState";
 
-  let { houseState = $bindable(), open = $bindable(loadPanelOpen("house", false)) }: { houseState: HouseState; open: boolean } = $props();
+  let {
+    houseState = $bindable(),
+    open = $bindable(loadPanelOpen("house", false)),
+    spoilerSettings,
+  }: { houseState: HouseState; open: boolean; spoilerSettings: SpoilerSettings } = $props();
+
+  const showFilters = $derived(spoilerSettings.entireGame);
+  const furnacePlaced = $derived(houseState.placedRooms.includes('furnace'));
 
   $effect(() => savePanelOpen("house", open));
 
@@ -48,10 +55,9 @@
   );
 
   function addRoom(slug: string) {
-    houseState = syncFlags({
-      ...houseState,
-      placedRooms: [...houseState.placedRooms, slug],
-    });
+    let next = syncFlags({ ...houseState, placedRooms: [...houseState.placedRooms, slug] });
+    if (slug === 'furnace') next = { ...next, furnaceInHouse: true };
+    houseState = next;
     searchKey++;
   }
 
@@ -99,25 +105,31 @@
         House Rank Reached:
         <input type="number" min="1" max="9" bind:value={houseState.maxRank} />
       </label>
-      <div class="section">
-        <div class="section-label">Filters &amp; Additions</div>
-        <div class="checks">
-          {#each SPECIAL_ROOMS as { slug, label, tooltip }}
-            <label data-tooltip={tooltip}>
-              <input
-                type="checkbox"
-                checked={houseState.placedRooms.includes(slug)}
-                onchange={(e) => toggleSpecialRoom(slug, e.currentTarget.checked)}
-              /> {label}
-            </label>
-          {/each}
-          <label>
-            <input type="checkbox" bind:checked={houseState.furnaceInHouse} />
-            Furnace
-            <span class="help-icon" data-tooltip={FURNACE_NOTE}>?</span>
-          </label>
+      {#if showFilters || furnacePlaced}
+        <div class="section">
+          <div class="section-label">Filters &amp; Additions</div>
+          <div class="checks">
+            {#if showFilters}
+              {#each SPECIAL_ROOMS as { slug, label, tooltip }}
+                <label data-tooltip={tooltip}>
+                  <input
+                    type="checkbox"
+                    checked={houseState.placedRooms.includes(slug)}
+                    onchange={(e) => toggleSpecialRoom(slug, e.currentTarget.checked)}
+                  /> {label}
+                </label>
+              {/each}
+            {/if}
+            {#if showFilters || furnacePlaced}
+              <label>
+                <input type="checkbox" bind:checked={houseState.furnaceInHouse} />
+                Furnace
+                <span class="help-icon" data-tooltip={FURNACE_NOTE}>?</span>
+              </label>
+            {/if}
+          </div>
         </div>
-      </div>
+      {/if}
     </div>
   </div>
 </details>

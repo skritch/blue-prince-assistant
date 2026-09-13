@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { Direction, TileColumn, TileRow } from "bp-logic";
+  import type { Direction, TileColumn, TileRow, SpoilerSettings } from "bp-logic";
   import { ROOMS } from "bp-logic";
   import { untrack } from "svelte";
   import SearchInput from "./SearchInput.svelte";
@@ -24,6 +24,9 @@
     previouslyDraftedOuter = $bindable(),
     outerBerryPicker = $bindable(),
     open = $bindable(loadPanelOpen("draft", false)),
+    spoilerSettings,
+    day,
+    altMode,
   }: {
     mode: Mode;
     column: TileColumn;
@@ -39,7 +42,20 @@
     previouslyDraftedOuter: string;
     outerBerryPicker: boolean;
     open: boolean;
+    spoilerSettings: SpoilerSettings;
+    day: number;
+    altMode: boolean;
   } = $props();
+
+  const showOuter = $derived(spoilerSettings.westGate || spoilerSettings.entireGame);
+  const showBerryPicker = $derived(spoilerSettings.entireGame);
+  const showOuterDraftCount = $derived(
+    !(day > 8 || spoilerSettings.room46 || spoilerSettings.entireGame || altMode),
+  );
+
+  $effect(() => {
+    if (!showOuter && untrack(() => mode) === 'outer') mode = 'none';
+  });
 
   $effect(() => savePanelOpen("draft", open));
 
@@ -90,7 +106,7 @@
       ? `Drafting: ${toDirection} into ${column}${row}`
       : mode === "outer"
         ? "Drafting: Outer Room"
-        : "Drafting",
+        : "Draft Location",
   );
 
   function clearPreviousDraft() {
@@ -104,30 +120,35 @@
   <div class="fields">
     <div class="top-grid">
       <div class="mode-col">
-        <label><input type="radio" bind:group={mode} value="none" /> None</label
-        >
-        <label
-          ><input type="radio" bind:group={mode} value="outer" /> Outer</label
-        >
-        <label
-          ><input type="radio" bind:group={mode} value="house" /> House</label
-        >
+        <label><input type="radio" bind:group={mode} value="none" /> None</label>
+        {#if showOuter}
+          <label><input type="radio" bind:group={mode} value="outer" /> Outer Room</label>
+        {/if}
+        <label><input type="radio" bind:group={mode} value="house" /> House Tile</label>
       </div>
 
       {#if mode === "outer"}
         <div class="outer-fields">
-          <label class="inline-field">
-            Times drafted:
-            <input
-              type="number"
-              min="0"
-              class="narrow"
-              value={outerRoomDraftCount}
-              oninput={(e) =>
-                (outerRoomDraftCount = parseInt(e.currentTarget.value) || 0)}
-            />
-          </label>
-          <div class="prev-outer-col">
+          {#if showOuterDraftCount}
+            <label
+              class="inline-field"
+              data-tooltip="Rarer outer rooms appear after the first 3 drafts"
+            >
+              Times drafted:
+              <input
+                type="number"
+                min="0"
+                class="narrow"
+                value={outerRoomDraftCount}
+                oninput={(e) =>
+                  (outerRoomDraftCount = parseInt(e.currentTarget.value) || 0)}
+              />
+            </label>
+          {/if}
+          <div
+            class="prev-outer-col"
+            data-tooltip="The previous outer room drafted will not appear in the initial roll of three"
+          >
             <div class="prev-outer-label">Previously drafted:</div>
             <div class="prev-outer-input">
               <SearchInput
@@ -137,10 +158,12 @@
               />
             </div>
           </div>
-          <label class="checkbox-field">
-            <input type="checkbox" bind:checked={outerBerryPicker} />
-            Berry Picker
-          </label>
+          {#if showBerryPicker}
+            <label class="checkbox-field">
+              <input type="checkbox" bind:checked={outerBerryPicker} />
+              Berry Picker
+            </label>
+          {/if}
         </div>
       {/if}
 
@@ -180,15 +203,19 @@
           Gems:
           <input type="number" min="0" bind:value={gems} />
         </label>
-        <label class="inline-field inline-field-end">
-          Keys,&nbsp;etc.:
-          <select bind:value={keyUsed} class="key-select">
-            <option value="">None</option>
-            <option value="silver">Silver Key</option>
-            <option value="prism">Prism Key</option>
-            <option value="berry picker">Blessing of the Berry Picker</option>
-          </select>
-        </label>
+        {#if showOuter}
+          <label class="inline-field inline-field-end">
+            Keys,&nbsp;etc.:
+            <select bind:value={keyUsed} class="key-select">
+              <option value="">None</option>
+              <option value="silver">Silver Key</option>
+              <option value="prism">Prism Key</option>
+              {#if showBerryPicker}
+                <option value="berry picker">Blessing of the Berry Picker</option>
+              {/if}
+            </select>
+          </label>
+        {/if}
 
         <label
           class="checkbox-field"
@@ -197,24 +224,21 @@
           Reroll:
           <input type="checkbox" bind:checked={isReroll} />
         </label>
-        <label
-          class="inline-field inline-field-end"
-          class:muted={!showPassageColor && !showPrismColor}
-        >
-          Color:
-          <select
-            bind:value={secretPassageColor}
-            class="color-select"
-            disabled={!showPassageColor && !showPrismColor}
-          >
-            <option value="">—</option>
-            <option value="purple">Purple</option>
-            <option value="orange">Orange</option>
-            <option value="green">Green</option>
-            <option value="gold">Gold</option>
-            <option value="red">Red</option>
-          </select>
-        </label>
+        {#if showPassageColor || showPrismColor}
+          <label class="inline-field inline-field-end">
+            Color:
+            <select bind:value={secretPassageColor} class="color-select">
+              <option value="">—</option>
+              <option value="purple">Purple</option>
+              <option value="orange">Orange</option>
+              <option value="green">Green</option>
+              <option value="gold">Gold</option>
+              <option value="red">Red</option>
+            </select>
+          </label>
+        {/if}
+
+        <div class="col-span-divider"></div>
 
         <div class="prev-draft">
           <div class="prev-draft-header">
@@ -307,7 +331,7 @@
   .divider {
     height: 1px;
     background: var(--border);
-    margin: 0.5rem 0;
+    margin: 0.25rem 0;
   }
 
   .house-grid {
@@ -411,9 +435,11 @@
     font-size: 0.8rem;
   }
 
-  .muted {
-    color: var(--text-muted);
-    opacity: 0.5;
+  .col-span-divider {
+    grid-column: 1 / -1;
+    height: 1px;
+    background: var(--border);
+    margin: 0.25rem 0;
   }
 
   .prev-draft-header {

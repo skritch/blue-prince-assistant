@@ -1,8 +1,14 @@
 <script lang="ts">
-  import { type DraftPool, type Rarity } from "bp-logic";
+  import { type DraftPool, type Rarity, type SpoilerSettings } from "bp-logic";
   import ColorDots from "./ColorDots.svelte";
 
-  let { draftPool }: { draftPool: DraftPool } = $props();
+  let {
+    draftPool,
+    spoilerSettings,
+  }: { draftPool: DraftPool; spoilerSettings: SpoilerSettings } = $props();
+
+  const showUnusual = $derived(spoilerSettings.westGate || spoilerSettings.entireGame);
+  const showRare    = $derived(spoilerSettings.room46  || spoilerSettings.entireGame);
 
   function pSum(pSlot: [number, number, number] | undefined): number {
     return pSlot ? pSlot.reduce((s, p) => s + p, 0) : 0;
@@ -64,13 +70,19 @@
         <tr class:empty={rooms.length === 0}>
           <td class="category rarity-{rarity}">{label}</td>
           <td class="room-list">
-            {#each rooms as pr, i}
-              {@const tooltip = makeTooltip(pr)}
-              {@const colors = pr.upgrade?.color ?? pr.room.color}
-              <span class="room-chip" class:has-tooltip={!!tooltip} data-tooltip={tooltip}
-                ><ColorDots {colors} /><span class="room-name">{pr.upgrade?.name ?? pr.room.name}</span></span
-              >{#if i < rooms.length - 1}<span class="sep">, </span>{/if}
-            {/each}
+            {#if rarity === 3 && !showUnusual}
+              <span class="hidden-note">({rooms.length} rooms hidden until west gate is opened)</span>
+            {:else if rarity === 4 && !showRare}
+              <span class="hidden-note">({rooms.length} rooms hidden until Room 46 is found)</span>
+            {:else}
+              {#each rooms as pr, i}
+                {@const tooltip = makeTooltip(pr)}
+                {@const colors = pr.upgrade?.color ?? pr.room.color}
+                <span class="room-chip" class:has-tooltip={!!tooltip} data-tooltip={tooltip}
+                  ><ColorDots {colors} /><span class="room-name">{pr.upgrade?.name ?? pr.room.name}</span></span
+                >{#if i < rooms.length - 1}<span class="sep">, </span>{/if}
+              {/each}
+            {/if}
           </td>
         </tr>
       {/each}
@@ -167,6 +179,12 @@
 
   .sep {
     color: var(--text-muted);
+  }
+
+  .hidden-note {
+    color: var(--text-muted);
+    font-style: italic;
+    font-size: 0.8rem;
   }
 
   .sep + .room-chip {

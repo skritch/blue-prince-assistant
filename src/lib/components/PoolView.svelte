@@ -314,9 +314,9 @@
 
 <div class="layout">
   <div class="config">
-    <GameStatePanel bind:gameState bind:open={gamePanelOpen} bind:spoilerSettings />
+    <GameStatePanel bind:gameState bind:open={gamePanelOpen} bind:spoilerSettings day={dayState.day} />
     <DayStatePanel bind:dayState bind:open={dayPanelOpen} {spoilerSettings} />
-    <HouseStatePanel bind:houseState bind:open={housePanelOpen} />
+    <HouseStatePanel bind:houseState bind:open={housePanelOpen} {spoilerSettings} />
     {#key draftKey}
       <DraftStatePanel
         bind:mode={draftMode}
@@ -333,6 +333,9 @@
         bind:previouslyDraftedOuter
         bind:outerBerryPicker
         bind:open={draftPanelOpen}
+        {spoilerSettings}
+        day={dayState.day}
+        altMode={gameState.vmode || gameState.curseOrDare}
       />
     {/key}
     <div class="bottom-btns">
@@ -373,9 +376,10 @@
         gameRarityOverrides={gameState.rarityOverrides}
         bind:houseState
         bind:sortBy
+        {spoilerSettings}
       />
     {:else if viewMode === "room-list"}
-      <RoomListView draftPool={poolResult.pool} />
+      <RoomListView draftPool={poolResult.pool} {spoilerSettings} />
     {:else}
       <div class="stub">Door %s coming soon.</div>
     {/if}

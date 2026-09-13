@@ -1,9 +1,12 @@
 <script lang="ts">
   import {
+    ADHOC_ADDITIONS,
+    POOL_ADDITIONS,
     type DraftPool,
     type HouseState,
     type Rarity,
     type Annotation,
+    type SpoilerSettings,
   } from "bp-logic";
   import ColorDots from "./ColorDots.svelte";
 
@@ -12,11 +15,13 @@
     gameRarityOverrides,
     houseState = $bindable(),
     sortBy = $bindable(),
+    spoilerSettings,
   }: {
     draftPool: DraftPool;
     gameRarityOverrides: Record<string, Rarity>;
     houseState: HouseState;
     sortBy: "rarity" | "room" | "name" | "probability";
+    spoilerSettings: SpoilerSettings;
   } = $props();
 
   function addRoomToHouse(slug: string) {
@@ -74,7 +79,20 @@
       .join("\n");
   }
 
+  // --- Spoiler gates ---
+  const showRemoved  = $derived(spoilerSettings.room46 || spoilerSettings.entireGame);
+  const showTooltips = $derived(spoilerSettings.room46 || spoilerSettings.entireGame);
+
   let activeTab: "pool" | "removed" = $state("pool");
+
+  $effect(() => {
+    if (!showRemoved && activeTab === "removed") activeTab = "pool";
+  });
+
+  // --- "Other" grouping ---
+  // Always show rooms from pages 7/8 (studio/floorplan) and ad-hoc/pool additions
+  const ALWAYS_SHOW_PAGES = new Set([7, 8]);
+  const ALWAYS_SHOW_SLUGS = new Set([...ADHOC_ADDITIONS, ...POOL_ADDITIONS]);
 
   let sortedRooms = $derived(
     [...draftPool.rooms].sort((a, b) => {
@@ -109,6 +127,45 @@
       return a.room.roomNumber - b.room.roomNumber;
     }),
   );
+
+  const otherRooms = $derived(
+    showRemoved
+      ? []
+      : sortedRooms.filter(({ room }) => {
+          if (ALWAYS_SHOW_PAGES.has(room.directoryPage)) return false;
+          if (ALWAYS_SHOW_SLUGS.has(room.slug)) return false;
+          const effectiveRarity = draftPool.rarityOverrides[room.slug] ?? room.baseRarity;
+          return spoilerSettings.westGate
+            ? effectiveRarity === 4
+            : (effectiveRarity !== null && effectiveRarity >= 3) || room.directoryPage === 9;
+        }),
+  );
+
+  const otherRoomSet = $derived(new Set(otherRooms));
+
+  const otherLabel = $derived(
+    spoilerSettings.westGate
+      ? `(${otherRooms.length} other rare rooms...)`
+      : `(${otherRooms.length} other unusual and rare rooms...)`,
+  );
+
+  const visibleRooms = $derived(
+    otherRoomSet.size === 0 ? sortedRooms : sortedRooms.filter((r) => !otherRoomSet.has(r)),
+  );
+
+  const otherPSlot = $derived.by<[number, number, number] | null>(() => {
+    if (otherRooms.length === 0) return null;
+    const result: [number, number, number] = [0, 0, 0];
+    for (const { pSlot } of otherRooms) {
+      if (pSlot) {
+        for (let i = 0; i < 3; i++) {
+          const v = pSlot[i];
+          if (v != null && !isNaN(v)) result[i] += v;
+        }
+      }
+    }
+    return result;
+  });
 
   let sortedRemoved = $derived(
     [...draftPool.removed]
@@ -148,12 +205,14 @@
       onclick={() => (activeTab = "pool")}
       >Pool ({draftPool.rooms.length})</button
     >
-    <button
-      class="tab"
-      class:active={activeTab === "removed"}
-      onclick={() => (activeTab = "removed")}
-      >Removed ({sortedRemoved.length})</button
-    >
+    {#if showRemoved}
+      <button
+        class="tab"
+        class:active={activeTab === "removed"}
+        onclick={() => (activeTab = "removed")}
+        >Removed ({sortedRemoved.length})</button
+      >
+    {/if}
   </div>
 
   {#if activeTab === "removed"}
@@ -235,14 +294,14 @@
             onclick={() => (sortBy = "probability")}
             ><span
               class="prob-col-label"
-              data-tooltip="approximate chance this room appears in each slot"
+              data-tooltip={showTooltips ? "approximate chance this room appears in each slot" : undefined}
               >%[slot]</span
             > <span class="sort-arrow">{sortBy === "probability" ? "▼" : "▽"}</span></th
           >
         </tr>
       </thead>
       <tbody>
-        {#each sortedRooms as { room, source, upgrade, p, pSlot, pReasons }, i (room.slug + (source ?? "") + i)}
+        {#each visibleRooms as { room, source, upgrade, p, pSlot, pReasons }, i (room.slug + (source ?? "") + i)}
           {@const effectiveRarity =
             draftPool.rarityOverrides[room.slug] ?? room.baseRarity}
           {@const annotations = draftPool.annotations[room.slug]}
@@ -263,7 +322,9 @@
         }}
           {@const tagLine = room.tags.map((t) => TAG_LABELS[t] ?? t).join(", ")}
           {@const tooltip =
-            [tagLine, description].filter(Boolean).join("\n") || undefined}
+            showTooltips
+              ? ([tagLine, description].filter(Boolean).join("\n") || undefined)
+              : undefined}
           {@const placedCount = houseState.placedRooms.filter(
             (s) => s === room.slug,
           ).length}
@@ -279,11 +340,11 @@
             <td class="btn-col">
               <button
                 class="place-btn plus"
-                data-tooltip="add to house"
+                data-tooltip={showTooltips ? "add to house" : undefined}
                 onclick={() => addRoomToHouse(room.slug)}>+</button
               >
             </td>
-            <td class="source-icon-col">{#if source}<span class="source-icon" data-tooltip={`added by: ${SOURCE_LABELS[source] ?? source}`}>?</span>{/if}</td>
+            <td class="source-icon-col">{#if source}<span class="source-icon" data-tooltip={showTooltips ? `added by: ${SOURCE_LABELS[source] ?? source}` : undefined}>?</span>{/if}</td>
             <td class="colors"><ColorDots colors={upgrade?.color ?? room.color} /></td>
             <td class="name" data-tooltip={tooltip}
               >{upgrade?.name ?? room.name}</td
@@ -291,13 +352,13 @@
             <td class="rarity rarity-{effectiveRarity}">
               {rarityName(effectiveRarity)}{#if rarityExplicit}<span
                   class="rarity-base"
-                  data-tooltip="player-set rarity">**</span
+                  data-tooltip={showTooltips ? "player-set rarity" : undefined}>**</span
                 >{:else if rarityDynamic}<span
                   class="rarity-base"
-                  data-tooltip="dynamic rarity">*</span
+                  data-tooltip={showTooltips ? "dynamic rarity" : undefined}>*</span
                 >{/if}{#if annotations?.length}<span
                   class="annot-icon"
-                  data-tooltip={formatAnnotations(annotations)}>?</span
+                  data-tooltip={showTooltips ? formatAnnotations(annotations) : undefined}>?</span
                 >{/if}
             </td>
             <td class="doors">{room.doors ?? "—"}</td>
@@ -311,8 +372,8 @@
                     ? pctValue.toPrecision(3)
                     : pctValue.toPrecision(2)}
                 {@const reason = pReasons?.[idx]}
-                <td class="prob" data-tooltip={reason ? `${tooltipValue}%\n${reason}` : tooltipValue + "%"}
-                  >{display}{#if display && reason}<span class="prob-reason">*</span>{/if}</td
+                <td class="prob" data-tooltip={showTooltips && reason ? `${tooltipValue}%\n${reason}` : undefined}
+                  >{display}{#if display && reason && showTooltips}<span class="prob-reason">*</span>{/if}</td
                 >
               {/each}
             {:else}
@@ -320,6 +381,24 @@
             {/if}
           </tr>
         {/each}
+
+        {#if otherPSlot}
+          <tr class="other-row">
+            <td class="btn-col"></td>
+            <td class="btn-col"></td>
+            <td class="source-icon-col"></td>
+            <td class="colors other-unknown">?</td>
+            <td class="name other-label">{otherLabel}</td>
+            <td class="rarity other-unknown">?</td>
+            <td class="doors other-unknown">?</td>
+            <td class="gems other-unknown">?</td>
+            {#each otherPSlot as slotP}
+              {@const pctValue = slotP * 100}
+              {@const display = pctValue === 0 ? "" : pctValue.toFixed(1)}
+              <td class="prob">{display}</td>
+            {/each}
+          </tr>
+        {/if}
       </tbody>
       <tfoot>
         <tr class="totals-row">
@@ -733,5 +812,22 @@
   .totals-row .total {
     font-weight: 600;
     color: var(--text);
+  }
+
+  .other-row td {
+    border-top: 1px dashed var(--border);
+    border-bottom: none;
+  }
+
+  .other-label {
+    color: var(--text-muted);
+    font-style: italic;
+    font-size: 0.8rem;
+  }
+
+  .other-unknown {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    opacity: 0.5;
   }
 </style>

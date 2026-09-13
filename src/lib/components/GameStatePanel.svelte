@@ -21,7 +21,8 @@
     gameState = $bindable(),
     open = $bindable(loadPanelOpen("game", false)),
     spoilerSettings = $bindable(),
-  }: { gameState: GameState; open: boolean; spoilerSettings: SpoilerSettings } = $props();
+    day,
+  }: { gameState: GameState; open: boolean; spoilerSettings: SpoilerSettings; day: number } = $props();
 
   $effect(() => savePanelOpen("game", open));
 
@@ -34,6 +35,11 @@
   const showCurseDare = $derived(spoilerSettings.giftShop || spoilerSettings.entireGame);
   const showVmode = $derived(spoilerSettings.entireGame);
   const tombLabel = $derived(spoilerSettings.entireGame ? "Epsen Tomb Found" : "Tomb candles lit");
+  const showFoundationElevator = $derived(
+    showUnlockDetails &&
+      !(day > 8 || spoilerSettings.room46 || spoilerSettings.entireGame ||
+        gameState.vmode || gameState.curseOrDare),
+  );
 
   const PAGE7_ROOMS = roomsForPage(7);
   const PAGE8_ROOMS = roomsForPage(8);
@@ -293,13 +299,15 @@
               onchange={(e) => setFlag("foundEpsenTomb", e.currentTarget.checked)}
             /> {tombLabel}
           </label>
-          <label data-tooltip="Affects the probability of drafting the Tomb as an outer room">
-            <input
-              type="checkbox"
-              checked={gameState.haveFoundationElevator}
-              onchange={(e) => setFlag("haveFoundationElevator", e.currentTarget.checked)}
-            /> Foundation Elevator Activated
-          </label>
+          {#if showFoundationElevator}
+            <label data-tooltip="Affects the probability of drafting the Tomb as an outer room">
+              <input
+                type="checkbox"
+                checked={gameState.haveFoundationElevator}
+                onchange={(e) => setFlag("haveFoundationElevator", e.currentTarget.checked)}
+              /> Foundation Elevator Activated
+            </label>
+          {/if}
           <label
             class="inline-field"
             data-tooltip="Chance of drawing Bookshop from Library decreases with each book bought. Realm &amp; Rune does not count."
