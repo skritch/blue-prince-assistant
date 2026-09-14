@@ -318,11 +318,7 @@
                     onmousedown={(e) => handleCellMouseDown(c, r, e)}
                     onmouseenter={() => handleCellMouseEnter(c, r)}
                     onmouseup={(e) => handleCellMouseUp(c, r, e)}
-                  >
-                    {#if isTo && isFrom}
-                      <div class="arrow arrow-{toDirection}">→</div>
-                    {/if}
-                  </button>
+                  ></button>
                 {/each}
               </div>
             {/each}
@@ -689,26 +685,6 @@
     border-color: var(--accent);
     border-width: 2px;
     opacity: 0.7;
-  }
-
-  .arrow {
-    position: absolute;
-    font-size: 1rem;
-    color: var(--bg);
-    user-select: none;
-    pointer-events: none;
-  }
-
-  .arrow-N {
-    transform: rotate(-90deg);
-  }
-
-  .arrow-S {
-    transform: rotate(90deg);
-  }
-
-  .arrow-W {
-    transform: rotate(180deg);
   }
 
   .draft-label {

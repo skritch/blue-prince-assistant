@@ -92,6 +92,11 @@ const DOOR_OVERRIDES = {
   'her-ladyships-chamber': 1,
 }
 
+// Shape overrides where CSV lists multiple orientations handled in code
+const SHAPE_OVERRIDES = {
+  'greenhouse': '∏',
+}
+
 // Extra tags to add beyond what the CSV provides
 const TAG_OVERRIDES = {
   'utility-closet': ['dead-end'],
@@ -137,6 +142,14 @@ function parseDoors(doorsStr) {
   return m ? parseInt(m[0]) : null
 }
 
+const KNOWN_SHAPES = new Set(['∏', '⎾', '|', '⏉', '＋'])
+
+function parseShape(shapeStr) {
+  if (!shapeStr?.trim()) return null
+  const s = shapeStr.split(',').map(s => s.trim()).find(s => KNOWN_SHAPES.has(s))
+  return s ?? null
+}
+
 function parseGemCost(costStr) {
   const m = costStr.match(/\d+/)
   return m ? parseInt(m[0]) : 0
@@ -176,6 +189,7 @@ const rooms = rows
       baseRarity: RARITY_CORRECTIONS[slug] ?? parseRarity(r['Rarity']),
       baseGemCost: parseGemCost(r['Gem cost']),
       doors: DOOR_OVERRIDES[slug] ?? parseDoors(r['Doors']),
+      shape: SHAPE_OVERRIDES[slug] ?? parseShape(r['Shape']),
       directoryPage: dirPage,
       roomNumber: parseInt(r['#']),
       description: parseDescription(r['Room description']),

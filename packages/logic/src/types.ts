@@ -1,6 +1,7 @@
 /** 1 = commonplace, 2 = standard, 3 = unusual, 4 = rare, null = special */
 export type Rarity = 1 | 2 | 3 | 4
 export type RoomColor = 'blue' | 'purple' | 'orange' | 'green' | 'gold' | 'red' | 'black'
+export type RoomShape = '∏' | '⎾' | '|' | '⏉' | '＋'
 export const ALL_COLORS: RoomColor[] = ['blue', 'purple', 'orange', 'green', 'gold', 'red', 'black']
 export type Direction = 'N' | 'S' | 'E' | 'W'
 export type TileColumn = 'A' | 'B' | 'C' | 'D' | 'E'
@@ -32,6 +33,7 @@ export interface Room {
   baseRarity: Rarity | null
   baseGemCost: number
   doors: number
+  shape: RoomShape
   directoryPage: number  // 1-9
   roomNumber: number
   tags: string[]
