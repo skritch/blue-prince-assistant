@@ -5,10 +5,12 @@
     items,
     value = $bindable(""),
     placeholder = "Search...",
+    preventTabOut = false,
   }: {
     items: Item[];
     value?: string;
     placeholder?: string;
+    preventTabOut?: boolean;
   } = $props();
 
   const itemById = $derived(Object.fromEntries(items.map((i) => [i.id, i])));
@@ -16,10 +18,13 @@
   let query = $state("");
   let focused = $state(false);
   let selectedIndex = $state(-1);
+  let isTyping = $state(false);
 
-  // Sync query with value changes (e.g., when cleared externally)
+  // Sync query with value changes (e.g., when cleared externally), but not while typing
   $effect(() => {
-    query = value ? (itemById[value]?.label ?? value) : "";
+    if (!isTyping) {
+      query = value ? (itemById[value]?.label ?? value) : "";
+    }
   });
 
   let matches = $derived(
@@ -30,34 +35,27 @@
       : [],
   );
 
-  // Reset selected index when matches change
+  // Auto-select first match when matches appear
   $effect(() => {
     if (matches.length === 0) {
       selectedIndex = -1;
-    } else if (selectedIndex >= matches.length) {
-      selectedIndex = matches.length - 1;
+    } else if (selectedIndex === -1 || selectedIndex >= matches.length) {
+      selectedIndex = 0;
     }
   });
 
-  function pick(item: Item, shouldFocusNext = false) {
+  let inputElement: HTMLInputElement;
+
+  function pick(item: Item) {
+    isTyping = false;
     value = item.id;
     query = item.label;
     selectedIndex = -1;
-
-    if (shouldFocusNext) {
-      // Focus next input element
-      const input = document.activeElement as HTMLInputElement;
-      const form = input?.form || input?.closest('form') || document;
-      const inputs = Array.from(form.querySelectorAll('input, select, textarea, button'));
-      const currentIndex = inputs.indexOf(input);
-      const nextInput = inputs[currentIndex + 1] as HTMLElement;
-      if (nextInput) {
-        setTimeout(() => nextInput.focus(), 0);
-      }
-    }
+    focused = false;
   }
 
   function oninput() {
+    isTyping = true;
     value = "";
     selectedIndex = -1;
   }
@@ -67,6 +65,14 @@
       query = "";
       value = "";
       selectedIndex = -1;
+      return;
+    }
+
+    if (e.key === "Tab" && preventTabOut) {
+      e.preventDefault();
+      if (matches.length > 0 && selectedIndex >= 0 && selectedIndex < matches.length) {
+        pick(matches[selectedIndex]);
+      }
       return;
     }
 
@@ -85,19 +91,19 @@
       } else if (matches.length > 0) {
         pick(matches[0]);
       }
-    } else if (e.key === "Tab" && matches.length > 0) {
-      e.preventDefault();
+    } else if (e.key === "Tab") {
+      // Pick the highlighted item (which will be auto-highlighted if matches exist)
       if (selectedIndex >= 0 && selectedIndex < matches.length) {
-        pick(matches[selectedIndex], true);
-      } else {
-        pick(matches[0], true);
+        pick(matches[selectedIndex]);
       }
+      // Don't prevent default - let Tab move focus naturally
     }
   }
 </script>
 
 <div class="search-wrap">
   <input
+    bind:this={inputElement}
     class="text-input"
     type="text"
     bind:value={query}

@@ -244,9 +244,6 @@
         <div class="prev-draft">
           <div class="prev-draft-header">
             <div class="section-label">Previous draft:</div>
-            <button class="clear-btn" onclick={clearPreviousDraft}
-              >(clear)</button
-            >
           </div>
           <div class="prev-input">
             <SearchInput
@@ -277,7 +274,11 @@
               items={roomOptions}
               bind:value={fromRoomSlug}
               placeholder="room"
+              preventTabOut={true}
             />
+          </div>
+          <div class="clear-btn-wrapper">
+            <button class="clear-btn" onclick={clearPreviousDraft}>(clear)</button>
           </div>
         </div>
       </div>
@@ -342,9 +343,16 @@
     align-items: center;
   }
 
-  .prev-draft,
-  .from-col {
+  .prev-draft {
     align-self: start;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    margin-top: 0.15rem;
+  }
+
+  .from-col {
+    align-self: stretch;
     display: flex;
     flex-direction: column;
     gap: 0.35rem;
@@ -443,14 +451,11 @@
     margin: 0.25rem 0;
   }
 
-  .prev-draft-header {
+  .clear-btn-wrapper {
     display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-  }
-
-  .prev-draft-header .section-label {
-    margin-bottom: 0.15rem;
+    justify-content: flex-end;
+    align-items: flex-end;
+    flex: 1;
   }
 
   .clear-btn {
