@@ -113,24 +113,34 @@
     };
   });
 
-  // Sync spoiler milestones → game state (never downgrade on uncheck)
+  // Track previous spoiler settings to detect actual changes (not just initial load)
+  let prevSpoilerSettings = $state({ westGate: spoilerSettings.westGate, room46: spoilerSettings.room46 });
+
+  // Sync spoiler milestones → game state only when manually changed
+  // (never downgrade on uncheck, and only apply on user interaction, not permalink load or batch updates)
   $effect(() => {
-    const { westGate, room46, entireGame } = spoilerSettings;
-    if (entireGame) {
-      const cur = untrack(() => gameState);
-      gameState = {
-        ...initGameFull(),
-        rarityOverrides: cur.rarityOverrides,
-        chamberOfMirrorsAdditions: cur.chamberOfMirrorsAdditions,
-        upgrades: cur.upgrades,
-        booksPurchased: cur.booksPurchased,
-      };
-    } else if (room46) {
-      const cur = untrack(() => gameState);
-      if (!cur.haveRoom46) gameState = { ...cur, haveWestGate: true, haveRoom46: true };
-    } else if (westGate) {
-      const cur = untrack(() => gameState);
-      if (!cur.haveWestGate) gameState = { ...cur, haveWestGate: true };
+    const { westGate, room46 } = spoilerSettings;
+
+    // Skip if this is a batch update (e.g., from "entire game" checkbox)
+    if ((spoilerSettings as any)._batchUpdate) {
+      prevSpoilerSettings = { westGate, room46 };
+      return;
+    }
+
+    // Only apply if these settings actually changed (not just initial render)
+    const westGateChanged = westGate !== prevSpoilerSettings.westGate;
+    const room46Changed = room46 !== prevSpoilerSettings.room46;
+
+    if (westGateChanged || room46Changed) {
+      if (room46 && room46Changed) {
+        const cur = untrack(() => gameState);
+        if (!cur.haveRoom46) gameState = { ...cur, haveWestGate: true, haveRoom46: true };
+      } else if (westGate && westGateChanged) {
+        const cur = untrack(() => gameState);
+        if (!cur.haveWestGate) gameState = { ...cur, haveWestGate: true };
+      }
+
+      prevSpoilerSettings = { westGate, room46 };
     }
   });
 
@@ -144,11 +154,16 @@
     return () => clearTimeout(timer);
   });
 
-  function permalink() {
+  async function permalink() {
     saveState(gameState, dayState, houseState, draftParams, {
       sortBy,
       viewMode,
     });
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+    } catch {
+      // Clipboard API may fail in some contexts (e.g., insecure origins)
+    }
   }
 
   function resetAll() {

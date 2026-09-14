@@ -36,6 +36,7 @@
 
   function confirmEntireGame() {
     confirmingEntireGame = false
+    // Mark that we're batch-updating (don't trigger game state changes)
     settings = {
       westGate: true,
       antechamber: true,
@@ -46,7 +47,12 @@
       precipiceSolved: true,
       giftShop: true,
       entireGame: true,
-    }
+      _batchUpdate: true, // Custom flag to indicate this is a batch update
+    } as SpoilerSettings
+    // Clear the flag on next tick
+    setTimeout(() => {
+      settings = { ...settings, _batchUpdate: undefined } as SpoilerSettings
+    }, 0)
   }
 </script>
 

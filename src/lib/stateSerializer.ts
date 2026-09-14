@@ -127,6 +127,7 @@ export function loadState(): LoadedState | null {
   const hash = location.hash.slice(1)
   if (hash.startsWith(HASH_PREFIX)) {
     const result = decodeState(hash.slice(HASH_PREFIX.length))
+    // Keep valid permalink in URL; only clear if decode failed
     if (result) return result
     history.replaceState(null, '', location.pathname + location.search)
   }
