@@ -87,15 +87,15 @@
   );
 
   // Grid interaction state
-  let isDragging = false;
-  let fromCol: TileColumn | null = null;
-  let fromRow: number | null = null;
-  let savedColumn: TileColumn | null = null;
-  let savedRow: number | null = null;
-  let savedDirection: Direction | null = null;
-  let previewFromCol: TileColumn | null = null;
-  let previewFromRow: number | null = null;
-  let hasMovedToOtherCell = false;
+  let isDragging = $state(false);
+  let fromCol = $state<TileColumn | null>(null);
+  let fromRow = $state<number | null>(null);
+  let savedColumn = $state<TileColumn | null>(null);
+  let savedRow = $state<number | null>(null);
+  let savedDirection = $state<Direction | null>(null);
+  let previewFromCol = $state<TileColumn | null>(null);
+  let previewFromRow = $state<number | null>(null);
+  let hasMovedToOtherCell = $state(false);
 
   const derivedFromCol = $derived.by(() => {
     if (!column || !row || !toDirection) return null;
@@ -173,59 +173,17 @@
   }
 
   function handleCellMouseUp(c: TileColumn, r: number, e: MouseEvent) {
-    if (isDragging && fromCol && fromRow !== null) {
-      const dir = getDirection(fromCol, fromRow, c, r);
-      if (dir) {
-        // Dragged to a valid neighbor - set the direction
-        setDraftDirection(fromCol, fromRow, c, r);
-        savedColumn = null;
-        savedRow = null;
-        savedDirection = null;
-      } else if (c === fromCol && r === fromRow && hasMovedToOtherCell) {
-        // We moved to other cells but came back to the starting cell - do nothing
-      } else if (c === fromCol && r === fromRow && !hasMovedToOtherCell) {
-        // Pure click without moving - move the direction to start from this tile
-        if (savedColumn && savedRow && savedDirection) {
-          const clickedColIdx = COLUMNS.indexOf(c);
-          const clickedRow = r;
-          let newDir = savedDirection;
-          let newToCol = c;
-          let newToRow = r;
-
-          if (savedDirection === "E" && clickedColIdx < COLUMNS.length - 1) {
-            newToCol = COLUMNS[clickedColIdx + 1];
-            newToRow = clickedRow;
-          } else if (savedDirection === "W" && clickedColIdx > 0) {
-            newToCol = COLUMNS[clickedColIdx - 1];
-            newToRow = clickedRow;
-          } else if (savedDirection === "N" && clickedRow < 9) {
-            newToCol = c;
-            newToRow = clickedRow + 1;
-          } else if (savedDirection === "S" && clickedRow > 1) {
-            newToCol = c;
-            newToRow = clickedRow - 1;
-          } else {
-            // Direction doesn't work from clicked tile, default to N or S
-            if (clickedRow < 9) {
-              newDir = "N";
-              newToCol = c;
-              newToRow = clickedRow + 1;
-            } else if (clickedRow > 1) {
-              newDir = "S";
-              newToCol = c;
-              newToRow = clickedRow - 1;
-            }
-          }
-
-          column = newToCol;
-          row = newToRow;
-          toDirection = newDir;
-
-          savedColumn = null;
-          savedRow = null;
-          savedDirection = null;
+    if (isDragging && fromCol !== null && fromRow !== null) {
+      if (c === fromCol && r === fromRow && !hasMovedToOtherCell) {
+        // Pure click, no drag - restore old state
+        if (savedColumn !== null && savedRow !== null && savedDirection !== null) {
+          column = savedColumn;
+          row = savedRow;
+          toDirection = savedDirection;
         }
       }
+      // If a valid neighbor was entered during drag, state was already committed in mouseenter.
+      // If moved away and came back (hasMovedToOtherCell), keep committed state.
     }
     isDragging = false;
     fromCol = null;
@@ -233,15 +191,31 @@
     previewFromCol = null;
     previewFromRow = null;
     hasMovedToOtherCell = false;
+    savedColumn = null;
+    savedRow = null;
+    savedDirection = null;
   }
 
-  // Reset drag state on mouse up anywhere
+  // Reset drag state on mouse up anywhere (catches releases outside the grid)
   $effect(() => {
     function handleMouseUp() {
-      isDragging = false;
-      previewFromCol = null;
-      previewFromRow = null;
-      hasMovedToOtherCell = false;
+      if (isDragging) {
+        // Released outside grid - restore if not yet committed
+        if (savedColumn !== null && savedRow !== null && savedDirection !== null) {
+          column = savedColumn;
+          row = savedRow;
+          toDirection = savedDirection;
+        }
+        isDragging = false;
+        fromCol = null;
+        fromRow = null;
+        previewFromCol = null;
+        previewFromRow = null;
+        hasMovedToOtherCell = false;
+        savedColumn = null;
+        savedRow = null;
+        savedDirection = null;
+      }
     }
     document.addEventListener("mouseup", handleMouseUp);
     return () => {
@@ -340,6 +314,7 @@
                     class:selected-from={isFrom}
                     class:preview-from={isPreviewFrom}
                     class:entrance={isEntrance}
+                    title="{c}{r}"
                     onmousedown={(e) => handleCellMouseDown(c, r, e)}
                     onmouseenter={() => handleCellMouseEnter(c, r)}
                     onmouseup={(e) => handleCellMouseUp(c, r, e)}
@@ -352,6 +327,7 @@
               </div>
             {/each}
           </div>
+          <div class="grid-hint">click and drag</div>
         </div>
       {/if}
     </div>
@@ -640,6 +616,12 @@
     flex-direction: column;
     align-items: center;
     gap: 0.5rem;
+  }
+
+  .grid-hint {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    text-align: center;
   }
 
   .house-grid-vis {
