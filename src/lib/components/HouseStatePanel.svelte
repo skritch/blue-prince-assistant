@@ -46,10 +46,8 @@
     for (const { slug, flag } of SPECIAL_ROOMS) {
       (updates as Record<string, unknown>)[flag] = state.placedRooms.includes(slug);
     }
-    // Furnace: one-way sync (adding furnace sets flag, but unchecking doesn't remove from house)
-    if (state.placedRooms.includes('furnace')) {
-      updates.furnaceInHouse = true;
-    }
+    // Furnace: removing from placedRooms unchecks the flag, but unchecking doesn't remove from placedRooms
+    updates.furnaceInHouse = state.placedRooms.includes('furnace');
     return { ...state, ...updates };
   }
 
