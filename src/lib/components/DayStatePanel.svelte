@@ -111,7 +111,7 @@
               <label data-tooltip="Increases chance of drawing a Bookshop from the Library">
                 <input type="checkbox" bind:checked={dayState.haveHallPass} /> Hall Pass
               </label>
-              <label>
+              <label data-tooltip="Biases room orientations to have a door facing north. This will be in effect even if the compass becomes part of a contraption, and even if that contraption is in an undrafted coat check.">
                 <input type="checkbox" bind:checked={dayState.haveCompass} /> Compass
               </label>
               {#if showRoyalScepter}

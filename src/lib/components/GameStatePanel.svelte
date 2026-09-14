@@ -32,6 +32,7 @@
   const showAllRoomsCheckboxes = $derived(spoilerSettings.allRooms || spoilerSettings.entireGame);
   const showFullDirectory = $derived(spoilerSettings.room46 || spoilerSettings.entireGame);
   const showCoM = $derived(spoilerSettings.room46 || spoilerSettings.entireGame);
+  const showAllItems = $derived(spoilerSettings.allItems || spoilerSettings.entireGame);
   const showCurseDare = $derived(spoilerSettings.giftShop || spoilerSettings.entireGame);
   const showVmode = $derived(spoilerSettings.entireGame);
   const tombLabel = $derived(spoilerSettings.entireGame ? "Epsen Tomb Found" : "Tomb candles lit");
@@ -324,6 +325,15 @@
               bind:value={gameState.booksPurchased}
             />
           </label>
+          {#if showAllItems}
+            <label data-tooltip="Greenhouse gains a second exit on the side facing the nearest house edge">
+              <input
+                type="checkbox"
+                checked={gameState.greenhouseWallBroken}
+                onchange={(e) => setFlag("greenhouseWallBroken", e.currentTarget.checked)}
+              /> Greenhouse Wall Broken
+            </label>
+          {/if}
         {/if}
       </div>
     </div>

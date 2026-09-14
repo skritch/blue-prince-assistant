@@ -13,6 +13,7 @@ export interface GameState {
   curseOrDare: boolean
   haveFoundationElevator: boolean
   booksPurchased: number
+  greenhouseWallBroken: boolean
 
   // Conservatory / Gear Wrench permanent rarity shifts;
   // https://www.reddit.com/r/BluePrince/comments/1lnn4y6/dynamic_rarity_room_rarity_changes_behind_the/
@@ -50,6 +51,7 @@ export function initGameState(): GameState {
     curseOrDare: false,
     haveFoundationElevator: false,
     booksPurchased: 0,
+    greenhouseWallBroken: false,
     rarityOverrides: {},
     chamberOfMirrorsAdditions: [],
     upgrades: {}
@@ -68,6 +70,7 @@ export function initGameFull(): GameState {
     curseOrDare: false,
     haveFoundationElevator: true,
     booksPurchased: 0,
+    greenhouseWallBroken: false,
     rarityOverrides: {},
     chamberOfMirrorsAdditions: [],
     upgrades: {}

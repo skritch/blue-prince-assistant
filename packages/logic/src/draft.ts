@@ -112,7 +112,7 @@ function getPGemBySlot(
   let pGems: [number, number, number]
   if (inLibrary) {
     pGems = [0, gems == 0 ? 0 : 1, 1]
-    
+
   } else if (
     (day > 4)
     || (vMode && roomsDrafted >= 3)
@@ -583,6 +583,6 @@ export function draftHouse(
   }) as [KeyedVec, KeyedVec, KeyedVec]
 
 
-  return { slots: slotPools, reasons: [{}, {}, {}] }
+  return { slots: slotPools, reasons: [{}, {}, {}] } as DraftResult
 }
 

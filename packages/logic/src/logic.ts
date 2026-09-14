@@ -270,6 +270,7 @@ function applyDynamicRarities(
 // in the game's parlance.
 function constrainForLocation(
   pool: DraftPool,
+  day: DayState,
   draft: DraftParams,
 ): DraftPool {
   // https://www.reddit.com/r/BluePrince/comments/1ltsn1t/drafting_mechanics_room_placement_restrictions/
@@ -306,7 +307,6 @@ function constrainForLocation(
 
     // Special Cases
 
-
     // Responsible for garage only appearing at 4+.
     // Ignoring some exit lists subtleties that don't appear to do anything
     if ([2, 3].includes(loc.tile.row)) {
@@ -319,6 +319,12 @@ function constrainForLocation(
       pool = annotateRoom(pool,
         { inPoolPct: 10, note: "90% chance of being removed when drafting rank 3 center tiles", },
         'foundation')
+    }
+
+    // Remove security from edge tiles for its first draft, since it needs to play the cinematic
+    // Will miss cases where security is not drafted day 1
+    if (day.day == 1 && classifyExitTo(loc.tile, loc.toDirection) != 'center') {
+      pool = removeFromPool(pool, ['security'], "security cannot be drafted on an edge for its first draft")
     }
   }
   return pool
@@ -381,7 +387,7 @@ export function generateDraftPool(
   pool = buildbasePool(game, day, house)
   pool = removeDraftedRooms(pool, house)
   if (draft !== undefined) {
-    pool = constrainForLocation(pool, draft)
+    pool = constrainForLocation(pool, day, draft)
   }
   pool = applyDraftingBlocks(pool, game, day, draft)
   pool = applyDynamicRarities(pool, game, day, house)
