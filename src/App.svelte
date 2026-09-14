@@ -38,6 +38,8 @@
     localStorage.getItem("spoiler-dismissed") !== "true",
   );
 
+  let confirmingEntireGame = $state(false);
+
   function dismissSpoilerWarning() {
     localStorage.setItem("spoiler-dismissed", "true");
     showSpoilerWarning = false;
@@ -76,9 +78,9 @@
       </p>
       <div class="spoiler-settings-wrap">
         <p class="settings-label">What have you seen?</p>
-        <SpoilerSettingsPanel bind:settings={spoilerSettings} />
+        <SpoilerSettingsPanel bind:settings={spoilerSettings} bind:confirmingEntireGame />
       </div>
-      <button class="continue-btn" onclick={dismissSpoilerWarning}
+      <button class="continue-btn" disabled={confirmingEntireGame} onclick={dismissSpoilerWarning}
         >Continue</button
       >
     </div>
@@ -239,11 +241,17 @@
     letter-spacing: 0.03em;
     transition:
       background 0.15s,
-      color 0.15s;
+      color 0.15s,
+      opacity 0.15s;
   }
 
-  .continue-btn:hover {
+  .continue-btn:hover:not(:disabled) {
     background: rgba(70, 184, 248, 0.15);
+  }
+
+  .continue-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
   }
 
   /* dark mode: light overlay */

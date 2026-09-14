@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { SpoilerSettings } from '../spoilerSettings'
 
-  let { settings = $bindable() }: { settings: SpoilerSettings } = $props()
+  let { settings = $bindable(), confirmingEntireGame = $bindable(false) }: { settings: SpoilerSettings; confirmingEntireGame?: boolean } = $props()
 
   type Field = keyof SpoilerSettings
 
@@ -24,8 +24,6 @@
     }
     return next
   }
-
-  let confirmingEntireGame = $state(false)
 
   function toggle(field: Field, checked: boolean) {
     if (field === 'entireGame' && checked) {

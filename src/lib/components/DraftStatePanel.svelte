@@ -86,35 +86,168 @@
     ]),
   );
 
-  function handleDirectionChange(newDirection: Direction) {
-    // If choosing an invalid direction, work out where we should move to
-    if (invalidDirections.has(newDirection)) {
-      const prevDirection = toDirection;
+  // Grid interaction state
+  let isDragging = false;
+  let fromCol: TileColumn | null = null;
+  let fromRow: number | null = null;
+  let savedColumn: TileColumn | null = null;
+  let savedRow: number | null = null;
+  let savedDirection: Direction | null = null;
+  let previewFromCol: TileColumn | null = null;
+  let previewFromRow: number | null = null;
+  let hasMovedToOtherCell = false;
 
-      // When drafting direction X into tile T, we're coming FROM the opposite of X
-      // So if we're facing East into E5, we're coming from D5 (west of E5)
-      // If we then want to face West, we should draft into D5 (the tile we were coming from)
+  const derivedFromCol = $derived.by(() => {
+    if (!column || !row || !toDirection) return null;
+    const colIdx = COLUMNS.indexOf(column);
+    if (toDirection === "E") return COLUMNS[colIdx - 1] ?? null;
+    if (toDirection === "W") return COLUMNS[colIdx + 1] ?? null;
+    return column;
+  });
 
-      // Move the destination tile in the opposite of the new direction
-      const colIdx = COLUMNS.indexOf(column);
+  const derivedFromRow = $derived.by(() => {
+    if (!column || !row || !toDirection) return null;
+    if (toDirection === "N") return row - 1;
+    if (toDirection === "S") return row + 1;
+    return row;
+  });
 
-      if (newDirection === "E") {
-        // Moving destination west (opposite of east)
-        column = COLUMNS[colIdx + 1] ?? column;
-      } else if (newDirection === "W") {
-        // Moving destination east (opposite of west)
-        column = COLUMNS[colIdx - 1] ?? column;
-      } else if (newDirection === "N") {
-        // Moving destination south (opposite of north)
-        row = Math.min(9, row + 1);
-      } else if (newDirection === "S") {
-        // Moving destination north (opposite of south)
-        row = Math.max(1, row - 1);
+  function getDirection(
+    fromCol: TileColumn,
+    fromRow: number,
+    toCol: TileColumn,
+    toRow: number,
+  ): Direction | null {
+    const colDiff = COLUMNS.indexOf(toCol) - COLUMNS.indexOf(fromCol);
+    const rowDiff = toRow - fromRow;
+
+    if (colDiff === -1 && rowDiff === 0) return "W";
+    if (colDiff === 1 && rowDiff === 0) return "E";
+    if (colDiff === 0 && rowDiff === -1) return "S";
+    if (colDiff === 0 && rowDiff === 1) return "N";
+    return null;
+  }
+
+  function setDraftDirection(fc: TileColumn, fr: number, tc: TileColumn, tr: number) {
+    const dir = getDirection(fc, fr, tc, tr);
+    if (dir) {
+      toDirection = dir;
+      column = tc;
+      row = tr;
+    }
+  }
+
+  function handleCellMouseDown(c: TileColumn, r: number, e: MouseEvent) {
+    // Save current state and start drag
+    savedColumn = column;
+    savedRow = row;
+    savedDirection = toDirection;
+    isDragging = true;
+    fromCol = c;
+    fromRow = r;
+    hasMovedToOtherCell = false;
+    // Show preview highlight immediately
+    previewFromCol = c;
+    previewFromRow = r;
+  }
+
+  function handleCellMouseEnter(c: TileColumn, r: number) {
+    if (isDragging && fromCol && fromRow !== null) {
+      // Mark that we've moved to a different cell
+      if (c !== fromCol || r !== fromRow) {
+        hasMovedToOtherCell = true;
+      }
+
+      // Check if this is a valid neighbor
+      const dir = getDirection(fromCol, fromRow, c, r);
+      if (dir) {
+        setDraftDirection(fromCol, fromRow, c, r);
+        // Clear saved state and preview since we successfully set a direction
+        savedColumn = null;
+        savedRow = null;
+        savedDirection = null;
+        previewFromCol = null;
+        previewFromRow = null;
       }
     }
-
-    toDirection = newDirection;
   }
+
+  function handleCellMouseUp(c: TileColumn, r: number, e: MouseEvent) {
+    if (isDragging && fromCol && fromRow !== null) {
+      const dir = getDirection(fromCol, fromRow, c, r);
+      if (dir) {
+        // Dragged to a valid neighbor - set the direction
+        setDraftDirection(fromCol, fromRow, c, r);
+        savedColumn = null;
+        savedRow = null;
+        savedDirection = null;
+      } else if (c === fromCol && r === fromRow && hasMovedToOtherCell) {
+        // We moved to other cells but came back to the starting cell - do nothing
+      } else if (c === fromCol && r === fromRow && !hasMovedToOtherCell) {
+        // Pure click without moving - move the direction to start from this tile
+        if (savedColumn && savedRow && savedDirection) {
+          const clickedColIdx = COLUMNS.indexOf(c);
+          const clickedRow = r;
+          let newDir = savedDirection;
+          let newToCol = c;
+          let newToRow = r;
+
+          if (savedDirection === "E" && clickedColIdx < COLUMNS.length - 1) {
+            newToCol = COLUMNS[clickedColIdx + 1];
+            newToRow = clickedRow;
+          } else if (savedDirection === "W" && clickedColIdx > 0) {
+            newToCol = COLUMNS[clickedColIdx - 1];
+            newToRow = clickedRow;
+          } else if (savedDirection === "N" && clickedRow < 9) {
+            newToCol = c;
+            newToRow = clickedRow + 1;
+          } else if (savedDirection === "S" && clickedRow > 1) {
+            newToCol = c;
+            newToRow = clickedRow - 1;
+          } else {
+            // Direction doesn't work from clicked tile, default to N or S
+            if (clickedRow < 9) {
+              newDir = "N";
+              newToCol = c;
+              newToRow = clickedRow + 1;
+            } else if (clickedRow > 1) {
+              newDir = "S";
+              newToCol = c;
+              newToRow = clickedRow - 1;
+            }
+          }
+
+          column = newToCol;
+          row = newToRow;
+          toDirection = newDir;
+
+          savedColumn = null;
+          savedRow = null;
+          savedDirection = null;
+        }
+      }
+    }
+    isDragging = false;
+    fromCol = null;
+    fromRow = null;
+    previewFromCol = null;
+    previewFromRow = null;
+    hasMovedToOtherCell = false;
+  }
+
+  // Reset drag state on mouse up anywhere
+  $effect(() => {
+    function handleMouseUp() {
+      isDragging = false;
+      previewFromCol = null;
+      previewFromRow = null;
+      hasMovedToOtherCell = false;
+    }
+    document.addEventListener("mouseup", handleMouseUp);
+    return () => {
+      document.removeEventListener("mouseup", handleMouseUp);
+    };
+  });
 
   const showPassageColor = $derived(fromRoomSlug === "secret-passage");
   const showPrismColor = $derived(keyUsed === "prism");
@@ -192,34 +325,32 @@
       {/if}
 
       {#if mode === "house"}
-        <div class="location-col">
-          <select
-            value={toDirection}
-            onchange={(e) => handleDirectionChange(e.currentTarget.value as Direction)}
-          >
-            {#each DIRECTIONS as d}
-              <option
-                value={d.value}
-                class:grayed={invalidDirections.has(d.value)}
-                >{d.label}</option
-              >
+        <div class="grid-container">
+          <div class="house-grid-vis">
+            {#each ROWS.slice().reverse() as r}
+              <div class="grid-row">
+                {#each COLUMNS as c}
+                  {@const isTo = column === c && row === r}
+                  {@const isFrom = derivedFromCol === c && derivedFromRow === r}
+                  {@const isPreviewFrom = previewFromCol === c && previewFromRow === r}
+                  {@const isEntrance = (r === 1 || r === 9) && c === "C"}
+                  <button
+                    class="grid-cell"
+                    class:selected-to={isTo}
+                    class:selected-from={isFrom}
+                    class:preview-from={isPreviewFrom}
+                    class:entrance={isEntrance}
+                    onmousedown={(e) => handleCellMouseDown(c, r, e)}
+                    onmouseenter={() => handleCellMouseEnter(c, r)}
+                    onmouseup={(e) => handleCellMouseUp(c, r, e)}
+                  >
+                    {#if isTo && isFrom}
+                      <div class="arrow arrow-{toDirection}">→</div>
+                    {/if}
+                  </button>
+                {/each}
+              </div>
             {/each}
-          </select>
-          <div class="into-label">into</div>
-          <div class="tile-selects">
-            <select bind:value={column}>
-              {#each COLUMNS as c}
-                <option value={c}>{c}</option>
-              {/each}
-            </select>
-            <select
-              value={row}
-              onchange={(e) => (row = parseInt(e.currentTarget.value))}
-            >
-              {#each ROWS as r}
-                <option value={r}>{r}</option>
-              {/each}
-            </select>
           </div>
         </div>
       {/if}
@@ -502,5 +633,105 @@
   .grayed {
     color: var(--text-muted);
     opacity: 0.5;
+  }
+
+  .grid-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .house-grid-vis {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 0.25rem;
+    background: var(--bg-secondary);
+    border-radius: 4px;
+  }
+
+  .grid-row {
+    display: flex;
+    gap: 2px;
+  }
+
+  .grid-cell {
+    width: 28px;
+    height: 28px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    cursor: pointer;
+    position: relative;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.1s;
+    border-radius: 2px;
+  }
+
+  .grid-cell.selected-to {
+    background: var(--accent);
+    border-color: var(--accent-dark);
+    font-weight: 600;
+  }
+
+  .grid-cell.selected-from {
+    background: var(--accent-light, var(--accent));
+    border-color: var(--accent);
+    opacity: 0.7;
+  }
+
+  .grid-cell.preview-from {
+    background: var(--accent-light, var(--accent));
+    border-color: var(--accent);
+    opacity: 0.7;
+  }
+
+  .grid-cell.entrance {
+    background: var(--bg-tertiary);
+    border-color: var(--border-emphasis);
+    border-width: 2px;
+  }
+
+  .grid-cell.entrance.selected-to {
+    background: var(--accent);
+    border-color: var(--accent-dark);
+    border-width: 2px;
+  }
+
+  .grid-cell.entrance.selected-from,
+  .grid-cell.entrance.preview-from {
+    background: var(--accent-light, var(--accent));
+    border-color: var(--accent);
+    border-width: 2px;
+    opacity: 0.7;
+  }
+
+  .arrow {
+    position: absolute;
+    font-size: 1rem;
+    color: var(--bg);
+    user-select: none;
+    pointer-events: none;
+  }
+
+  .arrow-N {
+    transform: rotate(-90deg);
+  }
+
+  .arrow-S {
+    transform: rotate(90deg);
+  }
+
+  .arrow-W {
+    transform: rotate(180deg);
+  }
+
+  .draft-label {
+    font-size: 0.875rem;
+    color: var(--text);
+    font-weight: 500;
   }
 </style>
