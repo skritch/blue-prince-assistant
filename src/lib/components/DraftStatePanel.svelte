@@ -86,12 +86,35 @@
     ]),
   );
 
-  $effect(() => {
-    if (invalidDirections.has(untrack(() => toDirection))) {
-      toDirection =
-        DIRECTIONS.find((d) => !invalidDirections.has(d.value))?.value ?? "N";
+  function handleDirectionChange(newDirection: Direction) {
+    // If choosing an invalid direction, work out where we should move to
+    if (invalidDirections.has(newDirection)) {
+      const prevDirection = toDirection;
+
+      // When drafting direction X into tile T, we're coming FROM the opposite of X
+      // So if we're facing East into E5, we're coming from D5 (west of E5)
+      // If we then want to face West, we should draft into D5 (the tile we were coming from)
+
+      // Move the destination tile in the opposite of the new direction
+      const colIdx = COLUMNS.indexOf(column);
+
+      if (newDirection === "E") {
+        // Moving destination west (opposite of east)
+        column = COLUMNS[colIdx + 1] ?? column;
+      } else if (newDirection === "W") {
+        // Moving destination east (opposite of west)
+        column = COLUMNS[colIdx - 1] ?? column;
+      } else if (newDirection === "N") {
+        // Moving destination south (opposite of north)
+        row = Math.min(9, row + 1);
+      } else if (newDirection === "S") {
+        // Moving destination north (opposite of south)
+        row = Math.max(1, row - 1);
+      }
     }
-  });
+
+    toDirection = newDirection;
+  }
 
   const showPassageColor = $derived(fromRoomSlug === "secret-passage");
   const showPrismColor = $derived(keyUsed === "prism");
@@ -170,9 +193,14 @@
 
       {#if mode === "house"}
         <div class="location-col">
-          <select bind:value={toDirection}>
+          <select
+            value={toDirection}
+            onchange={(e) => handleDirectionChange(e.currentTarget.value as Direction)}
+          >
             {#each DIRECTIONS as d}
-              <option value={d.value} disabled={invalidDirections.has(d.value)}
+              <option
+                value={d.value}
+                class:grayed={invalidDirections.has(d.value)}
                 >{d.label}</option
               >
             {/each}
@@ -469,5 +497,10 @@
 
   .clear-btn:hover {
     color: var(--text);
+  }
+
+  .grayed {
+    color: var(--text-muted);
+    opacity: 0.5;
   }
 </style>
