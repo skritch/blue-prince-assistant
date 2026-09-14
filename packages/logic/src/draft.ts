@@ -112,20 +112,22 @@ function getPGemBySlot(
   let pGems: [number, number, number]
   if (inLibrary) {
     pGems = [0, gems == 0 ? 0 : 1, 1]
+    
   } else if (
-    (vMode && roomsDrafted < 3)
-    || (day == 1 && roomsDrafted < 6)
-    || (day == 2 && roomsDrafted < 5)
-    || (day == 3 && roomsDrafted < 4)
+    (day > 4)
+    || (vMode && roomsDrafted >= 3)
+    || (day == 1 && roomsDrafted >= 6)
+    || (day == 2 && roomsDrafted >= 5)
+    || (day == 3 && roomsDrafted >= 4)
   ) {
-    pGems = [0, 0, 0]
-  } else {
     const slot2chance = rareCheckSlot2Chance(gems, rank)
     const slot3chance = rareCheckSlot3Chance(gems, roomsDrafted, rank)
 
     // If slot 2 gets a rare check, slot 3 automatically does
     // Scale down slot3chance by chance 1 - slot2chance
-    pGems = [0, slot2chance, (1 - slot2chance) * slot3chance]
+    pGems = [0, slot2chance, slot2chance + (1 - slot2chance) * slot3chance]
+  } else {
+    pGems = [0, 0, 0]
   }
   return pGems[slot - 1]
 }
@@ -565,8 +567,10 @@ export function draftHouse(
     let pRedraw = 0
 
     for (const [i, deck] of effectiveDecks.entries()) {
-      sp = sp.add(deck.scale(pDeckRoll.get(i)))
-      pRedraw = pRedraw + pDeckRoll.get(i) * pRedrawI.get(i)
+      const pdr = pDeckRoll.get(i)
+      const scaledDeck = deck.scale(pdr)
+      sp = sp.add(scaledDeck)
+      pRedraw = pRedraw + pdr * pRedrawI.get(i)
     }
 
     if (pRedraw > 0) {
