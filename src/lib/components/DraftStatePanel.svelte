@@ -446,13 +446,16 @@
   .prev-draft-header {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: baseline;
+  }
+
+  .prev-draft-header .section-label {
     margin-bottom: 0.15rem;
   }
 
   .clear-btn {
     padding: 0;
-    font-size: 0.7rem;
+    font-size: 0.75rem;
     border: none;
     background: transparent;
     color: var(--text-muted);

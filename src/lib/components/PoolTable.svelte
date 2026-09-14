@@ -24,11 +24,28 @@
     spoilerSettings: SpoilerSettings;
   } = $props();
 
+  // Map of room slugs to their state flags that should be synced
+  const ROOM_TO_FLAG: Record<string, keyof HouseState> = {
+    'pool': 'poolInHouse',
+    'schoolhouse': 'schoolhouseInHouse',
+    'chamber-of-mirrors': 'chamberOfMirrorsInHouse',
+    'greenhouse': 'greenhouseInHouse',
+    'solarium': 'solariumInHouse',
+    'foundation': 'foundationDrafted',
+    'furnace': 'furnaceInHouse',
+  };
+
   function addRoomToHouse(slug: string) {
-    houseState = {
-      ...houseState,
-      placedRooms: [...houseState.placedRooms, slug],
-    };
+    const newPlacedRooms = [...houseState.placedRooms, slug];
+    const newState: HouseState = { ...houseState, placedRooms: newPlacedRooms };
+
+    // Sync the flag if this is a special room
+    const flag = ROOM_TO_FLAG[slug];
+    if (flag) {
+      (newState as any)[flag] = true;
+    }
+
+    houseState = newState;
   }
 
   function removeRoomFromHouse(slug: string) {
@@ -36,7 +53,16 @@
     if (idx === -1) return;
     const arr = [...houseState.placedRooms];
     arr.splice(idx, 1);
-    houseState = { ...houseState, placedRooms: arr };
+
+    const newState: HouseState = { ...houseState, placedRooms: arr };
+
+    // Sync the flag if this is a special room (except furnace)
+    const flag = ROOM_TO_FLAG[slug];
+    if (flag && slug !== 'furnace') {
+      (newState as any)[flag] = arr.includes(slug);
+    }
+
+    houseState = newState;
   }
 
   function raritySort(r: Rarity | null): number {
@@ -239,6 +265,7 @@
           <th></th>
           <th>Room</th>
           <th>Rarity</th>
+          <th>Source</th>
           <th>Reason</th>
         </tr>
       </thead>
@@ -269,6 +296,7 @@
             <td class="rarity rarity-{effectiveRarity}"
               >{effectiveRarity ? rarityName(effectiveRarity) : ""}</td
             >
+            <td class="source"></td>
             <td class="reason">{reason ?? ""}</td>
           </tr>
         {/each}

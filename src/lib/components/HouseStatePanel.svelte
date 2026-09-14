@@ -46,6 +46,10 @@
     for (const { slug, flag } of SPECIAL_ROOMS) {
       (updates as Record<string, unknown>)[flag] = state.placedRooms.includes(slug);
     }
+    // Furnace: one-way sync (adding furnace sets flag, but unchecking doesn't remove from house)
+    if (state.placedRooms.includes('furnace')) {
+      updates.furnaceInHouse = true;
+    }
     return { ...state, ...updates };
   }
 
@@ -122,14 +126,29 @@
                   <input
                     type="checkbox"
                     checked={houseState.placedRooms.includes(slug)}
-                    onchange={(e) => toggleSpecialRoom(slug, e.currentTarget.checked)}
+                    onchange={(e) => {toggleSpecialRoom(slug, e.currentTarget.checked)}}
                   /> {label}
                 </label>
               {/each}
             {/if}
             {#if showFilters || furnacePlaced}
               <label>
-                <input type="checkbox" bind:checked={houseState.furnaceInHouse} />
+                <input 
+                  type="checkbox"
+                  checked={houseState.furnaceInHouse}
+                  onchange={(e) => {
+                  const checked = e.currentTarget.checked;
+                  if (checked && !houseState.placedRooms.includes('furnace')) {
+                    houseState = {
+                      ...houseState,
+                      furnaceInHouse: true,
+                      placedRooms: [...houseState.placedRooms, 'furnace'],
+                    };
+                  } else {
+                    houseState = { ...houseState, furnaceInHouse: checked };
+                  }
+                }}
+                />
                 Furnace
                 <span class="help-icon" data-tooltip={FURNACE_NOTE}>?</span>
               </label>
