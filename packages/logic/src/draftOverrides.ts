@@ -25,7 +25,7 @@ function applyWeightedRooms(
   draft: HouseDraftParams,
 ): DraftResult & { pWeighted: number } {
   let slots = draftResult.slots
-  let reasons = draftResult.reasons
+  let reasons = draftResult.reasons || [{}, {}, {}]
 
   // No conditions for locations in house because this is already determined
   // by the room being in the pool
@@ -113,7 +113,7 @@ function applyForcedDraws(
   draft: HouseDraftParams,
 ): DraftResult {
   let slots = draftResult.slots
-  let reasons = draftResult.reasons
+  let reasons = draftResult.reasons || [{}, {}, {}]
 
   if (draft.fromRoomSlug == 'tunnel') {
     slots[0] = KeyedVec.empty().set('tunnel', 1)
@@ -178,7 +178,7 @@ function applyDuctDrafting(
   pWeighted: number
 ): DraftResult {
   let slots = draftResult.slots
-  let reasons = draftResult.reasons
+  let reasons = draftResult.reasons || [{}, {}, {}]
 
   // Duct Drafting
   // Ignoring electric eel aquarium

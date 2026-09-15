@@ -27,7 +27,7 @@ export function draftBerryHouse(
 
   return {
     slots: [KeyedVec.empty(), KeyedVec.empty(), draftResult.slots[2]],
-    reasons: [{}, {}, draftResult.reasons[2]]
+    reasons: [{}, {}, (draftResult.reasons || [])[2] || {}]
   }
 }
 

@@ -1,6 +1,9 @@
 <script lang="ts">
-  import type { OrientationResult, Rarity, Direction } from "bp-logic";
-  import { ROOMS, ADHOC_ADDITIONS, POOL_ADDITIONS, DEAD_END_DIRECTIONS } from "bp-logic";
+  import type { OrientationResult, DirectionResult, PairResult, Rarity, Direction } from "bp-logic";
+  import {
+    ROOMS, ADHOC_ADDITIONS, POOL_ADDITIONS, DEAD_END_DIRECTIONS,
+    computeDirectionProbabilities, computePairProbabilities,
+  } from "bp-logic";
   import type { SpoilerSettings } from "../spoilerSettings";
 
   let {
@@ -15,50 +18,63 @@
     toDirection: Direction | undefined;
   } = $props();
 
-  function displaySymbol(sym: string): string {
-    if (sym === "∏" && toDirection) return DEAD_END_DIRECTIONS[toDirection];
-    return sym;
-  }
-
   const ROOM_BY_SLUG = Object.fromEntries(ROOMS.map((r) => [r.slug, r]));
   const ALWAYS_SHOW_PAGES = new Set([7, 8]);
   const ALWAYS_SHOW_SLUGS = new Set([...ADHOC_ADDITIONS, ...POOL_ADDITIONS]);
 
-  // Canonical display order for orientation symbols
   const SYMBOL_ORDER = [
-    "∏",
-    "║",
-    "═",
-    "╔",
-    "╗",
-    "╚",
-    "╝",
-    "╦",
-    "╩",
-    "╠",
-    "╣",
-    "╬",
+    "∏", "║", "═", "╔", "╗", "╚", "╝", "╦", "╩", "╠", "╣", "╬",
   ];
+  const DIR_ORDER: Direction[] = ["N", "E", "S", "W"];
 
   type SlotData = { p: number; rooms: string[] };
-  type Row = { symbol: string; slots: (SlotData | null)[] };
+  type Row = { label: string; slots: (SlotData | null)[]; rerollSlot?: number };
 
-  const rows = $derived.by<Row[]>(() => {
+  const orientationRows = $derived.by<Row[]>(() => {
     if (!orientations) return [];
-
     const seen = new Set<string>();
     for (const slot of orientations) {
-      for (const [sym] of slot) seen.add(sym);
+      for (const sym of Object.keys(slot)) seen.add(sym);
     }
+    return SYMBOL_ORDER.filter((s) => seen.has(s)).map((sym) => {
+      const label = sym === "∏" && toDirection ? DEAD_END_DIRECTIONS[toDirection] : sym;
+      return {
+        label,
+        rerollSlot: sym === "∏" ? 1 : undefined,
+        slots: orientations!.map((slot) => {
+          const entry = slot[sym as keyof typeof slot];
+          return entry ? { p: entry.p, rooms: entry.rooms } : null;
+        }),
+      };
+    });
+  });
 
-    return SYMBOL_ORDER.filter((s) => seen.has(s)).map((sym) => ({
-      symbol: sym,
-      slots: orientations!.map((slot) => {
-        for (const [k, v] of slot) {
-          if (k === sym) return { p: v.p, rooms: v.rooms };
-        }
-        return null;
-      }),
+  const directionRows = $derived.by<Row[]>(() => {
+    if (!orientations || !toDirection) return [];
+    const result: DirectionResult = computeDirectionProbabilities(orientations, toDirection);
+    const seen = new Set<Direction>();
+    for (const slot of result) {
+      for (const d of Object.keys(slot) as Direction[]) seen.add(d);
+    }
+    return DIR_ORDER.filter((d) => seen.has(d)).map((dir) => ({
+      label: dir,
+      slots: result.map((slot) => slot[dir] ?? null),
+    }));
+  });
+
+  const pairRows = $derived.by<Row[]>(() => {
+    if (!orientations || !toDirection) return [];
+    const result: PairResult = computePairProbabilities(orientations, toDirection);
+    const seenKeys: [string, [Direction, Direction]][] = [];
+    for (const slot of result) {
+      for (const [key, entry] of Object.entries(slot)) {
+        if (entry && !seenKeys.some(([k]) => k === key))
+          seenKeys.push([key, entry.directions]);
+      }
+    }
+    return seenKeys.map(([key, [d1, d2]]) => ({
+      label: `${d1}${d2}`,
+      slots: result.map((slot) => slot[key as keyof typeof slot] ?? null),
     }));
   });
 
@@ -86,7 +102,6 @@
     const unique = [...new Set(rooms)];
     const visible = unique.filter((s) => !isHidden(s));
     const hiddenCount = unique.length - visible.length;
-
     const names = visible.map((s) => ROOM_BY_SLUG[s]?.name ?? s);
     if (hiddenCount > 0) {
       const label = spoilerSettings.room46
@@ -104,20 +119,23 @@
   <table class="door-table">
     <thead>
       <tr>
-        <th class="sym-col">Shape</th>
+        <th class="label-col"></th>
         <th>Slot 1</th>
         <th>Slot 2</th>
         <th>Slot 3</th>
       </tr>
     </thead>
     <tbody>
-      {#each rows as row}
+      <tr class="section-header">
+        <td>Shape</td><td></td><td></td><td></td>
+      </tr>
+      {#each orientationRows as row, i}
         <tr>
-          <td class="sym-cell">{displaySymbol(row.symbol)}</td>
-          {#each row.slots as slot, i}
+          <td class="sym-cell">{row.label}</td>
+          {#each row.slots as slot, si}
             {#if slot && slot.p >= 0.0005}
               <td class="pct-cell"
-                ><span data-tooltip={tooltipRooms(slot.rooms)}>{fmtPct(slot.p)}</span>{#if row.symbol === "∏" && i === 1}<span
+                ><span data-tooltip={tooltipRooms(slot.rooms)}>{fmtPct(slot.p)}</span>{#if row.rerollSlot === si}<span
                     class="reroll-note"
                     data-tooltip="Rerolled if all three slots draw a dead end"
                     >*</span
@@ -128,6 +146,46 @@
           {/each}
         </tr>
       {/each}
+
+      {#if directionRows.length > 0}
+        <tr class="section-header">
+          <td>Exit direction</td><td></td><td></td><td></td>
+        </tr>
+        {#each directionRows as row}
+          <tr>
+            <td class="label-cell">{row.label}</td>
+            {#each row.slots as slot}
+              {#if slot && slot.p >= 0.0005}
+                <td class="pct-cell">
+                  <span data-tooltip={tooltipRooms(slot.rooms)}>{fmtPct(slot.p)}</span>
+                </td>
+              {:else}
+                <td class="nil-cell">—</td>
+              {/if}
+            {/each}
+          </tr>
+        {/each}
+      {/if}
+
+      {#if pairRows.length > 0}
+        <tr class="section-header">
+          <td>Exit pair</td><td></td><td></td><td></td>
+        </tr>
+        {#each pairRows as row}
+          <tr>
+            <td class="label-cell">{row.label}</td>
+            {#each row.slots as slot}
+              {#if slot && slot.p >= 0.0005}
+                <td class="pct-cell">
+                  <span data-tooltip={tooltipRooms(slot.rooms)}>{fmtPct(slot.p)}</span>
+                </td>
+              {:else}
+                <td class="nil-cell">—</td>
+              {/if}
+            {/each}
+          </tr>
+        {/each}
+      {/if}
     </tbody>
   </table>
 {/if}
@@ -158,7 +216,7 @@
     white-space: nowrap;
   }
 
-  .door-table th.sym-col {
+  .door-table th.label-col {
     text-align: center;
   }
 
@@ -172,11 +230,35 @@
     border-bottom: none;
   }
 
+  .section-header td {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+    padding-top: 0.6rem;
+    padding-bottom: 0.2rem;
+    border-bottom: 1px solid var(--border);
+    text-align: right;
+  }
+
+  .section-header td:first-child {
+    text-align: center;
+  }
+
   .door-table .sym-cell {
     font-size: 1.25rem;
     text-align: center;
     font-family: monospace;
     color: var(--text);
+  }
+
+  .door-table .label-cell {
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-align: center;
+    color: var(--text);
+    font-family: monospace;
   }
 
   .pct-cell {

@@ -8,7 +8,7 @@ import type { GameState } from './game'
 
 
 
-
+// One symbol is used for all dead-ends, but we display them differently on the frontend.
 type ORIENTATION_SYMBOL = '∏' | '╔' | '╗' | '╚' | '╝' | '║' | '═' | '╣' | '╠' | '╦' | '╩' | '╬'
 export type Orientation = { exits: Direction[]; symbol: ORIENTATION_SYMBOL; p: number }
 
@@ -80,8 +80,8 @@ type OrientationEntry = {
   p: number
 }
 
-type OrientationMap = Map<ORIENTATION_SYMBOL, OrientationEntry & { rooms: string[] }>
-export type OrientationResult = [OrientationMap, OrientationMap, OrientationMap]
+type OrientationPs = Partial<Record<ORIENTATION_SYMBOL, OrientationEntry & { rooms: string[] }>>
+export type OrientationResult = [OrientationPs, OrientationPs, OrientationPs]
 
 
 function computeOrientations(
@@ -92,8 +92,8 @@ function computeOrientations(
   compass: boolean,
   haveRoom46: boolean,
   greenhouseWallBroken: boolean
-): OrientationMap {
-  const acc = new Map<ORIENTATION_SYMBOL, OrientationEntry & { rooms: string[] }>()
+): OrientationPs {
+  const acc: OrientationPs = {}
 
   let excludedExits: Direction[] = []
   if (tile.row == 1) { excludedExits.push("S") }
@@ -159,15 +159,15 @@ function computeOrientations(
     }
 
     for (const { exits, symbol, p } of orientations) {
-      const existing = acc.get(symbol)
+      const existing = acc[symbol]
       if (existing) {
-        acc.set(symbol, {
+        acc[symbol] = {
           ...existing,
           p: existing.p + pRoom * p,
           rooms: [...existing.rooms, room.slug]
-        })
+        }
       } else {
-        acc.set(symbol, { shape: room.shape, exits, symbol, p: pRoom * p, rooms: [room.slug] })
+        acc[symbol] = { shape: room.shape, exits, symbol, p: pRoom * p, rooms: [room.slug] }
       }
     }
   }
@@ -192,5 +192,73 @@ export function computeOrientationProbabilities(
       game.haveRoom46,
       game.greenhouseWallBroken
     )
-  ) as [OrientationMap, OrientationMap, OrientationMap]
+  ) as [OrientationPs, OrientationPs, OrientationPs]
+}
+
+type DoorEntry = { p: number; rooms: string[] }
+type DirectionPs = Partial<Record<Direction, DoorEntry>>
+type PairKey = `${Direction}${Direction}`
+type PairPs = Partial<Record<PairKey, DoorEntry & { directions: [Direction, Direction] }>>
+
+export type DirectionResult = [DirectionPs, DirectionPs, DirectionPs]
+export type PairResult = [PairPs, PairPs, PairPs]
+
+const DIRECTION_ORDER: Direction[] = ['N', 'E', 'S', 'W']
+
+export function computeDirectionProbabilities(
+  orientations: OrientationResult,
+  toDirection: Direction
+): DirectionResult {
+  const entryDir = OPPOSITE[toDirection]
+  const dirs = DIRECTION_ORDER.filter(d => d !== entryDir)
+
+  return orientations.map(slot => {
+    const acc: DirectionPs = {}
+    for (const entry of Object.values(slot)) {
+      for (const dir of entry.exits) {
+        if (!dirs.includes(dir)) continue
+        const existing = acc[dir]
+        if (existing) {
+          existing.p += entry.p
+          existing.rooms.push(...entry.rooms)
+        } else {
+          acc[dir] = { p: entry.p, rooms: [...entry.rooms] }
+        }
+      }
+    }
+    return acc
+  }) as DirectionResult
+}
+
+export function computePairProbabilities(
+  orientations: OrientationResult,
+  toDirection: Direction
+): PairResult {
+  const entryDir = OPPOSITE[toDirection]
+  const dirs = DIRECTION_ORDER.filter(d => d !== entryDir)
+
+  const pairs: [Direction, Direction][] = []
+  for (let i = 0; i < dirs.length; i++) {
+    for (let j = i + 1; j < dirs.length; j++) {
+      pairs.push([dirs[i], dirs[j]])
+    }
+  }
+
+  return orientations.map(slot => {
+    const acc: PairPs = {}
+    for (const entry of Object.values(slot)) {
+      for (const [d1, d2] of pairs) {
+        if (!entry.exits.includes(d1) || !entry.exits.includes(d2)) continue
+        const key: PairKey = `${d1}${d2}`
+        const existing = acc[key]
+        if (existing) {
+          existing.p += entry.p
+          existing.rooms.push(...entry.rooms)
+        } else {
+          acc[key] = { p: entry.p, rooms: [...entry.rooms], directions: [d1, d2] }
+        }
+      }
+    }
+    return acc
+  }) as PairResult
 }
