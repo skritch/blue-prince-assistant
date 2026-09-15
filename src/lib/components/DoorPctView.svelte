@@ -1,8 +1,16 @@
 <script lang="ts">
-  import type { OrientationResult, DirectionResult, PairResult, Rarity, Direction } from "bp-logic";
+  import type {
+    OrientationResult,
+    DirectionResult,
+    Rarity,
+    Direction,
+  } from "bp-logic";
   import {
-    ROOMS, ADHOC_ADDITIONS, POOL_ADDITIONS, DEAD_END_DIRECTIONS,
-    computeDirectionProbabilities, computePairProbabilities,
+    ROOMS,
+    ADHOC_ADDITIONS,
+    POOL_ADDITIONS,
+    DEAD_END_DIRECTIONS,
+    computeDirectionProbabilities,
   } from "bp-logic";
   import type { SpoilerSettings } from "../spoilerSettings";
 
@@ -23,7 +31,18 @@
   const ALWAYS_SHOW_SLUGS = new Set([...ADHOC_ADDITIONS, ...POOL_ADDITIONS]);
 
   const SYMBOL_ORDER = [
-    "∏", "║", "═", "╔", "╗", "╚", "╝", "╦", "╩", "╠", "╣", "╬",
+    "∏",
+    "║",
+    "═",
+    "╔",
+    "╗",
+    "╚",
+    "╝",
+    "╦",
+    "╩",
+    "╠",
+    "╣",
+    "╬",
   ];
   const DIR_ORDER: Direction[] = ["N", "E", "S", "W"];
 
@@ -37,7 +56,8 @@
       for (const sym of Object.keys(slot)) seen.add(sym);
     }
     return SYMBOL_ORDER.filter((s) => seen.has(s)).map((sym) => {
-      const label = sym === "∏" && toDirection ? DEAD_END_DIRECTIONS[toDirection] : sym;
+      const label =
+        sym === "∏" && toDirection ? DEAD_END_DIRECTIONS[toDirection] : sym;
       return {
         label,
         rerollSlot: sym === "∏" ? 1 : undefined,
@@ -51,7 +71,10 @@
 
   const directionRows = $derived.by<Row[]>(() => {
     if (!orientations || !toDirection) return [];
-    const result: DirectionResult = computeDirectionProbabilities(orientations, toDirection);
+    const result: DirectionResult = computeDirectionProbabilities(
+      orientations,
+      toDirection,
+    );
     const seen = new Set<Direction>();
     for (const slot of result) {
       for (const d of Object.keys(slot) as Direction[]) seen.add(d);
@@ -59,22 +82,6 @@
     return DIR_ORDER.filter((d) => seen.has(d)).map((dir) => ({
       label: dir,
       slots: result.map((slot) => slot[dir] ?? null),
-    }));
-  });
-
-  const pairRows = $derived.by<Row[]>(() => {
-    if (!orientations || !toDirection) return [];
-    const result: PairResult = computePairProbabilities(orientations, toDirection);
-    const seenKeys: [string, [Direction, Direction]][] = [];
-    for (const slot of result) {
-      for (const [key, entry] of Object.entries(slot)) {
-        if (entry && !seenKeys.some(([k]) => k === key))
-          seenKeys.push([key, entry.directions]);
-      }
-    }
-    return seenKeys.map(([key, [d1, d2]]) => ({
-      label: `${d1}${d2}`,
-      slots: result.map((slot) => slot[key as keyof typeof slot] ?? null),
     }));
   });
 
@@ -114,7 +121,9 @@
 </script>
 
 {#if !orientations}
-  <p class="empty">Configure a house draft location to see door orientation probabilities.</p>
+  <p class="empty">
+    Configure a house draft location to see door orientation probabilities.
+  </p>
 {:else}
   <table class="door-table">
     <thead>
@@ -131,15 +140,20 @@
       </tr>
       {#each orientationRows as row, i}
         <tr>
-          <td class="sym-cell">{row.label}</td>
+          <td class="sym-cell" class:dead-end={row.rerollSlot !== undefined}
+            >{row.label}</td
+          >
           {#each row.slots as slot, si}
             {#if slot && slot.p >= 0.0005}
               <td class="pct-cell"
-                ><span data-tooltip={tooltipRooms(slot.rooms)}>{fmtPct(slot.p)}</span>{#if row.rerollSlot === si}<span
+                ><span data-tooltip={tooltipRooms(slot.rooms)}
+                  >{fmtPct(slot.p)}</span
+                >{#if row.rerollSlot === si}<span
                     class="reroll-note"
-                    data-tooltip="Rerolled if all three slots draw a dead end"
+                    data-tooltip="Slot 2 is rerolled when all three slots draw a dead end. The probabilities in this column already account for this."
                     >*</span
-                  >{/if}</td>
+                  >{/if}</td
+              >
             {:else}
               <td class="nil-cell">—</td>
             {/if}
@@ -157,27 +171,9 @@
             {#each row.slots as slot}
               {#if slot && slot.p >= 0.0005}
                 <td class="pct-cell">
-                  <span data-tooltip={tooltipRooms(slot.rooms)}>{fmtPct(slot.p)}</span>
-                </td>
-              {:else}
-                <td class="nil-cell">—</td>
-              {/if}
-            {/each}
-          </tr>
-        {/each}
-      {/if}
-
-      {#if pairRows.length > 0}
-        <tr class="section-header">
-          <td>Exit pair</td><td></td><td></td><td></td>
-        </tr>
-        {#each pairRows as row}
-          <tr>
-            <td class="label-cell">{row.label}</td>
-            {#each row.slots as slot}
-              {#if slot && slot.p >= 0.0005}
-                <td class="pct-cell">
-                  <span data-tooltip={tooltipRooms(slot.rooms)}>{fmtPct(slot.p)}</span>
+                  <span data-tooltip={tooltipRooms(slot.rooms)}
+                    >{fmtPct(slot.p)}</span
+                  >
                 </td>
               {:else}
                 <td class="nil-cell">—</td>
@@ -251,6 +247,10 @@
     text-align: center;
     font-family: monospace;
     color: var(--text);
+  }
+
+  .door-table .sym-cell.dead-end {
+    font-weight: bold;
   }
 
   .door-table .label-cell {

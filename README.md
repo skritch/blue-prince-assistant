@@ -24,16 +24,17 @@ The following features are implemented
 I'd like to add the following:
 - [ ] Display some information as to why a room gets the probability it does
   - Incomplete
-- [ ] The "validation" stage of drafting, which removes duplicates, 3x dead ends, etc.
-  - Dead ends implemented
-- [ ] Probability of drawing e.g. right turn, gemless straight, etc.
+- [ ] The "validation" stage of drafting
+  - [x] Dead ends and Draxus
+  - [ ] Duplicates
+- [x] Probability of drawing e.g. right turn, gemless straight, etc.
+  - Doesn't account for gems.
 
 The following I am not currently planning to implement:
 - Idiosyncrasies of duplicated rooms, e.g. classrooms, chamber of mirrors
 - Probabilites of items, dig spots, locked doors, etc.
 - A full map of the house
 - Anything which depends on the exact order of rooms drafted, or the house history
-
 
 
 ----
