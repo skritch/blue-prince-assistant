@@ -1,9 +1,10 @@
 import keyLists from './data/keyLists.json';
 import type { DayState } from './day';
-import { draftHouse, type HouseDraftParams } from './draft';
+import { draftHouse, type DraftResult, type HouseDraftParams } from './draft';
 import type { GameState } from './game';
 import type { HouseState } from './house';
 import { KeyedVec } from './math';
+import { computeOrientationProbabilities, type OrientationResult } from './orientation';
 import { initSpecificPool, setProbabilities, type DraftPool } from './pool';
 import { ROOMS_BY_COLOR, UPGRADE_LOOKUP } from './rooms';
 import { classifyExitTo, type Exit } from './tiles';
@@ -103,9 +104,10 @@ function getExitLists(pool: DraftPool, draft: HouseDraftParams) {
 export function draftPrismatic(
   pool: DraftPool,
   game: GameState,
+  day: DayState,
   house: HouseState,
   draft: HouseDraftParams & { secretPassageColor: PrismColor }
-): DraftPool {
+): [DraftPool, DraftResult] {
 
   const keyColor = draft.secretPassageColor
 
@@ -285,10 +287,7 @@ export function draftPrismatic(
     game.upgrades,
   )
 
-  return setProbabilities(
-    fakePool,
-    slots
-  )
+  return [fakePool, { slots: slots }]
 }
 
 // TODO: figure out how to determine the probability of validation here. For now, skipping it.
@@ -299,7 +298,7 @@ export function draftSilver(
   day: DayState,
   house: HouseState,
   draft: HouseDraftParams
-): DraftPool {
+): DraftResult {
 
   const pool4 = {
     ...pool,
@@ -454,9 +453,5 @@ export function draftSilver(
   }
   slots[2] = slot3
 
-
-  return setProbabilities(
-    pool,
-    slots
-  )
+  return { slots }
 }

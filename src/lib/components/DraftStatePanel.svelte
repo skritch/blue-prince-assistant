@@ -50,9 +50,7 @@
 
   const showOuter = $derived(spoilerSettings.westGate || spoilerSettings.entireGame);
   const showBerryPicker = $derived(spoilerSettings.entireGame);
-  const showOuterDraftCount = $derived(
-    !(day > 8 || spoilerSettings.room46 || spoilerSettings.entireGame || altMode),
-  );
+  const showOuterDraftCount = $derived(!(day > 8 || altMode));
 
   $effect(() => {
     if (!showOuter && untrack(() => mode) === 'outer') mode = 'none';

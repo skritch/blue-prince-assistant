@@ -169,7 +169,7 @@
           if (ALWAYS_SHOW_PAGES.has(room.directoryPage)) return false;
           if (ALWAYS_SHOW_SLUGS.has(room.slug)) return false;
           const effectiveRarity = draftPool.rarityOverrides[room.slug] ?? room.baseRarity;
-          return spoilerSettings.westGate
+          return spoilerSettings.room46
             ? effectiveRarity === 4
             : (effectiveRarity !== null && effectiveRarity >= 3) || room.directoryPage === 9;
         }),
@@ -178,7 +178,7 @@
   const otherRoomSet = $derived(new Set(otherRooms));
 
   const otherLabel = $derived(
-    spoilerSettings.westGate
+    spoilerSettings.room46
       ? `(${otherRooms.length} other rare rooms...)`
       : `(${otherRooms.length} other unusual and rare rooms...)`,
   );

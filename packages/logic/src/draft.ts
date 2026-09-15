@@ -43,7 +43,7 @@ export type DeckList = [Deck, Deck, Deck, Deck, Deck, Deck, Deck, Deck]
 
 export type DraftResult = {
   slots: [KeyedVec, KeyedVec, KeyedVec],
-  reasons: [Record<string, string[]>, Record<string, string[]>, Record<string, string[]>]
+  reasons?: [Record<string, string[]>, Record<string, string[]>, Record<string, string[]>]
 }
 
 // --- Various helpers ---

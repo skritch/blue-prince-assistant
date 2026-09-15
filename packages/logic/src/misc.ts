@@ -34,7 +34,7 @@ export function draftBerryHouse(
 export function draftBerryOuter(
   game: GameState,
   house: HouseState
-) {
+): [DraftPool, DraftResult] {
   const berryCounts = OUTER_BERRIES
   const countsInHouse = house.placedRooms.reduce((acc, value) => {
     acc[value] = (acc[value] || 0) + 1;
@@ -59,8 +59,8 @@ export function draftBerryOuter(
     game.upgrades
   )
 
-  return setProbabilities(
+  return [
     fakePool,
-    [KeyedVec.empty(), KeyedVec.empty(), draftResult]
-  )
+    { slots: [KeyedVec.empty(), KeyedVec.empty(), draftResult], reasons: [{}, {}, {}] }
+  ]
 }

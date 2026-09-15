@@ -7,8 +7,17 @@ import type { DayState } from './day'
 import type { GameState } from './game'
 
 
+
+
 type ORIENTATION_SYMBOL = '∏' | '╔' | '╗' | '╚' | '╝' | '║' | '═' | '╣' | '╠' | '╦' | '╩' | '╬'
 export type Orientation = { exits: Direction[]; symbol: ORIENTATION_SYMBOL; p: number }
+
+export const DEAD_END_DIRECTIONS = {
+  "N": "⫪",
+  "S": "⫫",
+  "E": "⫤",
+  "W": "⊨"
+}
 
 const OPPOSITE: Record<Direction, Direction> = { N: 'S', S: 'N', E: 'W', W: 'E' }
 
@@ -93,6 +102,7 @@ function computeOrientations(
   if (tile.column == "E") { excludedExits.push("E") }
 
   for (const [slug, pRoom] of pRooms.entries()) {
+    if (pRoom <= 0) continue
     const room = ROOM_BY_SLUG[slug]
     if (!room) continue
 
@@ -166,13 +176,13 @@ function computeOrientations(
 }
 
 export function computeOrientationProbabilities(
-  result: DraftResult,
+  pRooms: DraftResult["slots"],
   game: GameState,
   day: DayState,
   draft: HouseDraftParams,
 ): OrientationResult {
 
-  return result.slots.map(slot =>
+  return pRooms.map(slot =>
     computeOrientations(
       slot,
       draft.toLocation.toDirection,

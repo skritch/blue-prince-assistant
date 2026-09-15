@@ -151,7 +151,6 @@ export function blockDraft(pool: DraftPool, slug: string, reason?: string) {
   }
 }
 
-
 export function setProbabilities(
   pool: DraftPool,
   slots: [KeyedVec, KeyedVec, KeyedVec],

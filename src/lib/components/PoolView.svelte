@@ -18,6 +18,7 @@
     type TileRow,
     type PrismColor,
     type DraftPool,
+    type OrientationResult,
   } from "bp-logic";
   import type { SpoilerSettings } from "../spoilerSettings";
   import { loadState, saveState, persistLocally } from "../stateSerializer";
@@ -28,6 +29,7 @@
   import DraftStatePanel from "./DraftStatePanel.svelte";
   import PoolTable from "./PoolTable.svelte";
   import RoomListView from "./RoomListView.svelte";
+  import DoorPctView from "./DoorPctView.svelte";
 
   let { spoilerSettings = $bindable() }: { spoilerSettings: SpoilerSettings } =
     $props();
@@ -319,6 +321,8 @@
       maxRank,
     };
 
+    outerRoomDraftCount = randomDay > 1 ? pick([randomDay, randomDay - 1]) : 0;
+
     draftMode = "house";
     draftColumn = column;
     draftRow = row;
@@ -332,14 +336,12 @@
 
   const poolSlugs = $derived(new Set(gameState.pool.map((r) => r.slug)));
 
-  type PoolResult = { ok: true; pool: DraftPool } | { ok: false; error: Error };
+  type PoolResult = { ok: true; pool: DraftPool; orientations: OrientationResult | undefined } | { ok: false; error: Error };
 
   let poolResult = $derived.by<PoolResult>(() => {
     try {
-      return {
-        ok: true,
-        pool: computePool(gameState, dayState, houseState, draftParams),
-      };
+      const [pool, orientations] = computePool(gameState, dayState, houseState, draftParams);
+      return { ok: true, pool, orientations };
     } catch (e) {
       const err = e instanceof Error ? e : new Error(String(e));
       console.error("[bp-drafter] computePool error:", err);
@@ -439,7 +441,12 @@
     {:else if viewMode === "room-list"}
       <RoomListView draftPool={poolResult.pool} {spoilerSettings} />
     {:else}
-      <div class="stub">Door %s coming soon.</div>
+      <DoorPctView
+        orientations={poolResult.orientations}
+        {spoilerSettings}
+        rarityOverrides={poolResult.pool.rarityOverrides}
+        toDirection={draftParams?.kind === "house" ? draftParams.toLocation.toDirection : undefined}
+      />
     {/if}
   </div>
 </div>
@@ -553,13 +560,6 @@
     background: var(--accent-light);
     color: var(--accent);
     border-color: var(--accent);
-  }
-
-  .stub {
-    color: var(--text-muted);
-    font-size: 0.875rem;
-    padding: 2rem 0;
-    text-align: center;
   }
 
   @media (max-width: 700px) {

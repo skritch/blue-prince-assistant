@@ -42,7 +42,7 @@ function validateDeadEnds(
 ) {
   let slots = draftResult.slots
 
-  // 2. if 3 dead-ends, rerolls slot 2 as a non-dead-end
+  // if 3 dead-ends, reroll slot 2 as a non-dead-end
   //   - calculate p[all 3 dead-ends]
   //   - rescale all slot-2 probabilities accordingly
   const pDeadEnds = [1, 2, 3].map((slot) =>
@@ -81,12 +81,11 @@ export function applyValidation(
   // Restrictions
   // - skipped for prism key / secret passage
   // - ignores weighted rooms & similar in slot 3
-  // - should affect duct drafts occurring before a normal draw, but
-  //   we're not going to implement that.
+  // - should affect duct drafts occuring before a normal draw, but unimplemented
   // 
   // When a card is invalidated, it is rerolled as an "any draw". Precompute this.
   // draftHouse(poolWithoutDeadEnds, game, day, house, draft, "any")
-
+  //
   // Duplicates: reroll the *first* slot with a dupe
   //   for each room in slot 1, p(dupe) = p(either slot 1 or 2 has that room)
   //   for each room in slot 2, p(dupe) = p(slot 3 has that room)

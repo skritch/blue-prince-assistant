@@ -12,6 +12,7 @@ import { applyDraftOverrides } from './draftOverrides'
 import { applyValidation } from './validation'
 import { draftPrismatic, draftSilver, type PrismColor } from './keys'
 import { draftBerryHouse, draftBerryOuter } from './misc'
+import { computeOrientationProbabilities, type OrientationResult } from './orientation'
 
 
 // Build the drafting pool, based on game conditions and unlocks
@@ -336,41 +337,49 @@ function runDraft(
   game: GameState,
   day: DayState,
   house: HouseState,
-  draft: DraftParams): DraftPool {
+  draft: DraftParams): [DraftPool, OrientationResult | undefined] {
 
   let draftResult: DraftResult
+  let orientations: OrientationResult | undefined
+
   if (draft.kind == 'outer') {
     if (draft.berryPicker) {
-      return draftBerryOuter(game, house) // bypasses pool
+      [pool, draftResult] = draftBerryOuter(game, house) // bypasses pool
     }
     draftResult = draftOuter(game, day, house, draft)
-  } else if (draft.keyUsed == 'berry picker') {
-    draftResult = draftBerryHouse(pool, game, day, house, draft)
-  } else if (draft.secretPassageColor !== undefined) {
-    return draftPrismatic(
-      pool, game, house,
-      { ...draft, secretPassageColor: draft.secretPassageColor }
-    )  // bypasses pool
-  } else if (draft.keyUsed == 'silver') {
-    return draftSilver(
-      pool, game, day, house, draft
-    )
+    orientations = undefined
   } else {
-    draftResult = draftHouse(pool, game, day, house, draft, 1)
-    draftResult = applyValidation(draftResult, pool, game, day, house, draft)
+    if (draft.secretPassageColor !== undefined) {
+      [pool, draftResult] = draftPrismatic(
+        pool, game, day, house,
+        { ...draft, secretPassageColor: draft.secretPassageColor }
+      )
+    } else if (draft.keyUsed == 'silver') {
+      draftResult = draftSilver(
+        pool, game, day, house, draft
+      )
+    } else if (draft.keyUsed == 'berry picker') {
+      draftResult = draftBerryHouse(pool, game, day, house, draft)
+    } else {
+      draftResult = draftHouse(pool, game, day, house, draft, 1)
+      draftResult = applyValidation(draftResult, pool, game, day, house, draft)
 
-    // Weighted rooms, guaranteed draws, duct draws, etc.
-    // We apply these after validation, as they mostly ignore validation. This
-    // will be inaccurate for some duct draws, which are validated in some cases.
-    // TODO: fix? Would have to annotate duct draws separately.
-    draftResult = applyDraftOverrides(draftResult, pool, game, day, house, draft)
+      // Weighted rooms, guaranteed draws, duct draws, etc.
+      // We apply these after validation, as they mostly ignore validation. This
+      // will be inaccurate for some duct draws, which are validated in some cases.
+      // TODO: fix? Would have to annotate duct draws separately.
+      draftResult = applyDraftOverrides(draftResult, pool, game, day, house, draft)
+    }
+    orientations = computeOrientationProbabilities(draftResult.slots, game, day, draft)
   }
 
-  return setProbabilities(
+  pool = setProbabilities(
     pool,
     draftResult.slots,
     draftResult.reasons
   )
+
+  return [pool, orientations]
 }
 
 
@@ -380,9 +389,10 @@ export function generateDraftPool(
   day: DayState,
   house: HouseState,
   draft?: DraftParams
-): DraftPool {
+): [DraftPool, OrientationResult | undefined] {
 
-  var pool: DraftPool
+  let pool: DraftPool
+  let orientations: OrientationResult | undefined
 
   pool = buildbasePool(game, day, house)
   pool = removeDraftedRooms(pool, house)
@@ -392,7 +402,7 @@ export function generateDraftPool(
   pool = applyDraftingBlocks(pool, game, day, draft)
   pool = applyDynamicRarities(pool, game, day, house)
   if (draft !== undefined) {
-    pool = runDraft(pool, game, day, house, draft)
+    [pool, orientations] = runDraft(pool, game, day, house, draft)
   }
-  return pool
+  return [pool, orientations]
 }
