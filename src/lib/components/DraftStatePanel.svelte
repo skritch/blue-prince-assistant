@@ -455,10 +455,6 @@
     gap: 0.3rem;
   }
 
-  .tile-selects select {
-    width: 3.5rem;
-  }
-
   .divider {
     height: 1px;
     background: var(--border);

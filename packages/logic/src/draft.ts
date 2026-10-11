@@ -257,7 +257,7 @@ export function initDecks(
 //   deck.length >= n
 // to draw from, where n = deckMinimums[i]. 
 // All non-empty decks are also "marked". When deck is accepted, the source
-// indicates that a random marked deck is be chosen to draw from. If no
+// indicates that a random marked deck is chosen to draw from. If no
 // deck is accepted, the source states that drafting fails. 
 // Later, however, it indicates that that draws 1 and 3 can proceed if
 // no deck as accepted, so long as some decks are marked, while only draw 2
@@ -286,6 +286,10 @@ export function selectDecks(
   allowMarked: boolean = true,
 ): { pDeckIJ: KeyedVec<number>[], pRedrawI: KeyedVec<number> } {
 
+  // Logic 1 = choose first deck with >=deckMinimums entries
+  // Logic 2 = when a deck with >=deckMinimums entries is found, choose any marked deck at random 
+  const LOGIC: 1 | 2 = 2;
+
   // Pr[deck j is chosen | deck i was rolled originally]
   const pDeckIJ: KeyedVec<number>[] = Array(8).fill(KeyedVec.empty<number>()) // outer index i
   let pRedrawI = KeyedVec.empty<number>() // keyed by i
@@ -296,8 +300,8 @@ export function selectDecks(
     const fallbackOrder = inLibrary ? LIBRARY_RARITY_FALLBACKS[rarity] : RARITY_FALLBACKS[rarity]
 
     // both keyed by j
-    let pMarked = KeyedVec.empty<number>()
-    let pAccepted = KeyedVec.empty<number>()
+    let pMarkedJ = KeyedVec.empty<number>()
+    let pAcceptedJ = KeyedVec.empty<number>()
 
     for (const rarity2 of fallbackOrder) {
       const j = (rarity2 - 1) + 4 * freeGem
@@ -314,23 +318,30 @@ export function selectDecks(
       //                      ~= 1 - BinomialCDF(n; L, q)
       // where q is the average p of each card being in the deck.
       const q = d2.mean()
-      const pAcceptedJ = binomialAtLeast(d2.length, q, n)
-      const pMarkedJ = binomialAtLeast(d2.length, q, 1)
+      const pIsAccepted = binomialAtLeast(d2.length, q, n)
+      const pIsMarked = binomialAtLeast(d2.length, q, 1)
 
       // Pr(j is first deck accepted) 
       // = Pr(no decks before j in fallback order accepted) * Pr(j accepted)
-      const pNoneAcceptedSoFar = pAccepted.values().reduce((acc, cur) => acc * (1 - cur), 1)
-      const pFirstAccepted = pAcceptedJ * pNoneAcceptedSoFar
+      const pNoneAcceptedSoFar = pAcceptedJ.values().reduce((acc, cur) => acc * (1 - cur), 1)
+      const pIsFirstAccepted = pIsAccepted * pNoneAcceptedSoFar
+      pAcceptedJ = pAcceptedJ.set(j, pIsAccepted)
+      pMarkedJ = pMarkedJ.set(j, pIsMarked)
 
       // Add j to outcome for i, weighted by pAcceptedJ
-      pDeckIJ[i] = pDeckIJ[i].set(j, pDeckIJ[i].get(j) + pFirstAccepted)
+      if (LOGIC == 1) {
+        pDeckIJ[i] = pDeckIJ[i].set(j, pDeckIJ[i].get(j) + pIsFirstAccepted)
+      } else {
+        // Choose a random marked deck so far
+        pDeckIJ[i] = pDeckIJ[i].add(
+          pMarkedJ.scale(1 / pMarkedJ.sum()).scale(pIsFirstAccepted)
+        )
+      }
 
-      pAccepted = pAccepted.set(j, pAcceptedJ)
-      pMarked = pMarked.set(j, pMarkedJ)
     }
 
-    const pNoneAcceptedI = pAccepted.values().reduce((acc, cur) => acc * (1 - cur), 1)
-    const pNoneMarkedI = pMarked.values().reduce((acc, cur) => acc * (1 - cur), 1)
+    const pNoneAcceptedI = pAcceptedJ.values().reduce((acc, cur) => acc * (1 - cur), 1)
+    const pNoneMarkedI = pMarkedJ.values().reduce((acc, cur) => acc * (1 - cur), 1)
 
     // On draw 2, we don't consider marked decks at all
     if (!allowMarked) {
@@ -353,12 +364,12 @@ export function selectDecks(
     // = [ Pr(j marked & j not accepted) * P(all j' != j not accepted) / P(none accepted)
     // = (Pr(0 < |j| <= n) / Pr(j not accepted) 
     // = (Pr(j marked) - Pr(j accepted)) / (1 - Pr(j accepted))
-    const pMarkedGivenNoneAccepted = (pMarked
-      .add(pAccepted.scale(-1)))
-      .mult(pAccepted.map((p => 1 / (1 - p))))
+    const pMarkedGivenNoneAccepted = (pMarkedJ
+      .add(pAcceptedJ.scale(-1)))
+      .mult(pAcceptedJ.map((p => 1 / (1 - p))))
 
 
-    for (const j of pMarked.keys()) {
+    for (const j of pMarkedJ.keys()) {
       // This is the probability this deck is marked
       const pj = pMarkedGivenNoneAccepted.get(j)
       const pks = pMarkedGivenNoneAccepted.unset(j)

@@ -46,7 +46,7 @@
 
   const initHouseDraft =
     loaded?.draft && loaded.draft.kind == "house" ? loaded.draft : undefined;
-  let draftMode: Mode = $state(!loaded?.draft ? "none" : loaded.draft.kind);
+  let draftMode: Mode = $state(!loaded?.draft ? "house" : loaded.draft.kind);
   let draftColumn: TileColumn = $state(
     initHouseDraft?.toLocation.tile.column ?? "C",
   );
